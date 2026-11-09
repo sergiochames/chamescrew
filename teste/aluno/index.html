@@ -3528,7 +3528,7 @@ const MEDDAY=[{k:'alim',n:'Dieta do dia',c:9,d:'Todas as refeições marcadas no
   {k:'perfeita',n:'Dia completo',c:4,d:'Treino (ou descanso planejado) + dieta no horário + check-in.'},{k:'agua',n:'Água em dia',c:16,d:'2 L ou mais registrados no check-in.'},
   {k:'sono',n:'Sono regulado',c:2,d:'7h ou mais de sono.'}];
 MEDDAY.forEach(m=>m.cnt=m.c);
-const MEDEVO=[{k:'carga',n:'Evolução de carga',t:()=>progTier(progMonth),d:()=>`Progressões confirmadas no mês. Ferro 2 • Aço 4 • Ouro 6 • Rubi 8 • Diamante 10. Agora: ${progMonth}.`},
+const MEDEVO=[{k:'carga',n:'Progressões do mês',t:()=>progTier(progMonth),d:()=>`Progressões confirmadas no mês. Ferro 2 • Aço 4 • Ouro 6 • Rubi 8 • Diamante 10. Agora: ${progMonth}.`},
   {k:'limite',n:'Quebrou o limite',t:()=>2,d:()=>'Recorde pessoal em um exercício principal.'},{k:'tempo',n:'Tempo de matilha',t:()=>1,d:()=>'Meses seguidos na consultoria.'},
   {k:'recrutador',n:'Recrutador',t:()=>0,d:()=>'Indicou 1 amigo que virou aluno: 10% de desconto.'}];
 function dayTier(n){let t=-1;DAY_T.forEach((x,i)=>{if(n>=x)t=i});return t}
@@ -3540,7 +3540,7 @@ function renderMedals(){
   if(window._agOnce){if(window._rmAgain)window._rmAgain();return}window._agOnce=1;
 /* aula presencial: confirmação, remarcação sem custo, crédito, extra */
 let NOWH=8;const DAYS_AG=['Hoje','Amanhã','Sex','Sáb'],DOFF={Hoje:0,'Amanhã':24,Sex:48,'Sáb':72};
-const AG={slots:[{d:'Hoje',h:18,conf:false},{d:'Sex',h:7.25,conf:false,mv:'07:00',rep:'cr'}],free:[['Hoje',16],['Amanhã',7],['Amanhã',18],['Sex',9],['Sex',18],['Sáb',9]],quota:8,week:2,done:4,wdone:1,credit:0,rem:1,moving:null};
+const AG={slots:[{d:'Hoje',h:16,conf:false},{d:'Sex',h:7.25,conf:false,mv:'07:00',rep:'cr'}],free:[['Hoje',18],['Amanhã',7],['Amanhã',18],['Sex',9],['Sex',18],['Sáb',9]],quota:8,week:2,done:4,wdone:1,credit:0,rem:1,moving:null};
 const hh2=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
 const agLeft=x=>DOFF[x.d]+x.h-NOWH;
 const agDl=x=>agDlX(x);
@@ -3605,7 +3605,7 @@ function renderPlan(){const u=Math.min(regular(),AG.quota);$('#pl-bar').style.wi
 function agAll(){renderAula();renderAgenda();renderPlan()}
 const RULES_TXT=['O plano é por número de aulas no mês: 8 aulas (2x por semana) ou 12 aulas (3x por semana). No plano de 2x, são 2 aulas por semana; uma a mais na semana é aula extra. Aula remarcada ou marcada com crédito pode cair em qualquer semana, sem virar extra.',
  'Não vai poder ir? Avise até 6 horas antes (aulas antes das 10h: até 22h da véspera). Você pode fazer isso até 2 vezes por mês no plano de 2x, e escolhe: pedir outro horário agora (sua aula fica garantida até o personal confirmar) ou guardar para depois (vira 1 crédito, que vale 30 dias, dentro do seu plano). Se o personal recusar o novo horário, você escolhe manter sua aula ou pedir outro até o prazo; sem resposta, a aula conta como dada.',
- 'Passou do limite de mudanças do mês ou do prazo: se não for, a aula conta como dada.',
+ 'Avisou fora do prazo ou faltou: a aula conta como dada, sem crédito. Já usou as mudanças do mês: a nova aula vira aula extra paga, e você vê o valor antes de aceitar.',
  'Se não houver horário livre para usar o crédito, a equipe tenta um encaixe na semana seguinte. O encaixe depende da agenda e não é garantido.',
  'Não compareceu sem avisar: a aula conta como dada.',
  'Aula além das aulas do plano é extra e cobrada à parte, só se o personal confirmar. Se depois você cancelar outra aula, ela vira crédito; a extra continua cobrada.',
@@ -3657,7 +3657,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-nowh],[dat
       sheet(`<span class="lbl">Remarcar</span><p class="d" style="font-size:36px;margin:6px 0">${m.d} ${hh2(m.h)} → ${dlab(dd)} ${hh2(h)}</p><p class="meta" style="margin:0">Sem custo. O Sérgio recebe o aviso com a sua mensagem.</p>${whyHTML('remarcação')}<button class="btn solid wide" id="rm-ok">Remarcar e avisar o Sérgio</button>`,
         sh=>{sh.querySelector('#rm-ok').onclick=()=>{const from={d:m.d,h:m.h};const w=readWhy(sh);sh.remove();AG.free.splice(i,1);AG.free.push([m.d,m.h]);m.d=dd;m.h=h;m.conf=false;AG.moving=null;AG.rem++;pushAviso('remarcou',from,{d:dd,h},w,true);agAll();toast(`Remarcado para ${dlab(dd)} às ${hh2(h)}. O Sérgio foi avisado.`)}});return}
     const useCredit=AG.credit>0,extra=!useCredit&&needExtra();const whyM=regular()>=AG.quota;
-    const doit=()=>{AG.free.splice(i,1);AG.slots.push({d:dd,h,conf:false,extra});if(extra&&window.pushCharge)window.pushCharge('Ana',`Aula extra • ${dd} ${hh2(h)}`,150);if(useCredit)AG.credit--;agAll();toast(extra?`Aula extra marcada: ${dd.toLowerCase()} às ${hh2(h)}. O link de pagamento chegou no app e no WhatsApp.`:`Marcado: ${dd.toLowerCase()} às ${hh2(h)}${useCredit?' com seu crédito':''}.`)};
+    const doit=()=>{AG.free.splice(i,1);AG.slots.push({d:dd,h,conf:false,extra});if(extra&&window.pushCharge)window.pushCharge('Ana',`Aula extra • ${dd} ${hh2(h)}`,AVU);if(useCredit)AG.credit--;agAll();toast(extra?`Aula extra marcada: ${dd.toLowerCase()} às ${hh2(h)}. O link de pagamento chegou no app e no WhatsApp.`:`Marcado: ${dd.toLowerCase()} às ${hh2(h)}${useCredit?' com seu crédito':''}.`)};
     if(extra)sheet(`<span class="lbl">Aula extra</span><p class="d" style="font-size:38px;margin:6px 0">Além do seu plano</p><p class="meta">${whyM?`Você já usou as ${AG.quota} aulas de outubro.`:`Seu plano permite até ${AG.week} aulas por semana e você já tem ${AG.week} nesta semana.`} Essa aula fica marcada como extra e é cobrada à parte.</p><button class="btn solid wide" id="ag-ex">Marcar aula extra</button>`,sh=>{sh.querySelector('#ag-ex').onclick=()=>{sh.remove();doit()}});else doit()}});
 agAll();
 /* ===== painel: 1) avisos da agenda ===== */
@@ -3697,7 +3697,7 @@ window.avulsaSheet=()=>{const AL=[['Ana',2],['Bruno',2],['Carla',5],['Duda',2],[
     sh.querySelector('#av-tp').onclick=e=>{const b=e.target.closest('[data-avt]');if(!b)return;tipo=b.dataset.avt;sh.querySelectorAll('[data-avt]').forEach(x=>x.setAttribute('aria-pressed',x===b));
       sh.querySelector('#av-note').textContent={'Dentro do plano':'Conta como uma das aulas do mês do aluno.','Usou crédito':'Usa 1 crédito que o aluno tinha de um cancelamento no prazo.','Extra (cobrar)':'Fica fora do plano. O app gera a cobrança e manda o link para o aluno na hora. Acompanhe na aba Financeiro.'}[tipo]};
     sh.querySelector('#av-ok').onclick=()=>{if(!who){sh.querySelector('#av-err').textContent='Escolha o aluno.';return}const h=+sh.querySelector('#av-h').value;
-      const rec={n:who,lv:AL.find(a=>a[0]===who)[1],h,tipo};if(tipo==='Extra (cobrar)')rec.fin=window.pushCharge(who,`Aula extra avulsa • hoje ${hh2(h)}`,150);window._PAV.push(rec);sh.remove();window.renderPres();toast(`Aula avulsa de ${who} às ${hh2(h)} registrada${tipo==='Extra (cobrar)'?'. O link de pagamento já foi enviado.':'.'}`)}})};window.renderPres=renderPres;window.agAllX=agAll;window.AGX=AG;
+      const rec={n:who,lv:AL.find(a=>a[0]===who)[1],h,tipo};if(tipo==='Extra (cobrar)')rec.fin=window.pushCharge(who,`Aula extra avulsa • hoje ${hh2(h)}`,AVU);window._PAV.push(rec);sh.remove();window.renderPres();toast(`Aula avulsa de ${who} às ${hh2(h)} registrada${tipo==='Extra (cobrar)'?'. O link de pagamento já foi enviado.':'.'}`)}})};window.renderPres=renderPres;window.agAllX=agAll;window.AGX=AG;
 if(!window._presL){window._presL=1;document.addEventListener('click',e=>{const p=e.target.closest('[data-pres]'),av=e.target.closest('[data-avulsa]');
   if(p){const [n,h]=p.dataset.pres.split('-');window._PO[n+h]=true;if(n==='Ana'){const x=window.AGX.slots.find(y=>y.d==='Hoje'&&y.h==+h);if(x)x.conf=true;window.agAllX()}window.renderPres();toast(`${n} marcado como presente.`)}
   if(av){window.avulsaSheet()}});
@@ -4234,10 +4234,22 @@ const extrasM=m=>AG.slots.filter(x=>x.extra&&monOf(x.d)===m).length;
 function xSheet(i){const f=AG.free[i];if(!f)return;const [dd,h]=f,m=monOf(dd),n=extrasM(m),q=quotaFor(dd);
   const why=q.full?`Suas ${AG.quota} aulas de ${MES[m]} já estão marcadas.`:`Sua semana já tem as ${AG.week} aulas do plano.`;
   const book=(paid)=>{AG.free.splice(i,1);AG.slots.push({d:dd,h,conf:false,extra:true,paid,pend:{novo:true}});AGV.sel=nOf(dd);agAll();pendSheet('aula',dd,h)};
-  if(n<XLIM)sheet(`<span class="lbl">Aula extra</span><p class="d" style="font-size:36px;margin:6px 0">${dlab(dd)} • ${hh2(h)}</p><p class="meta">${why} Essa entra como aula extra, sem pagar agora. As extras do mês vão numa cobrança única no fim do mês.</p><p class="meta" style="font-size:12.5px;margin:0 0 12px">O ${PN()} precisa confirmar o horário.</p><button class="btn solid wide" id="xok">Pedir aula extra</button>`,s=>s.querySelector('#xok').onclick=()=>{s.remove();book(false)});
+  if(n<XLIM)sheet(`<span class="lbl">Aula extra</span><p class="d" style="font-size:36px;margin:6px 0">${dlab(dd)} • ${hh2(h)}</p><p class="meta">${why}</p><div class="avb"><b>Aula extra: R$ ${AVU}</b><span>Você só paga se o ${PN()} aprovar. Ela entra na cobrança única do fim do mês.</span></div><p class="meta" style="font-size:12.5px;margin:8px 0 12px">Até ele aprovar, nada é cobrado.</p><button class="btn solid wide" id="xok">Aceito, pedir aula extra de R$ ${AVU}</button>`,s=>s.querySelector('#xok').onclick=()=>{s.remove();book(false)});
   else sheet(`<span class="lbl">Aula extra</span><p class="d" style="font-size:36px;margin:6px 0">${dlab(dd)} • ${hh2(h)}</p><div class="avb"><b>Você já tem ${XLIM} extras na cobrança do fim do mês.</b><span>Para pedir mais uma este mês, ela é paga agora (R$ ${AVU}). Se o ${PN()} recusar, o valor volta.</span></div><button class="btn solid wide" id="xpay">Pagar com Pix e pedir</button>`,s=>s.querySelector('#xpay').onclick=()=>{s.remove();toast('Pix confirmado');book(true)})}
 window.addEventListener('click',e=>{if(window.NB)return;const k=e.target.closest('[data-ag-book]');if(!k||AG.moving)return;const i=+k.getAttribute('data-ag-book'),f=AG.free[i];if(!f||outPlan(f[0]))return;
   const q=quotaFor(f[0]);if(credFor(f[0])||!(q.full||q.wfull))return;e.stopImmediatePropagation();xSheet(i)},true);
+/* ===== v48: remarcar acima do limite vira aula extra paga ===== */
+
+ // remarcar acima do limite: aula extra paga, com valor antes do aceite
+ {const _out=outSheet;outSheet=function(x){let ok,u,lim,mo;try{ok=inTime(x);mo=CURMO();u=chgOf(mo);lim=AG.chgLim}catch(_){return _out(x)}if(x.extra||!ok||u<lim)return _out(x);
+   const head=`<span class="lbl">${dlab(x.d)} • ${hh2(x.h)} • 📍 ${locOf(x)}</span><p class="d" style="font-size:40px;margin:6px 0 4px">Não vou poder ir</p>`;
+   sheet(head+`<p class="meta" style="margin:0 0 10px">Você já usou ${lim===1?'a sua mudança':'as suas '+lim+' mudanças'} de ${MES[mo]}.</p><div class="avb"><b>Esta aula conta como dada, sem crédito.</b><span>Se quiser treinar em outro horário, ele vira aula extra.</span></div>
+     <button class="opt3" id="o-ex" style="margin-top:10px"><b>Pedir aula extra • R$ ${AVU}</b><small>Você escolhe um horário livre. Só é cobrada se o ${PN()} aprovar, na cobrança do fim do mês.</small></button>
+     <button class="opt3" id="o-fr"><b>Só liberar o horário</b><small>Fica para outra pessoa. Sem cobrança extra.</small></button>${whyHTML('falta')}<button class="btn wide" data-close3>Manter minha aula</button>`,
+     s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-fr').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'dada',w)};
+       s.querySelector('#o-ex').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'dada',w);AG.forceExtra=true;go('agenda');try{agAll()}catch(_){}toast(`Escolha um horário livre. A aula extra custa R$ ${AVU}.`)}})}}
+ window.addEventListener('click',e=>{if(!AG.forceExtra||window.NB)return;const k=e.target.closest('[data-ag-book]');if(!k||AG.moving)return;e.stopImmediatePropagation();AG.forceExtra=false;xSheet(+k.getAttribute('data-ag-book'))},true);
+
 /* contagem: aulas + extras */
 const _rn20=renderNext;renderNext=function(){_rn20();const s=$('#ag-sum .agst');if(!s)return;const sp=s.querySelector('span');const mo=CURMO(),x=extrasM(mo);if(sp&&x&&!sp.querySelector('.xx'))sp.insertAdjacentHTML('beforeend',`<em class="xx">+${x} extra</em>`)};
 /* desfazer confirmação, visível */
@@ -4392,7 +4404,7 @@ function bookSheet(i){const f=AG.free[i];if(!f)return;const [dd,h]=f,des=f[2]===
   const why=D.why==='semana'?`Sua semana já tem as ${AG.week} aulas do plano.`:`Suas ${AG.quota} aulas de ${MES[m]} já estão marcadas.`;
   const T={plano:['Aula do plano',`Conta como aula ${D.pw+1} de ${AG.week} da semana e ${D.pm+1} de ${AG.quota} de ${MES[m]}.`,'Pedir esse horário','pl'],
     credito:['Usar 1 crédito',`${why} Esse horário usa 1 dos seus créditos (você tem ${AG.creds.length}). Não é cobrado.`,'Pedir e usar crédito','cr'],
-    extra:['Aula extra',`${why} Esse horário é uma aula extra, cobrada à parte${nX<XLIM?' na cobrança do fim do mês':`: R$ ${AVU} agora (você já tem ${XLIM} extras no mês)`}.`,nX<XLIM?'Pedir aula extra':`Pagar R$ ${AVU} e pedir`,'ex']}[D.t];
+    extra:['Aula extra',`${why} Esse horário é uma aula extra de R$ ${AVU}${nX<XLIM?'. Você só paga se o '+PN()+' aprovar, na cobrança do fim do mês':` paga agora (você já tem ${XLIM} extras no mês). Se o ${PN()} recusar, o valor volta`}.`,nX<XLIM?`Aceito, pedir aula extra de R$ ${AVU}`:`Pagar R$ ${AVU} e pedir`,'ex']}[D.t];
   sheet(`<span class="bkt ${T[3]}">${T[0]}</span><p class="d" style="font-size:36px;margin:10px 0 4px">${dlab(dd)} • ${hh2(h)}</p>${des?'<p class="meta" style="margin:0">Vaga de desistência</p>':''}
     <p class="meta" style="margin:8px 0 4px">${T[1]}</p><p class="meta" style="font-size:12.5px;margin:0 0 12px">O ${PN()} precisa confirmar o horário. Você recebe um aviso.</p><button class="btn solid wide" id="bk-go">${T[2]}</button>`,
     s=>s.querySelector('#bk-go').onclick=()=>{s.remove();const D2=ENG.decide(liveSt(),dd);const j=AG.free.indexOf(f);if(j<0)return;AG.free.splice(j,1);
@@ -4430,7 +4442,7 @@ function agendaTests(){const T=[],ok=(n,c,d)=>T.push({n,ok:!!c,d});
   /* contagens */
   s=mk({slots:[{d:'d5',h:7},{d:'d7',h:7,rep:'cr'},{d:'d8',h:7,extra:true}],dadas:[{d:'d9',h:7}]});ok('Contagem da semana: 1 plano + 1 dada = 2',ENG.planW(s,1)===2,ENG.planW(s,1));
   return T}
-window.agendaTestsX=agendaTests;
+window.agendaTestsX=agendaTests;window.runTestsX=()=>runTests();
 setTimeout(()=>{const _lab=window.labSheetX;window.labSheetX=function(){_lab();const s=[...document.querySelectorAll('.scrim')].pop();if(!s)return;const T=agendaTests(),bad=T.filter(x=>!x.ok).length;
   (s.querySelector('.sheet [data-close]')||s.querySelector('.sheet').lastElementChild).insertAdjacentHTML('beforebegin',`<span class="lbl pvl">Testes da agenda • ${T.length-bad} de ${T.length} passaram</span><div class="labt">${T.map(x=>`<div class="${x.ok?'ok':'no'}"><i>${x.ok?'✓':'✗'}</i><span>${x.n}${x.d!==undefined?` <em>(${x.d})</em>`:''}</span></div>`).join('')}</div>`)}},0);
 agAll();
@@ -4709,7 +4721,7 @@ var RMED_SRC={carga:'Conta pelo treino: semanas com progressão de carga',resist
   /* tudo semanal e personalizado por aluno */
   const S=window.STU,H={
    tempo:['Faça check-in em 6 dos 7 dias. A folga pode ser qualquer dia.','semanas com check-in'],
-   carga:['Aumente a carga em algum exercício na semana.','semanas aumentando carga'],
+   carga:['Suba a carga e cumpra as repetições em algum exercício na semana.','semanas progredindo a carga'],
    resist:[`Bata a sua meta de cardio da semana (a sua: ${S.cardio}x).`,'semanas com a meta de cardio'],
    limite:[`Cumpra os seus treinos da semana (a sua meta: ${S.freq}x). Dia de descanso não conta contra.`,'semanas com os treinos em dia','Treino em dia'],
    agua:[`Bata a sua meta de água (${window.aguaMeta().toLocaleString('pt-BR')} L) em 6 dos 7 dias.`,'semanas com a meta de água'],
@@ -4744,8 +4756,8 @@ function medSheet(id,show){const m=RMEDS().find(x=>x.id===id),t=rtier(m),v=RMED_
     <p class="d" style="font-size:44px;margin:10px 0 4px">${m.secret&&t<0?'Medalha secreta':m.name}</p>
     <p style="font-weight:800;margin:0">${status}</p>
     <p style="font-weight:700;margin:12px 0 0">Como ganhar: ${m.secret&&t<0?'ninguém conta. Continua firme…':m.how||'Aumente a carga ao longo da semana'}</p>
-    ${up}${lk?'':prog}<span class="ms-src">${RMED_SRC[id]||''}</span><p class="meta" style="font-size:12.5px;margin:10px auto 0;max-width:36ch">As semanas não precisam ser seguidas: vale a constância. Uma semana inteira sem check-in tira 1 semana do progresso. Se o progresso zerar, a medalha volta um material. Congelamento e viagem pausam tudo.</p>
-    ${lk||v<=0?'':`<button class="btn small" data-decay="${id}" style="margin-top:10px">Simular 1 semana sem check-in</button>`}
+    ${up}${lk?'':prog}<span class="ms-src">${RMED_SRC[id]||''}</span><p class="meta" style="font-size:12.5px;margin:10px auto 0;max-width:36ch">${id==='recrutador'?'Cada amigo que vira aluno conta 1. Essa medalha não perde com o tempo.':'As semanas não precisam ser seguidas: vale a constância. Uma semana inteira sem check-in tira 1 semana do progresso. Se o progresso zerar, a medalha volta um material. Congelamento e viagem pausam tudo.'}</p>
+    ${lk||v<=0||id==='recrutador'?'':`<button class="btn small" data-decay="${id}" style="margin-top:10px">Simular 1 semana sem check-in</button>`}
     <div class="ms-strip">${TIERS.map((x,j)=>`<button data-rmed-t="${id}:${j}" aria-pressed="${j===pv}">${RA.disc(m,j).replace('class="rdisc','style="--s:46px'+(j>t?';opacity:.55':'')+'" class="rdisc')}<b>${x}</b><small>${m.th[j]}</small></button>`).join('')}</div>
     <p class="meta" style="font-size:12.5px;margin:8px 0 0">Toque num material para ver como ele fica.</p></div>`;
   const open=document.querySelector('.scrim .ms-host');
@@ -5557,7 +5569,7 @@ function renderDLock(){const el=$('#dlock'),ok=$('#dok');if(!el)return;const D=C
     <div class="row" style="gap:8px"><button class="btn small" id="dsim" style="flex:1">Prévia: aprovar</button><button class="btn small line" id="dsimx" style="flex:1">Prévia: CRN não encontrado</button></div>`;
     $('#dsim').onclick=()=>{CFG.dieta='ok';applyNutri();toast('CRN verificado. A aba Dieta foi liberada.')};
     $('#dsimx').onclick=()=>{CFG.dieta='bloq';CFG.dn.err=`Não encontramos o CRN-${D.reg} ${D.num} ativo em nome de ${D.nome}. Confira os dados com o seu nutricionista e envie de novo.`;applyNutri()};return}
-  el.innerHTML=`<div class="hero"><span class="motto">Dieta</span><h2 class="d">Bloqueada</h2><p class="sub">Só nutricionista pode passar dieta. Envie a dieta que o seu nutricionista fez para liberar esta aba.</p></div>
+  el.innerHTML=`<div class="hero"><span class="motto">Dieta</span><h2 class="d">Adicionar minha dieta</h2><p class="sub">Guarde aqui o PDF da dieta que o seu nutricionista fez. Ela fica sempre à mão e o check-in passa a acompanhar suas refeições.</p></div>
    <div class="block frost dform">
     <label class="dup" for="dfile"><span class="pdfi">PDF</span><span style="min-width:0"><b id="dfn">${D.file||'Enviar a dieta em PDF'}</b><small>O arquivo que o nutricionista te entregou</small></span><span class="go">›</span></label><input type="file" id="dfile" accept="application/pdf" hidden>
     <div class="field" style="margin-top:12px"><label for="dnm">Nome do nutricionista</label><input class="inp" id="dnm" value="${D.nome||''}" placeholder="Como está no CRN"></div>
@@ -5630,7 +5642,7 @@ const CK='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="cu
 const TOUR=()=>{const T=TEMAS[CFG.tema],n=PERS.nome,g=gameOn();return [
  {t:'Seu treino',s:`Toque em Começar e siga de cima para baixo. Marque cada série: o app sugere a carga e conta o descanso sozinho.`,m:`<div class="tm-card"><small>Agachamento livre</small><b>3 × 10 • descanso 90s</b>${[[40,10,1],[40,10,1],[42,'',0]].map((r,i)=>`<div class="tm-set"><span>${i+1}</span><i>${r[0]} kg</i><i>${r[1]||'—'}</i><em class="${r[2]?'on':''}">${r[2]?CK:''}</em></div>`).join('')}<div class="tm-rest"><span>Descanso</span><b>1:12</b><i><u style="width:62%"></u></i></div></div>`},
  {t:'Check-in do dia',s:`8 toques, 1 minuto, todo fim de dia. É assim que o ${n} acompanha seu sono, energia, água e dores.`,m:`<div class="tm-card"><small>Como está sua energia?</small><div class="tm-chips"><span>Baixa</span><span class="on">Ok</span><span>Alta</span></div><small style="margin-top:10px">Dormiu quantas horas?</small><div class="tm-chips"><span>-6h</span><span>6 a 7h</span><span class="on">7h+</span></div><div class="tm-btn">Enviar check-in</div></div>`},
- {t:'Suas aulas',s:`Peça um horário ou remarque pelo app. O ${n} confirma e você recebe o aviso. Até ele confirmar, sua aula atual continua garantida.`,m:`<div class="tm-card"><small>Próxima aula</small><b class="tm-big">18:00</b><span class="tm-tag ok">Confirmada ✓</span><div class="tm-row pend"><b>Qui 07:15</b><span>⏳ aguardando ${n}</span></div></div>`},
+ {t:'Suas aulas',s:`Peça um horário ou remarque pelo app. O ${n} confirma e você recebe o aviso. Até ele confirmar, sua aula atual continua garantida.`,m:`<div class="tm-card"><small>Próxima aula</small><b class="tm-big">16:00</b><span class="tm-tag ok">Confirmada ✓</span><div class="tm-row pend"><b>Qui 07:15</b><span>⏳ aguardando ${n}</span></div></div>`},
  ...(g?[{t:'Medalhas e level',s:`Cada dia completo (treino, dieta e check-in) vale. Juntando dias, você ganha medalhas: Ferro, Aço, Ouro, Rubi e Diamante. Com o tempo, seu level sobe e libera descontos.`,m:`<div class="tm-coins">${['ferro','aco','ouro','rubi','diam'].map((c,i)=>`<span class="tm-coin" style="background:var(--t-${c});transform:translateY(${[8,2,-6,2,8][i]}px)">${['Fe','Aç','Ou','Ru','Di'][i]}</span>`).join('')}</div><div class="tm-card" style="margin-top:12px"><small>Level</small><b>Atleta • 6 meses</b><i class="tm-bar"><u style="width:58%"></u></i></div>`},
  {t:`Ranking ${T.da}`,s:`Toda semana a turma é comparada pela % da meta cumprida, não por quem treina mais pesado. Só aparece se você quiser.`,m:`<div class="tm-card">${[['1','Júlia','100%'],['2','Bruno','100%'],['3','Você','92%',1],['4','Duda','83%']].map(r=>`<div class="tm-rk${r[3]?' me':''}"><b>${r[0]}</b><span>${r[1]}</span><i>${r[2]}</i></div>`).join('')}</div>`}]:[])]};
 function tour(i){const S=TOUR(),x=S[i],last=i===S.length-1;O.hidden=false;O.dataset.i='t';
@@ -5772,7 +5784,7 @@ paySheet=function(){window.openRenewX()};
 /* ===== v25: ranking com Hall no topo, tamanhos, quase lá, disputa, motivação, sequência ===== */
 {const pR=$('#mp-rk'),hh=$('#sec-rk'),hall=$('#hall');if(pR&&hh&&hall){pR.insertBefore(hall,pR.firstChild);pR.insertBefore(hh,hall);
  const ed=pR.querySelector('[data-prof-edit]'),op=pR.querySelector('.rk-opt');if(op&&ed){const box=document.createElement('div');box.className='rkme';pR.appendChild(box);box.append(op,ed)}}}
-const MACT={uivo:'Faz o check-in hoje',agua:'Bate a meta de água hoje',sono:'Dorme 7h hoje',alim:'Marca a dieta no horário hoje',limite:'Treina hoje',carga:'Sobe a carga no próximo treino',resist:'Faz o treino completo',perfeita:'Fecha o dia completo hoje',zero:'Fica sem fast food esta semana',doce:'Fica sem doce esta semana'};
+const MACT={uivo:'Faz o check-in hoje',agua:'Bate a meta de água hoje',sono:'Dorme 7h hoje',alim:'Marca a dieta no horário hoje',limite:'Treina hoje',carga:'Sobe a carga e cumpre as repetições no próximo treino',resist:'Faz o treino completo',perfeita:'Fecha o dia completo hoje',zero:'Fica sem fast food esta semana',doce:'Fica sem doce esta semana'};
 function nearOne(){const V=window.RMEDV?window.RMEDV():{};const L=(window.RMEDS?window.RMEDS():[]).filter(m=>!m.secret&&MACT[m.id]).map(m=>{const t=window.rtier(m),v=V[m.id]||0,nx=m.th[t+1];return {m,t,v,nx,f:nx?nx-v:99}}).filter(o=>o.nx).sort((a,b)=>a.f-b.f);return L[0]}
 function renderQL(){if(!gameOn())return;const sd=$('#v-hoje .sday');if(!sd)return;let q=$('#qla');const o=nearOne();if(!o){if(q)q.remove();return}
   const T=window.TIERSX||['Ferro','Aço','Ouro','Rubi','Diamante'];const txt=o.f===1?`${MACT[o.m.id]} e você ganha <b>${o.m.name} • ${T[Math.min(4,o.t+1)]}</b>`:`Falta${o.f>1?'m':''} ${o.f} para <b>${o.m.name} • ${T[Math.min(4,o.t+1)]}</b>`;
@@ -5876,28 +5888,30 @@ O.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return
 /* ===== v47: minhas metas (só do aluno) ===== */
 {const K='cc_metas',dk=d=>d.toISOString().slice(0,10),TODAY=dk(new Date());
  const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}},sv=()=>{try{localStorage.setItem(K,JSON.stringify(M))}catch(e){}};
- let M=ld();if(!M||!M.items){M={items:[{id:'a',t:'Beber 2,5 L de água',k:'agua',g:8},{id:'b',t:'Alongar 10 min',k:'ck'},{id:'c',t:'Tomar a vitamina',k:'ck'}],days:{},share:false};for(let i=1;i<=4;i++){const d=new Date();d.setDate(d.getDate()-i);M.days[dk(d)]={a:8,c:true,b:i<2}}sv()}
+ let M=ld();if(!M||!M.items){M={v:2,items:[{id:'b',t:'Alongar 10 min',k:'ck'},{id:'c',t:'Tomar a vitamina',k:'ck'}],days:{},share:false};for(let i=1;i<=4;i++){const d=new Date();d.setDate(d.getDate()-i);M.days[dk(d)]={c:true,b:i<2}}sv()}
+ if(!M.v){M.items=M.items.filter(x=>!(x.id==='a'&&x.k==='agua'&&x.t==='Beber 2,5 L de água'));M.v=2;sv()}
  let ED=false,NK='ck';
  const done=(it,day)=>{const v=(M.days[day]||{})[it.id];return it.k==='agua'?(v||0)>=it.g:!!v};
  const streak=it=>{let n=0;const d=new Date();if(!done(it,TODAY))d.setDate(d.getDate()-1);for(let i=0;i<60;i++){if(done(it,dk(d))){n++;d.setDate(d.getDate()-1)}else break}return n};
  const CK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
  function draw(){let el=document.getElementById('metas');if(!el){const a=document.getElementById('ci-count');if(!a)return;a.insertAdjacentHTML('afterend','<div class="block frost metas" id="metas"></div>');el=document.getElementById('metas')}
   const T=M.days[TODAY]||{};
-  el.innerHTML=`<div class="mh"><span class="lbl">Minhas metas</span><button class="lnk" data-me="ed">${ED?'Pronto':'Editar'}</button></div><p class="meta" style="margin:2px 0 4px">Só suas. Zeram todo dia e não contam pontos.</p>
-   ${M.items.map(it=>{const on=done(it,TODAY),st=streak(it),v=T[it.id]||0;return `<div class="mtr${on?' on':''}">${ED?`<button class="rm" data-mrm="${it.id}" aria-label="Tirar ${it.t}">×</button>`:`<button class="cb${on?' on':''}" data-mck="${it.id}" aria-label="${it.t}">${on?CK:''}</button>`}<span class="mt">${it.t}<small>${it.k==='agua'?`${v} de ${it.g} copos`:''}${it.k==='agua'&&st?' • ':''}${st?`${st} ${st===1?'dia':'dias'} seguidos`:it.k==='agua'?'':'comece hoje'}</small></span>${it.k==='agua'&&!ED?`<span class="cups">${Array.from({length:it.g},(_,j)=>`<button class="${j<v?'f':''}" data-mcup="${it.id}:${j}" aria-label="Copo ${j+1}"></button>`).join('')}</span>`:''}</div>`}).join('')||'<p class="meta">Nenhuma meta ainda.</p>'}
+  const _H=`<div class="mh"><span class="lbl">Minhas metas</span><button class="lnk" data-me="ed">${ED?'Pronto':'Editar'}</button></div><p class="meta" style="margin:2px 0 4px">Só suas. Zeram todo dia e não contam pontos.</p>
+   ${M.items.map(it=>{const on=done(it,TODAY),st=streak(it),v=T[it.id]||0;return `<div class="mtr${on?' on':''}">${ED?`<button class="rm" data-mrm="${it.id}" aria-label="Tirar ${it.t}">×</button>`:`<button class="cb${on?' on':''}" data-mck="${it.id}" aria-label="${it.t}">${on?CK:''}</button>`}<span class="mt">${it.t}<small>${it.k==='agua'?`${v} de ${it.g} copos`:''}${it.k==='agua'&&st?' • ':''}${st?(st===1?'1 dia seguido':`${st} dias seguidos`):it.k==='agua'?'':'comece hoje'}</small></span>${it.k==='agua'&&!ED?`<span class="cups">${Array.from({length:it.g},(_,j)=>`<button class="${j<v?'f':''}" data-mcup="${it.id}:${j}" aria-label="Copo ${j+1}"></button>`).join('')}</span>`:''}</div>`}).join('')||'<p class="meta">Nenhuma meta ainda.</p>'}
    ${ED&&M.items.length<6?`<div class="madd"><input class="inp" id="mnew" maxlength="40" placeholder="Ex.: Dormir antes das 23h"><button class="btn small" data-me="add">Adicionar</button></div><div class="mtk"><button data-mk="ck" aria-pressed="${NK==='ck'}">Check simples</button><button data-mk="agua" aria-pressed="${NK==='agua'}">Copos de água</button></div>`:''}
-   ${ED?`<label class="mshare"><span>Mostrar minhas metas ao ${(window.PERS&&PERS.nome)||'personal'}</span><input type="checkbox" id="mshare" ${M.share?'checked':''}></label>`:''}`}
- document.addEventListener('click',e=>{const b=e.target.closest('[data-mck],[data-mcup],[data-mrm],[data-me],[data-mk]');if(!b||!b.closest('#metas'))return;const T=M.days[TODAY]=M.days[TODAY]||{};
+   ${ED?`<label class="mshare"><span>Mostrar minhas metas ao ${(window.PERS&&PERS.nome)||'personal'}</span><input type="checkbox" id="mshare" ${M.share?'checked':''}></label>`:''}`;
+  el.innerHTML=_H;const hm=document.getElementById('metas-h');if(hm){hm.innerHTML=M.items.length?_H.replace(/id="mnew"/,'id="mnew-h"').replace(/id="mshare"/,'id="mshare-h"'):`<div class="mh"><span class="lbl">Minhas metas</span></div><button class="lnk" data-go="checkin" style="padding:0">Criar uma meta só sua</button>`}}
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-mck],[data-mcup],[data-mrm],[data-me],[data-mk]');if(!b||!b.closest('#metas,#metas-h'))return;const T=M.days[TODAY]=M.days[TODAY]||{};
   if(b.dataset.mck){const it=M.items.find(x=>x.id===b.dataset.mck);if(it.k==='agua')T[it.id]=done(it,TODAY)?0:it.g;else T[it.id]=!T[it.id];if(done(it,TODAY))try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}}
   else if(b.dataset.mcup){const [id,j]=b.dataset.mcup.split(':');T[id]=(T[id]||0)===+j+1?+j:+j+1}
   else if(b.dataset.mrm){M.items=M.items.filter(x=>x.id!==b.dataset.mrm)}
   else if(b.dataset.mk){NK=b.dataset.mk}
   else if(b.dataset.me==='ed'){ED=!ED}
-  else if(b.dataset.me==='add'){const v=(document.getElementById('mnew').value||'').trim();if(!v)return;M.items.push({id:'m'+Date.now().toString(36),t:v,k:NK,g:8})}
+  else if(b.dataset.me==='add'){const v=((b.closest('#metas-h')?document.getElementById('mnew-h'):document.getElementById('mnew')).value||'').trim();if(!v)return;M.items.push({id:'m'+Date.now().toString(36),t:v,k:NK,g:8})}
   sv();draw()});
  document.addEventListener('change',e=>{if(e.target.id==='mshare'){M.share=e.target.checked;sv();toast(M.share?`O ${(window.PERS&&PERS.nome)||'personal'} vai ver suas metas na sua ficha.`:'Suas metas voltaram a ser só suas.')}});
  document.addEventListener('click',e=>{if(e.target.closest('[data-ci]'))setTimeout(()=>{const m=document.getElementById('metas'),d=document.getElementById('ci-dia');if(m&&d)m.hidden=d.hidden},0)});
- draw();window.metasX=()=>M}
+ draw();window.metasX=()=>M;window.metasDraw=draw}
 /* ===== v47: treino — cartão por exercício ===== */
 {const TR='<svg class="ei" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>';
  const setH=(el,h)=>{if(el.innerHTML!==h)el.innerHTML=h};const tog=(el,c,v)=>{if(el.classList.contains(c)!==!!v)el.classList.toggle(c,!!v)};
@@ -5942,6 +5956,54 @@ function run(root){const w=document.createTreeWalker(root||document.body,NodeFil
   L.forEach(n=>{const sp=document.createElement('span');sp.className='eiw';sp.innerHTML=n.nodeValue.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])).replace(RX,(m,e)=>svg(M[e]));n.parentNode.replaceChild(sp,n);if(sp.childNodes.length===1||1){const f=document.createDocumentFragment();while(sp.firstChild)f.appendChild(sp.firstChild);sp.replaceWith(f)}})}
 let q=0;new MutationObserver(()=>{if(q)return;q=requestAnimationFrame(()=>{q=0;run()})}).observe(document.body,{childList:true,subtree:true,characterData:true});run();
 const st=document.createElement('style');st.textContent='svg.ei{width:1.05em;height:1.05em;vertical-align:-.16em;display:inline-block;flex:none}';document.head.appendChild(st)})();
+</script>
+
+<style>
+/* ===== v48: grafite, Hoje mais curto, metas no Hoje ===== */
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121317;--fg:#f2efe9;--muted:#9d9fa6;--line:#2e2f36;--soft:#202127;--frost:#1b1c21;--ink:#f2efe9;--on-ink:#17181c;--accfg:#17181c}}
+:root[data-theme="dark"]{--bg:#121317;--fg:#f2efe9;--muted:#9d9fa6;--line:#2e2f36;--soft:#202127;--frost:#1b1c21;--ink:#f2efe9;--on-ink:#17181c;--accfg:#17181c}
+#aula.aula2{gap:8px!important}
+#aula .when{font-size:34px!important;line-height:1!important}
+#aula .hrn{display:none!important}
+#aula.aula2 .row:has([data-ag-conf]) > [data-ag-move],#aula.aula2 .row:has([data-ag-move]) > [data-ag-conf]{grid-column:auto!important}
+#aula.aula2 .row > [data-ag-conf],#aula.aula2 .row > [data-ag-move]{min-height:44px}
+#aula > [data-go="agenda"]{width:auto!important;align-self:center;border:0!important;background:none!important;min-height:40px;padding:0 8px!important;text-decoration:underline;text-underline-offset:3px;font-size:13px}
+#metas-h{margin-top:4px;padding-top:12px;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+#metas-h .meta{display:none}
+#metas-h .mtr{padding:8px 0}
+.metas .cups button.f,#metas-h .cups button.f{background:currentColor!important;opacity:.85}
+.rt0 .ic svg,.rt1 .ic svg{filter:none!important}
+.rdisc .ic{-webkit-transform:translateZ(0);transform:translateZ(0)}
+.need82{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin:2px 0 6px}
+.need82 button{min-height:36px;padding:0 12px;border-radius:999px;border:1px solid currentColor;font-weight:800}
+.sets input.need{outline:2px solid var(--fg);outline-offset:1px}
+</style>
+
+<script>
+/* ===== v48: Hoje, metas, check-in e série sem registro fictício ===== */
+(function(){
+ // metas compactas dentro de "Seu dia"
+ const sd=document.querySelector('#v-hoje .sday');if(sd&&!document.getElementById('metas-h')){const q=sd.querySelector('#qla');const box=document.createElement('div');box.className='metas';box.id='metas-h';if(q)q.before(box);else sd.appendChild(box)}
+ try{window.metasDraw&&window.metasDraw()}catch(_){}
+ document.addEventListener('click',e=>{const b=e.target.closest('#metas-h [data-me="ed"]');if(b){e.stopPropagation();go('checkin');setTimeout(()=>{const x=document.querySelector('#metas [data-me="ed"]');x&&x.click();document.getElementById('metas')&&document.getElementById('metas').scrollIntoView({block:'center'})},60)}},true);
+ // contador do dia já certo na primeira abertura
+ try{renderDay()}catch(_){}
+ // check-in usa o relógio da demonstração, não o do celular
+ const ciFix=()=>{try{CI_HOUR=Math.floor(((typeof NOWH==='number'?NOWH:8)%24+24)%24);const t=document.getElementById('h-ci-txt');if(t&&t.dataset.late&&CI_HOUR<20){delete t.dataset.late;t.textContent='8 toques, 1 minuto'}}catch(_){}};ciFix();setInterval(ciFix,400);
+ // dieta no check-in só quando o aluno tem dieta
+ const dietQ=()=>{const a=document.getElementById('auto-diet');if(!a)return;const q=a.closest('.q');if(q)q.hidden=!!(window.DIETA_ON&&!window.DIETA_ON())};setInterval(dietQ,600);dietQ();
+ // série: não conclui com campos vazios
+ const ex=document.getElementById('exs');
+ if(ex)ex.addEventListener('click',e=>{const c=e.target.closest('[data-ck]');if(c){if(c.getAttribute('aria-pressed')==='true')return;const id=c.dataset.ck,kg=document.getElementById('kg-'+id),rp=document.getElementById('rp-'+id);if(!kg||!rp)return;
+    const bw=!kg.placeholder||kg.placeholder==='0';const miss=(!kg.value&&!bw)||!rp.value;
+    const old=c.parentElement.querySelector(`.need82[data-for="${id}"]`);if(old)old.remove();kg.classList.remove('need');rp.classList.remove('need');
+    if(!miss){if(bw&&!kg.value)kg.value='0';return}
+    e.stopImmediatePropagation();e.preventDefault();if(!kg.value&&!bw)kg.classList.add('need');if(!rp.value)rp.classList.add('need');
+    const sk=bw?'':(kg.value||kg.placeholder)+' kg × ',sr=rp.value||rp.placeholder;
+    c.insertAdjacentHTML('afterend',`<div class="need82" data-for="${id}"><span>Preencha a carga e as repetições que você fez.</span>${sr?`<button data-usesug="${id}">Usar ${sk}${sr}</button>`:''}</div>`);(miss&&!rp.value&&kg.value?rp:kg).focus();return}
+  const u=e.target.closest('[data-usesug]');if(u){e.stopImmediatePropagation();const id=u.dataset.usesug,kg=document.getElementById('kg-'+id),rp=document.getElementById('rp-'+id);if(kg&&!kg.value&&kg.placeholder&&kg.placeholder!=='0')kg.value=kg.placeholder;if(rp&&!rp.value)rp.value=rp.placeholder;kg&&kg.classList.remove('need');rp&&rp.classList.remove('need');u.parentElement.remove();toast('Valores preenchidos. Confira e toque no ✓ para concluir.')}},true);
+ try{renderAula&&renderAula()}catch(_){}
+})();
 </script>
 
 </body></html>
