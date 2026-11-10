@@ -4571,14 +4571,19 @@ function monthData(M){const I=monthInfo(M),cur=M===NOWMO();
   const pastS=I.L.filter(x=>!x.extra&&agLeft(x)<=0).map(x=>({n:nOf(x.d),h:x.h,x}));doneL=doneL.concat(pastS);
   const up=I.L.filter(x=>!x.extra&&agLeft(x)>0).sort((a,b)=>agLeft(a)-agLeft(b)),ex=I.L.filter(x=>x.extra).sort((a,b)=>agLeft(a)-agLeft(b));
   const dadas=(AG.dadas||[]).filter(c=>monOf(c.d)===M),creds=AG.creds.filter(c=>monOf(c.from)===M);
-  const f=doneL.length,m=up.length,c=creds.length,d=dadas.length,falta=Math.max(0,AG.quota-f-m-c-d);
-  return {I,doneL,up,ex,dadas,creds,f,m,c,d,falta}}
+  const f=doneL.length,m=up.length,c=creds.length,d=dadas.length,resto=Math.max(0,AG.quota-f-m-c-d);
+  /* quanto ainda cabe no plano até o fim do mês, respeitando o limite da semana */
+  let cap=0;const st=liveSt(),last=new Date(2026,M,0);const n0=TDN()+1,nEnd=Math.round((last-dDate(0))/864e5);const W={};
+  if(M>NOWMO())cap=resto;else if(M===NOWMO()){for(let n=n0;n<=nEnd;n++){if(dDate(n).getDay()===0)continue;const w=Math.floor((n+2)/7);W[w]=(W[w]||0)+1}
+    Object.entries(W).forEach(([w,dias])=>{let pw=0;try{pw=ENG.planW(st,+w)}catch(_){}cap+=Math.min(dias,Math.max(0,AG.week-pw))})}
+  const falta=Math.min(resto,cap),perdidas=resto-falta;
+  return {I,doneL,up,ex,dadas,creds,f,m,c,d,falta,perdidas}}
 weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m>=10&&m<=Math.max(NOWMO(),10));
   const draw=s=>{const Q=monthData(M),N=AG.quota;
-    const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.m).fill('m'),...Array(Q.c).fill('c'),...Array(Q.falta).fill('e')].slice(0,Math.max(N,Q.f+Q.d+Q.m+Q.c));
+    const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.m).fill('m'),...Array(Q.c).fill('c'),...Array(Q.falta).fill('e'),...Array(Q.perdidas).fill('x')].slice(0,Math.max(N,Q.f+Q.d+Q.m+Q.c));
     const bar=seg.length<=20?`<div class="mb93" style="grid-template-columns:repeat(${seg.length},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div>`
-      :`<div class="mb93c">${[['f',Q.f],['d',Q.d],['m',Q.m],['c',Q.c],['e',Q.falta]].filter(z=>z[1]).map(([k,v])=>`<i class="${k}" style="flex:${v}"></i>`).join('')}</div>`;
-    const lg=[['f',Q.f,Q.f===1?'feita':'feitas'],['d',Q.d,'contou como dada'],['m',Q.m,Q.m===1?'marcada':'marcadas'],['c',Q.c,Q.c===1?'crédito':'créditos'],['e',Q.falta,'para marcar']].filter(z=>z[1]||z[0]==='f'||z[0]==='e');
+      :`<div class="mb93c">${[['f',Q.f],['d',Q.d],['m',Q.m],['c',Q.c],['e',Q.falta],['x',Q.perdidas]].filter(z=>z[1]).map(([k,v])=>`<i class="${k}" style="flex:${v}"></i>`).join('')}</div>`;
+    const lg=[['f',Q.f,Q.f===1?'feita':'feitas'],['d',Q.d,'contou como dada'],['m',Q.m,Q.m===1?'marcada':'marcadas'],['c',Q.c,Q.c===1?'crédito':'créditos'],['e',Q.falta,'para marcar'],['x',Q.perdidas,Q.perdidas===1?'não usada':'não usadas']].filter(z=>z[1]||z[0]==='f');
     const u=chgOf(M),lim=AG.chgLim,full=u>=lim;
     const dts=n=>{const d=dDate(n);return `${WDN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`};
     const rowF=z=>`<div class="r93 done"><span class="ic">✓</span><span><b>${dts(z.n)} • ${hh2(z.h)}</b><small>feita</small></span></div>`;
@@ -4590,6 +4595,7 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
     if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'marcada':'marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
     L+=Q.creds.map(c=>`<div class="r93 cr"><span class="ic">+1</span><span><b>1 crédito para usar</b><small>vale até ${fmtDM(c.exp)} • da aula de ${dlab(c.from).toLowerCase()}</small></span><button class="btn small solid" data-m93="use">Usar</button></div>`).join('');
     if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
+    if(Q.perdidas){const wk=Object.keys({}).length;L+=`<div class="r93 lost"><span class="ic">×</span><span><b>${Q.perdidas} ${Q.perdidas===1?'aula não usada':'aulas não usadas'} em ${MESN(M)}</b><small>${M<NOWMO()?'O prazo do mês acabou.':`Não cabem mais no plano até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}: sua semana já está completa no plano (${AG.week} por semana). ${AG.creds.length?'Use seu crédito ou peça uma aula extra.':'Um horário a mais seria extra.'}`}</small></span></div>`}
     L+=Q.ex.map(x=>`<div class="r93 ex"><span class="ic">+</span><span><b>${dts(nOf(x.d))} • ${hh2(x.h)}</b><small>aula extra • paga à parte</small></span></div>`).join('');
     s.querySelector('#mx').innerHTML=`${months.length>1?`<div class="seg pvs" style="grid-template-columns:repeat(${months.length},1fr);margin-bottom:12px">${months.map(m=>`<button data-mm="${m}" aria-selected="${m===M}">${MESC2(m)}</button>`).join('')}</div>`:''}
       <span class="lbl">Seu mês</span><p class="d" style="font-size:40px;margin:4px 0 10px">${MESC2(M)}</p>${bar}
@@ -6240,6 +6246,8 @@ header.top{top:env(safe-area-inset-top,0px)!important}
 .r93.dada{opacity:.7}.r93.dada .ic{border:1.5px solid var(--muted);color:var(--muted)}
 .r93.empty{background:transparent;border-style:dashed}.r93.empty .ic{border:1.5px dashed var(--muted)}
 .r93.cr{background:var(--a82bg);border-color:color-mix(in srgb,var(--y83) 35%,transparent)}.r93.cr .ic{background:var(--y83);color:#2a2410}
+.r93.lost{opacity:.75;background:transparent}.r93.lost .ic{border:1.5px solid var(--muted);color:var(--muted)}.r93.lost b{color:var(--muted)}
+.mb93 .x,.mb93c .x,.lg93 i.x{background:repeating-linear-gradient(135deg,var(--muted) 0 2px,transparent 2px 5px);opacity:.55}
 .r93.ex .ic{border:1.5px solid var(--muted);color:var(--muted)}
 .g93{display:flex;flex-direction:column;gap:6px}.g93>summary{cursor:pointer}.g93>summary::-webkit-details-marker{display:none}.g93[open]>summary .go{transform:rotate(90deg)}
 .chgh93{margin:-2px 0 10px;font-size:12.5px;font-weight:600;opacity:.75}
