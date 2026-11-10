@@ -124,7 +124,7 @@ function inviteSheet(){sheet(`<span class="lbl">Novo aluno</span><h3>Convidar</h
   <label class="f">Nome</label><input class="in" id="nm" placeholder="Nome e sobrenome"><label class="f">WhatsApp</label><input class="in" id="ph" inputmode="tel" placeholder="(21) 90000-0000">
   <div class="row"><button class="btn s" id="go">Criar convite</button></div>`,s=>{s.querySelector('#go').onclick=async()=>{const name=s.querySelector('#nm').value.trim(),phone=s.querySelector('#ph').value.trim();
    if(!name)return toast('Coloque o nome');s.querySelector('#go').disabled=true;
-   const {data,error}=await sb.from('invites').insert({name,phone,plan:'presencial',created_by:ME.id}).select().single();
+   const {data,error}=await sb.from('invites').insert({name,phone,plan:'treino',created_by:ME.id}).select().single();
    if(error){s.querySelector('#go').disabled=false;return toast('Não criou: '+error.message)}s.remove();shareInvite(data);draw()}})}
 function shareInvite(i){const link=`${location.origin}/app/?c=${i.code}`,nm=(i.name||'').split(' ')[0],txt=`Oi${nm?', '+nm:''}! Seu acesso ao app de treino com o Sérgio: ${link}`;
   sheet(`<span class="lbl">Convite • ${esc(i.name||'')}</span><h3>${i.code}</h3><p class="meta" style="word-break:break-all">${esc(link)}</p>
