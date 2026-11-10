@@ -1123,6 +1123,10 @@ body,button,input,select,textarea{font-family:var(--body)!important}
 .who .rt .cnt,i.cnt{background:var(--a82bg)!important;color:var(--a82)!important}
 .st.ok{background:var(--okbg)!important;color:var(--ok)!important}
 .wab{background:var(--fg)!important;color:var(--bg)!important}
+
+/* v93: revisão de texto — sem palavra solta no fim da linha */
+.d,h1,h2,h3,.lbl{text-wrap:balance}
+p,small,.note,.info,.sub,li,label,.tag,.opt2 small,.who small{text-wrap:pretty}
 </style>
 
 <div class="scroller"><div class="wrap" id="app"></div></div>
@@ -2906,7 +2910,7 @@ const PNOT=[
 const pnN=()=>PNOT.filter(x=>x.new).length;
 brandbar=function(){return `<div class="brand">${logoHTML(30)}<b>${esc(PERS.brand||PERS.name)}</b><button class="pbell" data-pnot aria-label="Notificações">🔔${pnN()?`<i>${pnN()}</i>`:''}</button></div>${SUB.fail?`<button class="subwarn" data-sub><b>Não conseguimos cobrar sua assinatura</b><small>Atualize o cartão até 10/nov. Até lá seus alunos usam normalmente.</small></button>`:SUB.st==='trial'?`<button class="subtrial" data-sub>Teste grátis • faltam ${SUB.left} dias <span>ver planos ›</span></button>`:''}`};
 function pnotSheet(){sheet(`<span class="lbl">Avisos</span><h3 class="d">Notificações</h3><div class="pnl">${PNOT.map((x,i)=>`<button class="pni${x.new?' new':''}" data-pgo="${i}"><span>${x.ic}</span><span style="min-width:0"><em>${x.w}</em><b>${esc(x.t)}</b><small>${esc(x.s)}</small></span><span class="go">›</span></button>`).join('')}</div>
-  <button class="btn" data-pnpref>O que vira notificação no celular</button><button class="btn" data-close>Fechar</button>`,s=>{PNOT.forEach(x=>x.new=0);s.addEventListener('click',e=>{const b=e.target.closest('[data-pgo]');if(b){s.remove();S.tab=PNOT[+b.dataset.pgo].go;A2.open=null;draw();return}if(e.target.closest('[data-pnpref]')){s.remove();pnPref()}});draw()})}
+  <button class="btn" data-pnpref>O que vira notificação no celular</button><button class="btn" data-close>Fechar</button>`,s=>{if(PNOT.some(x=>x.new)){const l=s.querySelector('.pnl');l&&l.insertAdjacentHTML('afterend','<button class="btn" id="pn-all">Marcar todas como lidas</button>');const a=s.querySelector('#pn-all');a.onclick=()=>{PNOT.forEach(x=>x.new=0);s.querySelectorAll('.pni.new').forEach(n=>n.classList.remove('new'));a.remove();draw()}}s.addEventListener('click',e=>{const b=e.target.closest('[data-pgo]');if(b){s.remove();S.tab=PNOT[+b.dataset.pgo].go;A2.open=null;draw();return}if(e.target.closest('[data-pnpref]')){s.remove();pnPref()}});draw()})}
 function pnPref(){const L=[['Pedidos de horário e cancelamentos','Na hora, para você liberar ou travar',1],['Pagamentos recebidos','Cada Pix ou cartão que cai',1],['Pagamentos atrasados','Um aviso por dia, às 9h',1],['Alertas de check-in','Dor, sono ruim, cansaço',1],['Convite aceito e anamnese respondida','',1],['Resumo do dia','Às 7h: suas aulas e pendências',0]];
   sheet(`<span class="lbl">Notificações</span><h3 class="d">No seu celular</h3>${L.map(([t,s,on],i)=>`<label class="sw" for="np${i}"><span>${t}${s?`<br><small class="note">${s}</small>`:''}</span><input type="checkbox" id="np${i}" ${on?'checked':''}></label>`).join('')}<p class="note">Tudo continua aparecendo no sino dentro do app. Aqui você escolhe só o que apita no celular.</p><button class="btn solid" data-close>Salvar</button>`)}
 /* ===== assinatura do personal ===== */
@@ -3925,12 +3929,15 @@ function mvAsk(e,d0,h0,d1,h1){const w=W3WARN;W3WARN=null;const fn1=esc(e.n.split
 {const okN=PNOT.find(x=>x.k==='ok'&&/Marina aceitou/.test(x.t));if(okN&&stu('Carla Mota')){okN.t='Carla Mota atualizou a anamnese';okN.s='Mudou rotina de sono e tirou a dor no ombro'}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-pgo]');if(!b)return;const x=PNOT[+b.dataset.pgo];if(!x||x.dem||x.ren||x.cad||x.wt)return;
   const who=STU.find(s=>x.t.startsWith(s.n)||x.t.includes(s.n+' ')||x.t.includes(s.n+':'));const sc=b.closest('.scrim');
-  const done=()=>{e.stopImmediatePropagation();e.preventDefault();PNOT.forEach(z=>z.new=0);sc&&sc.remove()};
+  const done=()=>{e.stopImmediatePropagation();e.preventDefault();x.new=0;sc&&sc.remove()};
   if(x.k==='req'){let hit=null;Object.entries(S.sp).forEach(([d,H])=>Object.entries(H||{}).forEach(([h,y])=>{if(!hit&&y&&y.req&&who&&y.req.n===who.n)hit=[+d,+h]}));
     done();S.tab='agenda';S.view='dia';S.wo=0;if(hit){S.day=hit[0];draw();reqSheet(hit[0],hit[1])}else{draw();toast('Esse pedido já foi respondido')}return}
   if(x.k==='novo'){done();S.tab='alunos';A2.open=null;A2.view='novos';draw();const sc2=document.querySelector('.scroller');if(sc2)sc2.scrollTop=0;return}
   if((x.k==='ck'||x.k==='ok')&&who){done();S.tab='alunos';A2.view='alunos';A2.open=who.n;draw();const sc2=document.querySelector('.scroller');if(sc2)sc2.scrollTop=0;return}
   if(x.k==='pg'){done();S.tab='fin';A2.open=null;draw();const sc2=document.querySelector('.scroller');if(sc2)sc2.scrollTop=0;return}},true);
+
+/* v92: notificação vira lida só quando tocada */
+document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-pgo]');if(!b)return;const x=PNOT[+b.dataset.pgo];if(x)x.new=0},true);
 
 draw();
 </script>

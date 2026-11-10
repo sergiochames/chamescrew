@@ -3540,7 +3540,7 @@ function renderMedals(){
   if(window._agOnce){if(window._rmAgain)window._rmAgain();return}window._agOnce=1;
 /* aula presencial: confirmação, remarcação sem custo, crédito, extra */
 let NOWH=8;const DAYS_AG=['Hoje','Amanhã','Sex','Sáb'],DOFF={Hoje:0,'Amanhã':24,Sex:48,'Sáb':72};
-const AG={slots:[{d:'Hoje',h:16,conf:false},{d:'Sex',h:7.25,conf:false,mv:'07:00',rep:'cr'}],free:[['Hoje',18],['Amanhã',7],['Amanhã',18],['Sex',9],['Sex',18],['Sáb',9]],quota:8,week:2,done:4,wdone:1,credit:0,rem:1,moving:null};
+const AG={slots:[{d:'Hoje',h:16,conf:false},{d:'Sex',h:7.25,conf:false,mv:'07:00',pm:1}],free:[['Hoje',18],['Amanhã',7],['Amanhã',18],['Sex',9],['Sex',18],['Sáb',9]],quota:8,week:2,done:3,wdone:1,credit:0,rem:1,moving:null};
 const hh2=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
 const agLeft=x=>DOFF[x.d]+x.h-NOWH;
 const agDl=x=>agDlX(x);
@@ -3919,7 +3919,7 @@ document.addEventListener('click',e=>{const r=e.target.closest('[data-agact]');i
 document.addEventListener('click',e=>{if(e.target.closest('[data-ag-move]')&&AG.moving)setTimeout(()=>{const h=$('#ag-cal-h');if(h&&!$('#v-agenda').hidden)h.scrollIntoView({behavior:'smooth',block:'start'})},60)});
 /* card da aula no Hoje: sem a simulação, botões arrumados */
 const _rau=renderAula;renderAula=function(){_rau();const el=$('#aula');const sim=el.querySelector('.sim');if(sim)sim.remove();
-  const ag=el.querySelector('[data-go="agenda"]');if(ag)ag.textContent='Ver agenda';el.classList.add('aula2')};
+  const ag=el.querySelector('[data-go="agenda"]');if(ag){ag.textContent='Ver agenda completa';ag.classList.add('agfull')};try{const c=window.CHGM_X&&window.CHGM_X();if(c){const n=[...el.querySelectorAll('p,span,div')].find(n=>n.children.length===0&&/Mudança sem custo/.test(n.textContent));if(n&&!el.querySelector('.chgh93'))n.insertAdjacentHTML('afterend',`<p class="chgh93">${c[0]>=c[1]?`Você já usou as ${c[1]} mudanças do mês`:`${c[0]} de ${c[1]} mudanças usadas no mês`}</p>`)}}catch(_){}el.classList.add('aula2')};
 window.setNowH=h=>{NOWH=h;agAll()};window.NOWH_X=()=>NOWH;
 agAll();
 /* ===== v8: pedido de horário precisa da confirmação do personal ===== */
@@ -3982,7 +3982,7 @@ const _rc10=renderCal;renderCal=function(){_rc10();const el=$('#ag-free');if(!el
   const n=AGV.sel,k=keyOf(n),C=AG.canc.filter(c=>c.d===k),list=el.querySelector('.agl');
   if(list&&C.length&&AGV.v==='sem'){const emp=list.querySelector('.agemp');if(emp)emp.remove();
     C.forEach(c=>{[...list.querySelectorAll('.agr')].forEach(r=>{if(!r.classList.contains('mine')&&r.querySelector('b')&&r.querySelector('b').textContent===hh2(c.h))r.remove()});
-      list.insertAdjacentHTML('beforeend',`<div class="agr canc"><b>${hh2(c.h)}</b><span>${c.why==='perdida'?'Aula perdida':'Cancelada'}<small>${c.why==='perdida'?'Sem resposta no prazo: contou como feita':c.ok?'Virou crédito':'Contou como feita'}</small></span></div>`)});
+      list.insertAdjacentHTML('beforeend',`<div class="agr canc"><b>${hh2(c.h)}</b><span>${c.why==='perdida'?'Aula perdida':'Cancelada'}<small>${c.why==='perdida'?'Sem resposta no prazo: contou como feita':c.ok?'Virou crédito':'Contou como feita'}</small></span>${window.UNC_OK&&window.UNC_OK(c)?`<button class="btn small line" data-unc="${c.d}|${c.h}">Desfazer</button>`:''}</div>`)});
     [...list.children].sort((a,b)=>(a.querySelector('b')||{}).textContent>(b.querySelector('b')||{}).textContent?1:-1).forEach(c=>list.appendChild(c))}
   const lg=el.querySelector('.agleg');if(lg)lg.innerHTML='<span><em class="m"></em>sua aula</span><span><em class="g"></em>confirmada</span><span><em class="y"></em>aguardando</span><span><em class="r"></em>cancelada</span><span><em class="f"></em>livre</span>'};
 /* recusa do personal: manter, pedir outro ou perder */
@@ -4099,11 +4099,25 @@ function outSheet(x){const ok=inTime(x),mo=monOf(x.d),u=chgOf(mo),lim=AG.chgLim,
     ${whyHTML('mudança')}<button class="btn wide" data-close3>Manter minha aula</button>`,
     s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-now').onclick=()=>{s.remove();startMove(x)};s.querySelector('#o-later').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'credito',w)}})}
 function freeX(x,kind,why){const mo=monOf(x.d);try{pushAviso('cancelou',x,null,why||{},kind==='credito')}catch(_){}
-  AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);AG.canc.push({d:x.d,h:x.h,ok:kind==='credito',why:kind==='dada'?'dada':''});
+  AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);AG.canc.push({d:x.d,h:x.h,ok:kind==='credito',why:kind==='dada'?'dada':'',slot:Object.assign({},x),kind,mo});
   if(kind==='credito'){AG.credM[mo]=credOf(mo)+1;AG.creds.push({from:x.d,exp:Math.min(nOf(x.d)+AG.credVal,AG.planEnd)});AG.creds.sort((a,b)=>a.exp-b.exp);syncCred()}
   if(kind==='dada')AG.dadas.push({d:x.d,h:x.h});
   agAll();toast(kind==='credito'?`Guardado: 1 crédito para usar até ${fmtDM(Math.min(nOf(x.d)+AG.credVal,AG.planEnd))}.`:kind==='avulsa'?'Aula avulsa cancelada, sem cobrança.':'Horário liberado. A aula contou como dada.')}
 cancelX=outSheet;limSheet=outSheet;window.CURMO_X=CURMO;window.MONOF_X=monOf;
+/* v92: mudança do personal — confirmar ou "não posso" sem perder nada */
+function pmSheet(x){sheet(`<span class="lbl">${dlab(x.d)} • ${hh2(x.h)} • 📍 ${locOf(x)}</span><p class="d" style="font-size:36px;margin:6px 0 4px">O ${PN()} mudou esta aula</p><p class="meta">Era ${x.mv}, agora é ${hh2(x.h)}. Como a mudança foi dele, você não gasta mudança nem perde a aula.</p>
+  <button class="btn solid wide" id="pm-ok">Confirmo ${hh2(x.h)}</button><button class="btn wide" style="margin-top:8px" id="pm-no">Não posso nesse horário</button><p class="meta" style="font-size:12.5px;margin-top:8px">Se não puder, você ganha 1 crédito para marcar outro horário, e o ${PN()} recebe o aviso.</p>`,
+  s=>{s.querySelector('#pm-ok').onclick=()=>{s.remove();x.conf=true;x.pmOk=1;agAll();toast(`Confirmado: ${dlab(x.d).toLowerCase()} às ${hh2(x.h)}.`)};
+     s.querySelector('#pm-no').onclick=()=>{s.remove();const mo=monOf(x.d);freeX(x,'credito',{});document.querySelectorAll('.toast').forEach(t=>t.remove());AG.credM[mo]=Math.max(0,credOf(mo)-1);const c=AG.canc[AG.canc.length-1];if(c)c.pm=1;agAll();toast('Sem problema: você ganhou 1 crédito e não gastou mudança.')}})}
+{const _o=outSheet;outSheet=function(x){if(x&&x.pm&&!x.pmOk&&!x.extra)return pmSheet(x);return _o(x)};cancelX=outSheet;limSheet=outSheet}
+/* v92: desfazer cancelamento enquanto a vaga está livre e a aula não passou */
+window.UNC_OK=c=>!!(c&&c.slot&&c.why!=='perdida'&&AG.free.some(f=>f[0]===c.d&&Math.abs(f[1]-c.h)<.01)&&((nOf(c.d)*24+c.h)-NOWH)>0&&(!c.ok||AG.creds.some(r=>r.from===c.d)));
+window.UNC_X=(d,h)=>{const i=AG.canc.findIndex(c=>c.d===d&&Math.abs(c.h-h)<.01);const c=AG.canc[i];if(!window.UNC_OK(c)){toast('Não dá mais para desfazer: o horário já foi pego ou a aula passou.');return}
+  AG.free=AG.free.filter(f=>!(f[0]===c.d&&Math.abs(f[1]-c.h)<.01));const x=Object.assign({},c.slot);delete x.pend;AG.slots.push(x);
+  if(c.ok){const k=AG.creds.findIndex(r=>r.from===c.d);if(k>=0)AG.creds.splice(k,1);if(!c.pm)AG.credM[c.mo]=Math.max(0,credOf(c.mo)-1);try{syncCred()}catch(_){}}
+  if(c.kind==='dada'){const k=AG.dadas.findIndex(z=>z.d===c.d&&Math.abs(z.h-c.h)<.01);if(k>=0)AG.dadas.splice(k,1)}
+  AG.canc.splice(i,1);agAll();try{window.pushNot&&0}catch(_){}toast(`Pronto: sua aula de ${dlab(c.d).toLowerCase()} às ${hh2(c.h)} voltou. Nada mudou nos seus créditos.`)};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-unc]');if(!b)return;e.stopImmediatePropagation();const [d,h]=b.dataset.unc.split('|');window.UNC_X(d,+h)},true);
 window.VAGA_X=function(){const n0=TDN(),qd=keyOf(n0+1),fd=keyOf(n0+2),fri=AG.slots.find(x=>x.d===fd&&!x.extra&&!x.pend);
   go('agenda');if(!fri){toast('Você não tem aula na sexta para trocar.');return}
   let i=AG.free.findIndex(f=>f[0]===qd&&Math.abs(f[1]-18)<.01);if(i<0){AG.free.push([qd,18]);i=AG.free.length-1}
@@ -4538,15 +4552,64 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
     let lastW=null,h='';ev.forEach(e=>{const d=e.x?e.x.d:e.g.d,w=wkOf(d);
       if(e.lost){h+=`<div class="gd pst"><span><b>${dlab(e.g.d)} • ${hh2(e.g.h)}</b><small>não foi • contou como dada</small></span></div>`;return}
       if(e.g){h+=`<div class="gd"><span><b>${dlab(e.g.d)} • ${hh2(e.g.h)}</b><small>não foi • virou 1 crédito</small></span><em class="k credito">+1 crédito</em></div>`;return}
-      const x=e.x;h+=`<div class="${agLeft(x)<=0?'pst':''}"><span><b>${dlab(x.d)} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():agLeft(x)<=0?'feita':x.conf?'confirmada':'marcada'}</small></span>${x.extra?'<em class="k extra">extra</em>':x.rep==='cr'?'<em class="k credito">reposição</em>':''}</div>`});
+      const x=e.x;h+=`<div class="${agLeft(x)<=0?'pst':''}"><span><b>${dlab(x.d)} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():agLeft(x)<=0?'feita':x.conf?'confirmada':'marcada'}</small></span>${x.extra?'<em class="k extra">extra</em>':x.rep==='cr'?'<em class="k credito">reposição</em>':x.mv?'<em class="k pmv">remarcada pelo '+PN()+'</em>':''}</div>`});
     const dn=Math.max(0,I.used-I.norm-I.rep-I.D.length),parts=[];if(dn)parts.push(`${dn} ${dn>1?'feitas':'feita'} antes`);parts.push(`${I.norm} na agenda`);if(I.rep)parts.push(`${I.rep} ${I.rep>1?'reposições':'reposição'}`);if(I.D.length)parts.push(`${I.D.length} ${I.D.length>1?'contaram':'contou'} como dada`);if(I.ex)parts.push(`+ ${I.ex} extra, paga à parte`);if(AG.creds.length)parts.push(`${AG.creds.length} ${AG.creds.length>1?'créditos guardados':'crédito guardado'}`);
     s.querySelector('#mx').innerHTML=`${months.length>1?`<div class="seg pvs" style="grid-template-columns:repeat(${months.length},1fr);margin-bottom:12px">${months.map(m=>`<button data-mm="${m}" aria-selected="${m===M}">${MESC2(m)}</button>`).join('')}</div>`:''}
-     <span class="lbl">${MESC2(M)}</span><p class="d" style="font-size:38px;margin:6px 0 2px">${I.used} de ${AG.quota} aulas</p><p class="meta" style="margin:0 0 12px">${parts.join(' • ')}</p>
+     <span class="lbl">${MESC2(M)}</span><p class="d" style="font-size:38px;margin:6px 0 2px">${I.used} de ${AG.quota} aulas</p>${(()=>{const past=I.L.filter(x=>!x.extra&&agLeft(x)<=0).length,fut=I.L.filter(x=>!x.extra&&agLeft(x)>0).length,feitas=dn+past,falta=Math.max(0,AG.quota-I.used),cr=AG.creds.length;
+  const c=[[AG.quota,'no plano'],[feitas,feitas===1?'feita':'feitas'],[fut,fut===1?'marcada':'marcadas'],[falta,'para marcar']];if(cr)c.push([cr,cr===1?'crédito':'créditos']);if(I.ex)c.push([I.ex,'extra à parte']);if(I.D.length)c.push([I.D.length,'contou como dada']);
+  return `<div class="msum">${c.map(([n,l])=>`<div><b>${n}</b><small>${l}</small></div>`).join('')}</div>`})()}
      <div class="wkl mol">${h||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">${AG.creds.length?`Ver meus créditos (${AG.creds.length})`:'Extrato de créditos'}</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
 sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I=monthInfo(NOWMO()),n=I.tot+I.ex;const sp=bar.querySelector('span');if(sp)sp.innerHTML=`<b>${MESC2(NOWMO())}:</b> ${I.used} de ${AG.quota} aulas${I.ex?` + ${I.ex} extra`:''}`;bar.onclick=()=>weekListSheet()})(sumRender);
 agAll();
+
+/* ===== v93: tela do mês clara (barra, lista por data, mudanças, créditos) ===== */
+const MESN=m=>MES[m]||'';
+function monthData(M){const I=monthInfo(M),cur=M===NOWMO();
+  let doneL=[];if(M===10){const H=Object.keys(HIST).map(Number).filter(n=>n<TDN()&&dDate(n).getMonth()+1===M).sort((a,b)=>a-b);H.forEach(n=>(HIST[n]||[]).forEach(e=>{if(e.st==='feita')doneL.push({n,h:e.h})}));doneL=doneL.slice(-(AG.done||0))}
+  const pastS=I.L.filter(x=>!x.extra&&agLeft(x)<=0).map(x=>({n:nOf(x.d),h:x.h,x}));doneL=doneL.concat(pastS);
+  const up=I.L.filter(x=>!x.extra&&agLeft(x)>0).sort((a,b)=>agLeft(a)-agLeft(b)),ex=I.L.filter(x=>x.extra).sort((a,b)=>agLeft(a)-agLeft(b));
+  const dadas=(AG.dadas||[]).filter(c=>monOf(c.d)===M),creds=AG.creds.filter(c=>monOf(c.from)===M);
+  const f=doneL.length,m=up.length,c=creds.length,d=dadas.length,falta=Math.max(0,AG.quota-f-m-c-d);
+  return {I,doneL,up,ex,dadas,creds,f,m,c,d,falta}}
+weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m>=10&&m<=Math.max(NOWMO(),10));
+  const draw=s=>{const Q=monthData(M),N=AG.quota;
+    const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.m).fill('m'),...Array(Q.c).fill('c'),...Array(Q.falta).fill('e')].slice(0,Math.max(N,Q.f+Q.d+Q.m+Q.c));
+    const bar=seg.length<=20?`<div class="mb93" style="grid-template-columns:repeat(${seg.length},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div>`
+      :`<div class="mb93c">${[['f',Q.f],['d',Q.d],['m',Q.m],['c',Q.c],['e',Q.falta]].filter(z=>z[1]).map(([k,v])=>`<i class="${k}" style="flex:${v}"></i>`).join('')}</div>`;
+    const lg=[['f',Q.f,Q.f===1?'feita':'feitas'],['d',Q.d,'contou como dada'],['m',Q.m,Q.m===1?'marcada':'marcadas'],['c',Q.c,Q.c===1?'crédito':'créditos'],['e',Q.falta,'para marcar']].filter(z=>z[1]||z[0]==='f'||z[0]==='e');
+    const u=chgOf(M),lim=AG.chgLim,full=u>=lim;
+    const dts=n=>{const d=dDate(n);return `${WDN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`};
+    const rowF=z=>`<div class="r93 done"><span class="ic">✓</span><span><b>${dts(z.n)} • ${hh2(z.h)}</b><small>feita</small></span></div>`;
+    const rowU=x=>`<div class="r93 next"><span class="ic"></span><span><b>${nOf(x.d)===TDN()?'Hoje, '+dts(nOf(x.d)).toLowerCase():dts(nOf(x.d))} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():x.conf?'confirmada':'a confirmar'}${x.mv?` • ${PN()} mudou de ${x.mv}`:''}${x.rep==='cr'?' • com crédito':''}</small></span></div>`;
+    let L='';
+    if(Q.f>4)L+=`<details class="g93"><summary class="r93 done"><span class="ic">✓</span><span><b>${Q.f} aulas feitas</b><small>ver as datas</small></span><span class="go">›</span></summary>${Q.doneL.map(rowF).join('')}</details>`;else L+=Q.doneL.map(rowF).join('');
+    L+=Q.dadas.map(z=>`<div class="r93 dada"><span class="ic">–</span><span><b>${dts(nOf(z.d))} • ${hh2(z.h)}</b><small>não foi • contou como dada</small></span></div>`).join('');
+    const UP=Q.up.slice(0,3),MORE=Q.up.slice(3);L+=UP.map(rowU).join('');
+    if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'marcada':'marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
+    L+=Q.creds.map(c=>`<div class="r93 cr"><span class="ic">+1</span><span><b>1 crédito para usar</b><small>vale até ${fmtDM(c.exp)} • da aula de ${dlab(c.from).toLowerCase()}</small></span><button class="btn small solid" data-m93="use">Usar</button></div>`).join('');
+    if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
+    L+=Q.ex.map(x=>`<div class="r93 ex"><span class="ic">+</span><span><b>${dts(nOf(x.d))} • ${hh2(x.h)}</b><small>aula extra • paga à parte</small></span></div>`).join('');
+    s.querySelector('#mx').innerHTML=`${months.length>1?`<div class="seg pvs" style="grid-template-columns:repeat(${months.length},1fr);margin-bottom:12px">${months.map(m=>`<button data-mm="${m}" aria-selected="${m===M}">${MESC2(m)}</button>`).join('')}</div>`:''}
+      <span class="lbl">Seu mês</span><p class="d" style="font-size:40px;margin:4px 0 10px">${MESC2(M)}</p>${bar}
+      <div class="lg93">${lg.map(([k,v,t])=>`<span><i class="${k}"></i><b>${v}</b> ${t}</span>`).join('')}</div>
+      <div class="chg93${full?' full':''}"><span class="dots">${Array.from({length:lim},(_,i)=>`<i class="${i<u?'on':''}"></i>`).join('')}</span><span>${full?`Você já usou as ${lim} mudanças de ${MESN(M)}. Se não for, a aula conta como feita.`:`Mudanças sem custo: <b>${u} de ${lim}</b> usadas`}</span></div>
+      <div class="l93">${L||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>
+      <p class="ft93">${N} aulas no plano de ${MESN(M)}${Q.I.ex?` • +${Q.I.ex} extra à parte`:''}</p>`;
+    s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)});
+    s.querySelectorAll('[data-m93]').forEach(b=>b.onclick=()=>{s.remove();go('agenda');setTimeout(()=>{const h=$('#ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)})};
+  sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">Histórico de créditos</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
+credSheet=function(){const have=AG.creds.length,G=(AG.canc||[]).filter(c=>c.ok).map(c=>({n:nOf(c.d),h:c.h,t:c.pm?`O ${PN()} mudou e você não pôde`:'Avisou no prazo',v:1})),
+  GF=(AG.gifts||[]).map(g=>({n:TDN(),h:null,t:`Presente do ${PN()}${g.t||typeof g==='string'?': '+(g.t||g):''}`,v:1})),U=AG.slots.filter(x=>x.rep==='cr').map(x=>({n:nOf(x.d),h:x.h,t:x.pend?'Usado • aguardando o '+PN():'Usado',v:-1}));
+  const H=[...G,...GF,...U].sort((a,b)=>(b.n*24+(b.h||0))-(a.n*24+(a.h||0)));const nx=AG.creds.slice().sort((a,b)=>a.exp-b.exp)[0];
+  const dts=n=>{const d=dDate(n);return `${WDN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`};
+  sheet(`<span class="lbl">Seus créditos</span>${have?`<p class="d" style="font-size:56px;margin:4px 0 2px">${have} ${have===1?'crédito':'créditos'}</p><p class="meta" style="margin:0 0 12px">para usar até ${fmtDM(nx.exp)}</p><button class="btn solid wide" id="cr-use">Usar agora</button>`
+     :`<p class="d" style="font-size:44px;margin:4px 0 8px">Nenhum agora</p><p class="meta" style="margin:0">Se você cancelar no prazo, ou se o ${PN()} mudar uma aula e você não puder, a aula vira crédito e aparece aqui.</p>`}
+    ${H.length?`<p class="lbl" style="margin:16px 0 4px">Histórico</p><div class="h93">${H.map(z=>`<div><span>${dts(z.n)}${z.h!=null?' • '+hh2(z.h):''}<small>${z.t}</small></span><b class="${z.v>0?'p':'n'}">${z.v>0?'+1':'−1'}</b></div>`).join('')}</div>`:''}
+    ${have?`<p class="meta" style="font-size:12.5px;margin-top:8px">O crédito que vence primeiro é usado primeiro.</p>`:''}`,
+    s=>{const u=s.querySelector('#cr-use');if(u)u.onclick=()=>{s.remove();go('agenda');setTimeout(()=>{const h=$('#ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)}})};
+window.CHGM_X=()=>[chgOf(NOWMO()),AG.chgLim];
 
 /* ===== v43: locais, deslocamento do personal e confirmação automática ===== */
 var DESL=window.DESLX={on:true,min:30},AUTO=window.AUTOX={on:false},ALOC=window.ALOCX=['Bodytech Barra','Condomínio Península'];
@@ -5398,9 +5461,9 @@ const NOT=[
  {k:'tr',new:1,t:'Treino novo publicado',s:'O Sérgio atualizou seu Treino A. Entrou búlgaro no lugar do afundo.',w:'ontem',a:[['Ver treino','treino']]},
  {k:'med',t:'Medalha nova: Sono regulado • Ouro',s:'16 semanas dormindo bem. Já está no seu estojo.',w:'seg',a:[['Ver no estojo','med']]},
  {k:'aula',t:'Aula confirmada',s:'Sexta 07:00 • Condomínio Península',w:'dom',dd:30,a:[['Ver agenda','agenda']]}];
-const bd=()=>{const n=NOT.filter(x=>x.new).length;$('#h-bd').textContent=n;$('#h-bd').hidden=!n};
+window.NOTRD=i=>{if(NOT[i]){NOT[i].new=0;bd()}};const bd=()=>{const n=NOT.filter(x=>x.new).length;$('#h-bd').textContent=n;$('#h-bd').hidden=!n};
 function notSheet(){sheet(`<span class="lbl">Avisos</span><p class="d" style="font-size:44px;margin:6px 0 8px">Notificações</p><div id="ntl">${NOT.map((x,i)=>`<div class="nt ${x.new?'new':''}"><i></i><div><em>${x.w}</em><b>${x.t}</b><small>${x.s}</small>${x.a?`<div class="acts">${x.a.map(([l,k])=>`<button class="btn small" data-na="${k}" data-ni="${i}" data-dd="${x.dd||''}">${l}</button>`).join('')}</div>`:''}</div></div>`).join('')}</div>
-  <button class="btn small wide" data-go2="pref" style="margin-top:10px">Escolher o que eu recebo</button>`,s=>{NOT.forEach(x=>x.new=0);bd();s.addEventListener('click',e=>{const b=e.target.closest('[data-na]'),p=e.target.closest('[data-go2="pref"]');if(p){s.remove();prefSheet();return}if(!b)return;const k=b.dataset.na;s.remove();
+  <button class="btn small wide" data-go2="pref" style="margin-top:10px">Escolher o que eu recebo</button>`,s=>{bd();if(NOT.some(x=>x.new))s.querySelector('#ntl').insertAdjacentHTML('afterend','<button class="btn small wide" id="nt-all" style="margin-top:10px">Marcar todas como lidas</button>');const na=s.querySelector('#nt-all');if(na)na.onclick=()=>{NOT.forEach(x=>x.new=0);bd();s.querySelectorAll('.nt.new').forEach(n=>n.classList.remove('new'));na.remove()};s.addEventListener('click',e=>{const b=e.target.closest('[data-na]'),p=e.target.closest('[data-go2="pref"]');if(p){s.remove();prefSheet();return}if(!b)return;const k=b.dataset.na;s.remove();
     if(k==='vaga'){NOT.splice(+b.dataset.ni,1);if(window.VAGA_X)window.VAGA_X();else go('agenda')}
     else if(k==='pagar')paySheet();else if(k==='treino')go('treino');else{NOT.splice(+b.dataset.ni,1);toast('Ok, o horário fica para outra pessoa')}})})}
 function prefSheet(){const P=[['Aulas e horários','Confirmação, vaga aberta, mudanças do personal',1,1],['Lembrete do treino','Uma hora antes da aula ou no seu horário de treino',1],['Lembrete do check-in','Às 20h, se ainda não fez',1],['Pagamentos','Vencimento e recibo',1,1],['Medalhas e level','Quando você ganha ou está perto',1],['Ranking','Quando alguém passa você',0]];
@@ -6145,6 +6208,47 @@ window.medalPNG=async function(m){
 <style>/* v91: caixas de aviso no escuro sem bege forte */
 :root[data-theme="dark"] .avb:not(.red){background:var(--a82bg)!important;color:var(--fg)!important;border-color:color-mix(in srgb,var(--y83) 35%,transparent)!important}:root[data-theme="dark"] .avb:not(.red) b,.avb:not(.red) span{color:var(--fg)!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .avb:not(.red){background:var(--a82bg)!important;color:var(--fg)!important;border-color:color-mix(in srgb,var(--y83) 35%,transparent)!important}:root:not([data-theme="light"]) .avb:not(.red) b,.avb:not(.red) span{color:var(--fg)!important}}
+</style>
+
+<script>/* v92: notificação vira lida só quando tocada */
+document.addEventListener('pointerdown',e=>{const n=e.target.closest('#ntl .nt');if(!n||!window.NOTRD)return;const i=[...document.querySelectorAll('#ntl .nt')].indexOf(n);window.NOTRD(i);n.classList.remove('new')},true);
+</script>
+<style>/* v92 */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:60;pointer-events:none}
+header.top{top:env(safe-area-inset-top,0px)!important}
+#aula .agfull{display:flex!important;width:100%!important;align-self:stretch!important;flex:1 1 100%;box-sizing:border-box;min-height:44px;justify-content:center;align-items:center;border:1px solid var(--ink-line,rgba(255,255,255,.25))!important;border-radius:8px!important;text-decoration:none!important;font-size:14px!important;font-weight:650!important;margin-top:10px;background:transparent!important;color:inherit!important}
+.agr.canc{align-items:center}.agr.canc .btn{margin-left:auto}
+.k.pmv{background:transparent!important;border:1px solid var(--line)!important;color:var(--muted)!important}
+</style>
+<style>.msum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:4px 0 14px}.msum>div{border:1px solid var(--line);border-radius:8px;padding:8px 6px;text-align:center;background:var(--card)}.msum b{display:block;font-family:var(--display);font-size:26px;line-height:1}.msum small{font-size:11.5px;color:var(--muted);font-weight:600}</style>
+
+<style>/* v93: tela do mês e créditos */
+.mb93{display:grid;gap:4px;margin:0 0 8px}.mb93 i,.mb93c i{height:10px;border-radius:3px;display:block}
+.mb93c{display:flex;gap:3px;margin:0 0 8px}
+.mb93 .f,.mb93c .f,.lg93 i.f{background:var(--g83)}.mb93 .m,.mb93c .m,.lg93 i.m{border:1.5px solid var(--fg)}.mb93 .c,.mb93c .c,.lg93 i.c{background:var(--y83)}.mb93 .d,.mb93c .d,.lg93 i.d{background:var(--muted);opacity:.6}.mb93 .e,.mb93c .e,.lg93 i.e{border:1.5px dashed var(--muted)}
+.lg93{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:10px}.lg93 span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}.lg93 b{color:var(--fg)}.lg93 i{width:9px;height:9px;border-radius:2px;display:inline-block;box-sizing:border-box}
+.chg93{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);font-weight:600;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:12px;text-wrap:pretty}.chg93 b{color:var(--fg)}
+.chg93 .dots{display:inline-flex;gap:4px;flex:none}.chg93 .dots i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);box-sizing:border-box}.chg93 .dots i.on{background:var(--fg);border-color:var(--fg)}
+.chg93.full{background:var(--a82bg);border-color:color-mix(in srgb,var(--y83) 35%,transparent);color:var(--fg)}.chg93.full .dots i.on{background:var(--y83);border-color:var(--y83)}
+.l93{display:flex;flex-direction:column;gap:6px}
+.r93{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);min-height:52px;list-style:none}
+.r93 .ic{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;flex:none;box-sizing:border-box}
+.r93 b{font-size:14.5px;font-weight:700;display:block}.r93 small{font-size:12px;color:var(--muted);font-weight:600;display:block;text-wrap:pretty}.r93>span:nth-child(2){min-width:0;flex:1}
+.r93 .btn,.r93 .go{margin-left:auto;flex:none}.r93 .go{color:var(--muted);font-weight:800}
+.r93.done{background:var(--okbg);border-color:color-mix(in srgb,var(--g83) 30%,transparent)}.r93.done b{text-decoration:line-through;text-decoration-thickness:1.5px;text-decoration-color:color-mix(in srgb,var(--g83) 60%,transparent);opacity:.85}.r93.done .ic{background:var(--g83);color:var(--bg)}
+.r93.next .ic{border:1.5px solid var(--fg)}
+.r93.dada{opacity:.7}.r93.dada .ic{border:1.5px solid var(--muted);color:var(--muted)}
+.r93.empty{background:transparent;border-style:dashed}.r93.empty .ic{border:1.5px dashed var(--muted)}
+.r93.cr{background:var(--a82bg);border-color:color-mix(in srgb,var(--y83) 35%,transparent)}.r93.cr .ic{background:var(--y83);color:#2a2410}
+.r93.ex .ic{border:1.5px solid var(--muted);color:var(--muted)}
+.g93{display:flex;flex-direction:column;gap:6px}.g93>summary{cursor:pointer}.g93>summary::-webkit-details-marker{display:none}.g93[open]>summary .go{transform:rotate(90deg)}
+.chgh93{margin:-2px 0 10px;font-size:12.5px;font-weight:600;opacity:.75}
+.ft93{margin:12px 0 0;padding-top:10px;border-top:1px solid var(--line);text-align:center;font-size:13px;font-weight:650;color:var(--muted)}
+.h93>div{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:13.5px;font-weight:650}.h93 small{display:block;color:var(--muted);font-size:12px;font-weight:600}
+.h93 b{font-family:var(--display);font-size:22px;font-weight:800}.h93 .p{color:var(--g83)}.h93 .n{color:var(--muted)}
+/* revisão de texto: sem palavra solta no fim */
+.d,h1,h2,h3,.lbl{text-wrap:balance}
+p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 </style>
 
 </body></html>
