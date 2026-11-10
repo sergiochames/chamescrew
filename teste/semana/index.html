@@ -1,0 +1,103 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex"><title>Teste • Semana em 3 dias</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800;900&family=Archivo:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f1f1ee;--card:#fff;--fg:#1d1e21;--mu:#6f6f69;--ln:#dcdcd6;--ln2:#e7e7e2;--solid:#303136;--g:#2f7a4f;--y:#b8862b;--r:#b0503f;--HP:46px}
+@media (prefers-color-scheme:dark){:root{--bg:#2a2b2f;--card:#34353a;--fg:#ecebe6;--mu:#a3a39c;--ln:#45464c;--ln2:#3a3b40;--solid:#ecebe6;--g:#8fc7a2;--y:#e2c27e;--r:#e09a8c}}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--fg);font:500 14px/1.35 Archivo,system-ui,sans-serif}
+body{padding:calc(14px + env(safe-area-inset-top)) 16px 90px;max-width:520px;margin:0 auto;user-select:none;-webkit-user-select:none}
+.d{font-family:"Big Shoulders Display",sans-serif;font-weight:900;text-transform:uppercase;line-height:.9}
+.lb{font-size:12.5px;font-weight:600;color:var(--mu)}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.btn{height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--ln);background:transparent;color:var(--fg);font:inherit;font-weight:700}
+.btn.s{background:var(--solid);color:var(--bg);border-color:var(--solid)}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);background:color-mix(in srgb,var(--fg) 7%,transparent);border-radius:8px;padding:3px;margin:12px 0}
+.seg span{height:36px;display:grid;place-items:center;font-weight:650;border-radius:6px;color:var(--mu)}.seg .on{background:var(--solid);color:var(--bg)}
+.rul{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--ln);border-bottom:1px solid var(--ln);margin-bottom:8px;position:relative}
+.rul button{background:none;border:0;color:var(--mu);font:inherit;padding:7px 0 6px;font-size:11px;font-weight:600;border-radius:6px}
+.rul b{display:block;font-size:17px;color:var(--fg);font-weight:700}
+.rul .vis{background:color-mix(in srgb,var(--fg) 8%,transparent)}
+.rul .td b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.rul .past{opacity:.45}
+.rul.drop button{outline:1.5px dashed var(--mu);outline-offset:-3px}
+.rul button.hot{background:var(--solid)!important;color:var(--bg)}.rul button.hot b{color:var(--bg)}
+.nav{display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px}
+.nav button{width:40px;height:40px;border-radius:8px;border:1px solid var(--ln);background:none;color:var(--fg);font-size:18px;font-weight:700}
+.grid{display:grid;grid-template-columns:34px repeat(3,1fr);touch-action:pan-y}
+.ch{text-align:center;padding:4px 0 8px;border-bottom:1px solid var(--ln)}.ch small{display:block;font-size:11px;font-weight:600;color:var(--mu)}.ch b{font-family:"Big Shoulders Display";font-weight:800;font-size:22px}
+.ch.td b{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.hrs div{height:var(--HP);font-size:10.5px;color:var(--mu);font-weight:600;border-top:1px solid var(--ln2);padding-top:2px}
+.col{position:relative;border-left:1px solid var(--ln2)}
+.col .cell{height:var(--HP);border-top:1px solid var(--ln2)}
+.bk{position:absolute;left:3px;right:3px;border-radius:7px;background:var(--card);border:1px solid var(--ln);padding:4px 6px;font-size:12.5px;line-height:1.15;overflow:hidden;touch-action:none}
+.bk b{display:flex;align-items:center;gap:5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.bk b i{width:7px;height:7px;border-radius:2px;background:#a3a39c;flex:none}
+.bk small{color:var(--mu);font-size:10.5px}
+.bk.g b i{background:var(--g)}.bk.y b i{background:var(--y)}.bk.r b i{background:var(--r)}
+.bk.ps{opacity:.45}.bk.cx b{text-decoration:line-through}
+.bk.src{opacity:.25}
+.ghost{position:fixed;z-index:20;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.18);border-color:var(--fg);width:30%}
+.ghost em{position:absolute;top:-22px;left:0;font-style:normal;font-size:11px;font-weight:700;background:var(--solid);color:var(--bg);padding:2px 6px;border-radius:5px;white-space:nowrap}
+.now{position:absolute;left:0;right:0;height:1.5px;background:var(--fg);z-index:2}
+.toast{position:fixed;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));max-width:488px;margin:0 auto;background:var(--solid);color:var(--bg);border-radius:10px;padding:12px 14px;font-weight:600;display:flex;justify-content:space-between;gap:10px;align-items:center;z-index:40}
+.toast button{background:none;border:0;color:inherit;font:inherit;font-weight:800;text-decoration:underline}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;z-index:30}
+.sheet{background:var(--bg);width:100%;max-width:520px;margin:0 auto;border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+.sheet h3{font-size:30px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+input[type=time],select{height:44px;border-radius:8px;border:1px solid var(--ln);background:var(--card);color:var(--fg);font:inherit;font-weight:700;padding:0 10px;width:100%}
+.note{font-size:12.5px;color:var(--mu)}
+.tip{margin-top:14px;font-size:12.5px;color:var(--mu);line-height:1.45;border-top:1px solid var(--ln);padding-top:10px}
+</style></head><body>
+<div class="hd"><div><div class="lb">Agenda da semana • teste</div><h1 class="d" style="font-size:36px" id="ttl">26 out – 1 nov</h1></div><button class="btn s">+ Marcar</button></div>
+<div class="seg"><span>Dia</span><span class="on">Semana</span><span>Mês</span></div>
+<div class="rul" id="rul"></div>
+<div class="nav"><button id="pv" aria-label="Dias anteriores">‹</button><b class="lb" id="rng" style="color:var(--fg)"></b><button id="nx" aria-label="Próximos dias">›</button></div>
+<div class="grid" id="grid"></div>
+<p class="tip">Segure uma aula para arrastar. Solte numa coluna para mudar o horário, ou solte num dia da régua lá em cima para levar para um dia que não está na tela. Deslize para o lado para ver os outros dias.</p>
+<script>
+const WD=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],DT=[26,27,28,29,30,31,1],TD=2,NOW=14.75,H0=7,H1=21;
+const EV=[{d:0,h:7,n:'Pedro',st:'ok'},{d:1,h:8,n:'Lia',st:'ok'},{d:1,h:18,n:'Bruno',st:'ok'},{d:2,h:7,n:'Pedro',st:'ok'},{d:2,h:8,n:'Lia',st:'ok'},{d:2,h:11,n:'Marina',st:'ok'},{d:2,h:12,n:'Duda',st:'ok'},{d:2,h:16,n:'Ana',st:'conf'},{d:2,h:17.25,n:'Bruno',st:'wait'},{d:2,h:19,n:'Rafa',st:'conf'},{d:2,h:20,n:'Lia',st:'can'},{d:3,h:7,n:'Pedro',st:'conf'},{d:3,h:9,n:'Ana',st:'conf'},{d:3,h:18,n:'Carla',st:'conf'},{d:4,h:9,n:'Duda',st:'can'},{d:4,h:10,n:'Google • aniv. mãe',st:'gc'},{d:5,h:9,n:'Felipe',st:'wait'}];
+const LBL={ok:'Feita',conf:'Confirmada',wait:'A confirmar',can:'Cancelou',gc:'Google'},CL={conf:'g',wait:'y',can:'r'};
+let s0=TD;const hx=h=>{const m=Math.round(h*60),H=Math.floor(m/60),M=m%60;return H+'h'+(M?String(M).padStart(2,'0'):'')};
+const $=q=>document.querySelector(q);
+function draw(){s0=Math.max(0,Math.min(4,s0));const vis=[s0,s0+1,s0+2];
+ $('#rul').innerHTML=WD.map((w,i)=>`<button data-dd="${i}" class="${vis.includes(i)?'vis':''}${i===TD?' td':''}${i<TD?' past':''}">${w}<b>${DT[i]}</b></button>`).join('');
+ $('#rng').textContent=`${WD[vis[0]]} ${DT[vis[0]]} a ${WD[vis[2]]} ${DT[vis[2]]}`;
+ let h='<div></div>'+vis.map(d=>`<div class="ch${d===TD?' td':''}"><small>${d===TD?'Hoje':WD[d]}</small><b>${DT[d]}</b></div>`).join('');
+ h+=`<div class="hrs">${Array.from({length:H1-H0},(_,k)=>`<div>${H0+k}h</div>`).join('')}</div>`;
+ vis.forEach(d=>{h+=`<div class="col" data-col="${d}">${Array.from({length:H1-H0},()=>'<div class="cell"></div>').join('')}`;
+  if(d===TD)h+=`<div class="now" style="top:calc(${NOW-H0} * var(--HP))"></div>`;
+  EV.filter(e=>e.d===d).forEach(e=>{const past=d<TD||(d===TD&&e.h<NOW);h+=`<div class="bk ${CL[e.st]||''}${past?' ps':''}${e.st==='can'?' cx':''}" data-ev="${EV.indexOf(e)}" style="top:calc(${e.h-H0} * var(--HP) + 2px);height:calc(var(--HP) - 4px)"><b><i></i>${e.n}</b><small>${hx(e.h)} • ${LBL[e.st]}</small></div>`});h+='</div>'});
+ $('#grid').innerHTML=h}
+function toast(m,undo){document.querySelectorAll('.toast').forEach(t=>t.remove());const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${m}</span>${undo?'<button>Desfazer</button>':''}`;document.body.appendChild(t);if(undo)t.querySelector('button').onclick=()=>{undo();t.remove()};setTimeout(()=>t.remove(),4500)}
+function canGo(e,d,h){if(d<TD||(d===TD&&h<=NOW))return 'Esse horário já passou';const c=EV.find(x=>x!==e&&x.d===d&&x.st!=='can'&&Math.abs(x.h-h)<1);return c?`Já tem ${c.n.split(' ')[0]} às ${hx(c.h)}`:''}
+function move(e,d,h){const er=canGo(e,d,h);if(er){toast(er);return}const o={d:e.d,h:e.h};e.d=d;e.h=h;if(e.st==='can')e.st='conf';draw();toast(`${e.n} foi para ${WD[d]} ${DT[d]} às ${hx(h)}. Ela recebe o aviso.`,()=>{e.d=o.d;e.h=o.h;draw()})}
+function confirmSheet(e,d){let h=e.h;const sc=document.createElement('div');sc.className='scrim';const t=String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
+ sc.innerHTML=`<div class="sheet"><span class="lb">Mover aula</span><h3 class="d">${e.n} para ${WD[d]} ${DT[d]}?</h3><span class="note">Mesmo horário sugerido. Troque se quiser.</span><input type="time" id="ct" value="${t}" step="900"><div class="row2"><button class="btn" id="cn">Cancelar</button><button class="btn s" id="ok">Mover</button></div></div>`;
+ document.body.appendChild(sc);sc.onclick=ev=>{if(ev.target===sc||ev.target.id==='cn')sc.remove()};
+ sc.querySelector('#ok').onclick=()=>{const [H,M]=sc.querySelector('#ct').value.split(':').map(Number);sc.remove();if(d>s0+2||d<s0)s0=Math.min(4,Math.max(0,d-1));move(e,d,H+(M||0)/60)}}
+function tapSheet(e){const sc=document.createElement('div');sc.className='scrim';sc.innerHTML=`<div class="sheet"><span class="lb">${WD[e.d]} ${DT[e.d]} • ${hx(e.h)} • ${LBL[e.st]}</span><h3 class="d">${e.n}</h3><span class="note">Remarcar para:</span><div class="row2"><select id="rd">${WD.map((w,i)=>`<option value="${i}"${i===e.d?' selected':''}${i<TD?' disabled':''}>${w} ${DT[i]}</option>`).join('')}</select><input type="time" id="rt" step="900" value="${String(Math.floor(e.h)).padStart(2,'0')}:${String(Math.round(e.h%1*60)).padStart(2,'0')}"></div><div class="row2"><button class="btn" id="cn">Fechar</button><button class="btn s" id="ok">Remarcar</button></div></div>`;
+ document.body.appendChild(sc);sc.onclick=ev=>{if(ev.target===sc||ev.target.id==='cn')sc.remove()};sc.querySelector('#ok').onclick=()=>{const d=+sc.querySelector('#rd').value,[H,M]=sc.querySelector('#rt').value.split(':').map(Number);sc.remove();if(d>s0+2||d<s0)s0=Math.min(4,Math.max(0,d-1));move(e,d,H+(M||0)/60)}}
+let st=null,sw=null;
+document.addEventListener('pointerdown',ev=>{const b=ev.target.closest('.bk');if(b){const e=EV[+b.dataset.ev];if(e.st==='gc'||(e.d<TD)||(e.d===TD&&e.h<NOW)){st={tap:e,b,x:ev.clientX,y:ev.clientY,on:false};return}
+  st={e,b,x:ev.clientX,y:ev.clientY,on:false,off:ev.clientY-b.getBoundingClientRect().top,t:setTimeout(()=>{if(!st)return;st.on=true;navigator.vibrate&&navigator.vibrate(12);b.classList.add('src');const g=b.cloneNode(true);g.className+=' ghost';g.insertAdjacentHTML('beforeend','<em></em>');document.body.appendChild(g);st.g=g;$('#rul').classList.add('drop');pos(ev.clientX,ev.clientY)},260)};return}
+ if(ev.target.closest('#grid'))sw={x:ev.clientX,y:ev.clientY}});
+function pos(x,y){const g=st.g;g.style.left=(x-g.offsetWidth/2)+'px';g.style.top=(y-st.off)+'px';document.querySelectorAll('.rul button').forEach(b=>b.classList.remove('hot'));st.nd=null;st.rd=null;
+ const el=document.elementFromPoint(x,y),rb=el&&el.closest('.rul button');if(rb){rb.classList.add('hot');st.rd=+rb.dataset.dd;g.querySelector('em').textContent=`Soltar: ${WD[st.rd]} ${DT[st.rd]}`;return}
+ const c=el&&el.closest('.col');if(c){const r=c.getBoundingClientRect(),hp=r.height/(H1-H0);let h=H0+(y-st.off-r.top)/hp;h=Math.round(h*4)/4;h=Math.max(H0,Math.min(H1-1,h));st.nd=+c.dataset.col;st.nh=h;g.querySelector('em').textContent=`${WD[st.nd]} ${hx(h)}`}else g.querySelector('em').textContent='Solte numa coluna ou num dia'}
+document.addEventListener('pointermove',ev=>{if(st){if(!st.on){if(Math.hypot(ev.clientX-st.x,ev.clientY-st.y)>8){clearTimeout(st.t);st=null}return}ev.preventDefault();pos(ev.clientX,ev.clientY)}},{passive:false});
+document.addEventListener('touchmove',ev=>{if(st&&st.on)ev.preventDefault()},{passive:false});
+document.addEventListener('pointerup',ev=>{if(sw&&!st){const dx=ev.clientX-sw.x,dy=ev.clientY-sw.y;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){s0+=dx<0?1:-1;draw()}sw=null}
+ if(!st)return;clearTimeout(st.t);const s=st;st=null;$('#rul').classList.remove('drop');
+ if(!s.on){if(Math.hypot(ev.clientX-s.x,ev.clientY-s.y)<8)tapSheet(s.tap||s.e);return}
+ s.g.remove();s.b.classList.remove('src');document.querySelectorAll('.rul button').forEach(b=>b.classList.remove('hot'));
+ if(s.rd!=null){if(s.rd===s.e.d){draw();return}confirmSheet(s.e,s.rd);draw();return}
+ if(s.nd!=null)move(s.e,s.nd,s.nh);else draw()});
+document.addEventListener('pointercancel',()=>{if(st){clearTimeout(st.t);st.g&&st.g.remove();st=null;$('#rul').classList.remove('drop');draw()}sw=null});
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('click',ev=>{const r=ev.target.closest('.rul button');if(r){const d=+r.dataset.dd;s0=Math.min(4,Math.max(0,d-1));draw()}});
+$('#pv').onclick=()=>{s0-=3;draw()};$('#nx').onclick=()=>{s0+=3;draw()};
+draw();
+</script></body></html>
