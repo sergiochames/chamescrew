@@ -1079,11 +1079,11 @@ body,button,input,select,textarea{font-family:var(--body)!important}
 .wk3 .wb.lk{color:var(--muted)}.wk3 .wb.lk b::before{display:none}
 .wk3 .wb.ghost{border:1.5px solid var(--fg);box-shadow:0 10px 24px rgba(0,0,0,.22)}
 .wk3 .wb.ghost::after{border-radius:6px}
-.wk3 .wb.ghost.warn::after{background:var(--y83);color:#1d1e21}
+.wk3 .wb.ghost.warn::after{background:var(--a82bg);color:var(--fg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--y83) 45%,transparent)}
 .wk3 .wnow{background:var(--fg)}.wk3 .wnow::before{background:var(--fg)}
 .wk3 .wb small{display:flex;justify-content:space-between;align-items:center;gap:4px}
 .w3tv{font-style:normal;font-size:10px;font-weight:700;color:var(--muted);white-space:nowrap;line-height:14px;padding:0 3px;border-radius:3px}
-.w3tv.bad{background:var(--y83);color:#1d1e21}
+.w3tv.bad{background:var(--a82bg);color:var(--a82)}
 .wk3 .wcol{background:var(--card)!important;background-image:repeating-linear-gradient(135deg,color-mix(in srgb,var(--fg) 5%,transparent) 0 1px,transparent 1px 8px)!important}
 .wk3 .wwork{background:var(--card)!important;border:0!important}
 .wk3 .wbody{border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -1096,6 +1096,33 @@ body,button,input,select,textarea{font-family:var(--body)!important}
 .v86box .opt2{width:100%}
 .sheet [data-v86rem][aria-pressed="true"],.sheet [data-v86more][aria-pressed="true"]{background:var(--frost)}
 .wk3 .note{margin-top:10px}
+
+/* v87: mudança de horário só avisa depois de confirmar */
+.mvbar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));z-index:95;width:min(400px,calc(100% - 24px));background:var(--fg);color:var(--bg);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.mvbar p{margin:0;font-size:13.5px;font-weight:600;line-height:1.35}.mvbar p small{display:block;font-weight:500;opacity:.75;font-size:12px;margin-top:2px}
+.mvbar .r{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}
+.mvbar button{height:42px;border-radius:8px;font-weight:700;font-size:14px;border:1px solid color-mix(in srgb,var(--bg) 35%,transparent);background:transparent;color:var(--bg)}
+.mvbar button.ok{background:var(--bg);color:var(--fg);border-color:var(--bg)}
+.wb.pm{outline:1.5px dashed var(--fg);outline-offset:-1px}
+.cbox .mvw{display:block;margin:10px 0 2px;padding:9px 11px;border-radius:8px;background:var(--a82bg);color:var(--fg);font-weight:500;font-size:13.5px;line-height:1.4;text-align:left;border:1px solid color-mix(in srgb,var(--y83) 30%,transparent)}.cbox .mvw i{font-style:normal;color:var(--y83);font-weight:700;margin-right:4px}
+.cbox .btn:focus{outline:none!important;box-shadow:none!important}.cbox .btn[data-cno]{border:1px solid var(--line)!important}
+.utoast:has(~.mvbar),.mvbar~.utoast{display:none}
+
+/* v87: card principal com cor clarinha por status */
+#app .card.next.nxok{background:#e9f3ec!important;border-color:#cfe3d5!important}
+#app .card.next:not(.nxok):not(.nxcan):has(.nxb .s82-wait){background:#f8f0de!important;border-color:#ecdcb6!important}
+#app .card.next.nxcan{background:#f8e8e4!important;border-color:#eccdc5!important}
+#app .card.next.nxok .nxb .s82::before{background:var(--g83)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #app .card.next.nxok{background:#323b35!important;border-color:#43514a!important}:root:not([data-theme="light"]) #app .card.next:not(.nxok):not(.nxcan):has(.nxb .s82-wait){background:#3a3832!important;border-color:#4e4a3e!important}:root:not([data-theme="light"]) #app .card.next.nxcan{background:#3c3434!important;border-color:#524545!important}}
+:root[data-theme="dark"] #app .card.next.nxok{background:#323b35!important;border-color:#43514a!important}
+:root[data-theme="dark"] #app .card.next:not(.nxok):not(.nxcan):has(.nxb .s82-wait){background:#3a3832!important;border-color:#4e4a3e!important}
+:root[data-theme="dark"] #app .card.next.nxcan{background:#3c3434!important;border-color:#524545!important}
+#app .card.next .nreq{background:var(--card)!important;color:var(--fg)!important;border-color:var(--y83)!important}
+
+/* v87: mesmo padrão de cor no app todo */
+.who .rt .cnt,i.cnt{background:var(--a82bg)!important;color:var(--a82)!important}
+.st.ok{background:var(--okbg)!important;color:var(--ok)!important}
+.wab{background:var(--fg)!important;color:var(--bg)!important}
 </style>
 
 <div class="scroller"><div class="wrap" id="app"></div></div>
@@ -2840,7 +2867,7 @@ document.addEventListener('click',e=>{const t=e.target;let b;
   if((b=t.closest('[data-cancel]'))){cancelSheet(+b.dataset.cancel);return}
   if((b=t.closest('[data-undo-can]'))){const x=evAt(+b.dataset.undoCan);x.st='conf';x.why='';document.querySelectorAll('.scrim').forEach(s=>s.remove());draw();toast('Cancelamento desfeito');return}
   if((b=t.closest('[data-mv]'))){const sc=b.closest('.scrim');const [d,h]=b.dataset.mv.split(':').map(Number);const i=+sc.querySelector('[data-cancel]').dataset.cancel;const x=evAt(i);
-    S.ev[S.day].splice(S.ev[S.day].indexOf(x),1);(S.ev[d]=S.ev[d]||[]).push({h,n:x.n,st:'conf',moved:true});sc.remove();draw();toast(`${x.n.split(' ')[0]} remarcado para ${dayLbl(d).toLowerCase()} ${hh(h)}. O horário antigo ficou livre.`);return}
+    sc.remove();moveEv(S.day,x.h,d,h);return}
   if((b=t.closest('[data-ev]'))){evSheet(+b.dataset.ev);return}
   if((b=t.closest('[data-ok]'))){const [d,h]=b.dataset.ok.split(':').map(Number),x=spOf(d,h);(S.ev[d]=S.ev[d]||[]).push({h,n:x.req.n,st:'conf'});stu(x.req.n).q[0]++;delete S.sp[d][h];logA(`Confirmou ${x.req.n.split(' ')[0]} ${dayLbl(d).toLowerCase()} ${hh(h)}`);draw();toast(`${x.req.n.split(' ')[0]} ${oa(x.req.n,'confirmado','confirmada')} ${hh(h)}. ${EL(x.req.n)} recebe a confirmação no app.`);return}
   if((b=t.closest('[data-no]'))){const [d,h]=b.dataset.no.split(':').map(Number),x=spOf(d,h),nm=x.req.n;delete x.req;x.lock=true;logA(`Recusou o pedido de ${nm.split(' ')[0]} e travou ${hh(h)}`);draw();toast(`Pedido de ${nm.split(' ')[0]} recusado e horário travado. ${EL(nm)} recebe o aviso.`);return}
@@ -3032,7 +3059,7 @@ function moveEv(d0,h0,d1,h1,silent){const L0=S.ev[d0]||[],e=L0.find(x=>x.h===h0&
   const clash=(S.ev[d1]||[]).find(x=>x!==e&&x.st!=='can'&&Math.abs(x.h-h1)<1);if(clash){toast(`Já tem ${clash.gc?clash.gc:clash.n.split(' ')[0]} às ${hh(clash.h)}`);return false}
   const sp1=spOf(d1,Math.floor(h1));if(sp1&&sp1.req){toast(`${sp1.req.n.split(' ')[0]} pediu esse horário. Decida o pedido antes de mover outra aula para lá.`);return false}if(sp1&&sp1.lock){toast('Esse horário está travado. Destrave antes de mover uma aula para lá.');return false}if(sp1)delete S.sp[d1][Math.floor(h1)];
   L0.splice(L0.indexOf(e),1);e.h=h1;e.st=e.st==='ok'?'ok':'conf';(S.ev[d1]=S.ev[d1]||[]).push(e);draw();
-  if(!silent)utoast(`${esc(e.n.split(' ')[0])} foi para ${hhLong(d1,h1)}. ${EL(e.n)} recebe o aviso.`,()=>{moveEv(d1,h1,d0,h0,true);toast('Voltou para o horário anterior')});return true}
+  if(!silent)mvAsk(e,d0,h0,d1,h1);return true}
 (()=>{let st=null,skipClick=false;
   const colAt=(x,y)=>document.elementsFromPoint(x,y).find(el=>el.matches&&el.matches('.wcol'));
   document.addEventListener('pointerdown',e=>{const b=e.target.closest('.wb[data-wev]');if(!b||e.button>0)return;const [d,h]=b.dataset.wev.split(':').map(Number);
@@ -3159,7 +3186,7 @@ function waChip(n,msg,strong){document.querySelectorAll('.wachip').forEach(x=>x.
   c.innerHTML=`<span class="wai" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.4-.7-2.9-1.1-4.7-4.1-4.9-4.3-.1-.2-1.2-1.6-1.2-3s.8-2.2 1-2.5c.3-.3.6-.4.8-.4h.6c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .6l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.7-.1l2 .9c.3.2.5.2.6.4.1.1.1.7-.1 1.3z"/></svg></span><span class="wat"><b>Avisar ${esc(fn(n))}?</b><small>Mensagem pronta</small></span><a class="wago" href="https://wa.me/${ph.length<=11?'55':''}${ph}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Enviar</a><button class="wax" aria-label="Fechar">✕</button>`;
   c.querySelector('.wax').onclick=()=>c.remove();c.querySelector('.wago').addEventListener('click',()=>setTimeout(()=>c.remove(),300));document.body.appendChild(c);setTimeout(()=>c.remove(),9000)}
 const dTxt=(d,h)=>`${d===TODAY?'hoje':d===TODAY+1?'amanhã':DLONG[d]} às ${hh(h).replace(':00','h').replace(':','h')}`;
-const _mv=moveEv;moveEv=function(d0,h0,d1,h1,silent){const e=(S.ev[d0]||[]).find(x=>x.h===h0&&!x.gc),n=e&&e.n,ok=_mv(d0,h0,d1,h1,silent);if(ok&&!silent&&n)waChip(n,`Oi, ${fn(n)}! Sua aula de ${dTxt(d0,h0)} mudou para ${dTxt(d1,h1)}. Qualquer coisa me avisa!`,true);return ok};
+const _mv=moveEv;moveEv=function(d0,h0,d1,h1,silent){const e=(S.ev[d0]||[]).find(x=>x.h===h0&&!x.gc),n=e&&e.n,ok=_mv(d0,h0,d1,h1,silent);return ok};
 document.addEventListener('click',e=>{const t=e.target;let b;
   if(t.closest('#cc')){const sh=t.closest('.sheet'),n=sh.querySelector('h3').textContent.trim(),pw=sh.querySelector('[data-wy][aria-pressed="true"]'),why=pw?pw.dataset.wy:'',cr=sh.querySelector('#cr').checked,hm=(sh.querySelector('.lbl').textContent.match(/(\d\d):(\d\d)/)||[0,0,0]),d=S.day,mine=why==='Imprevisto meu',ht=dTxt(d,+hm[1]+(+hm[2]/60));
     setTimeout(()=>waChip(n,mine?`Oi, ${fn(n)}! Precisei cancelar nossa aula de ${ht}, me desculpa 🙏${cr?' A aula volta pro seu saldo.':''} Quer remarcar?`:`Tudo certo, ${fn(n)}! Cancelei sua aula de ${ht}.${cr?' A aula volta pro seu saldo.':''}${why==='Doente'?' Melhoras! 💪':''}`,mine),80);return}
@@ -3838,16 +3865,17 @@ function w3Lab(st,h){const e=(S.ev[st.d]||[]).find(x=>x.h===st.h&&!x.gc),t=w3Tig
 function w3Clean(){document.querySelectorAll('.w3rul').forEach(r=>{r.classList.remove('drop');r.querySelectorAll('.hot').forEach(b=>b.classList.remove('hot'))})}
 function w3Move(d,h,nd,nh,force){const e=(S.ev[d]||[]).find(x=>x.h===h&&!x.gc);if(!e)return;
   const past=nd<TODAY||(nd===TODAY&&nh<=NOW),clash=(S.ev[nd]||[]).some(x=>x!==e&&x.st!=='can'&&Math.abs(x.h-nh)<1);
-  if(!force&&!past&&!clash){const t=w3Tight(e,nd,nh);if(t){confirmBox('Pode não dar tempo',`${esc(t.msg)}. ${esc(e.n.split(' ')[0])} ficaria ${WD[nd]} ${DATES[nd]} às ${hh(nh)}.`,'Mover mesmo assim',()=>w3Move(d,h,nd,nh,true));const y=[...document.querySelectorAll('.cbox [data-cyes]')].pop();if(y)y.className='btn solid';return}}
+  W3WARN=(!past&&!clash)?w3Tight(e,nd,nh):null;
   if(moveEv(d,h,nd,nh)&&(nd<S.w3||nd>S.w3+2)){S.w3=w3clamp(nd-1);draw()}}
 function w3Confirm(d,h,rd){const e=(S.ev[d]||[]).find(x=>x.h===h&&!x.gc);if(!e)return;
   sheet(`<span class="lbl">Mover aula</span><h3 class="d">${esc(e.n.split(' ')[0])} para ${WD[rd]} ${DATES[rd]}?</h3><p class="note" style="margin:0">Mesmo horário sugerido. Troque se quiser.</p>
-    <input class="inp" type="time" id="w3t" step="900" value="${hh(h)}"><div class="row2"><button class="btn" data-close>Cancelar</button><button class="btn solid" id="w3ok">Mover</button></div>`,
-    s=>{s.querySelector('#w3ok').onclick=()=>{const v=s.querySelector('#w3t').value;if(!v)return;const [H,M]=v.split(':').map(Number);s.remove();w3Move(d,h,rd,H+(M||0)/60)}})}
+    <input class="inp" type="time" id="w3t" step="900" value="${hh(h)}"><div class="row2"><button class="btn" data-close>Cancelar</button><button class="btn solid" id="w3ok">Mover e avisar</button></div>`,
+    s=>{s.querySelector('#w3ok').onclick=()=>{const v=s.querySelector('#w3t').value;if(!v)return;const [H,M]=v.split(':').map(Number);s.remove();W3SKIP=true;w3Move(d,h,rd,H+(M||0)/60);W3SKIP=false}})}
 {const _ev3=evSheet;evSheet=function(i){_ev3(i);const sh=[...document.querySelectorAll('.scrim .sheet')].pop();if(!sh||sh.dataset.v86)return;sh.dataset.v86=1;
   const pres=sh.querySelector(':scope>.row2 [data-pres]'),r2=pres&&pres.parentElement;if(!r2)return;
   const L=[...sh.querySelectorAll(':scope>.lbl')],locL=L.find(l=>/Local desta aula/.test(l.textContent)),remL=L.find(l=>/Remarcar/.test(l.textContent)),locC=locL&&locL.nextElementSibling,remC=remL&&remL.nextElementSibling,can=sh.querySelector(':scope>[data-cancel]'),enc=sh.querySelector('[data-enc]');
   let after=r2;
+  sh.querySelectorAll('[data-mv]').forEach(c=>{const [d,h]=c.dataset.mv.split(':').map(Number),x=spOf(d,h);if(x&&(x.req||x.lock))c.remove()});
   if(remC){r2.classList.add('acts3');const rb=document.createElement('button');rb.className='btn';rb.textContent='Remarcar';rb.setAttribute('data-v86rem','');rb.setAttribute('aria-pressed','false');pres.after(rb);
     const box=document.createElement('div');box.className='v86box';box.hidden=true;box.append(remL,remC);r2.after(box);after=box;
     rb.addEventListener('click',ev=>{ev.stopPropagation();box.hidden=!box.hidden;rb.setAttribute('aria-pressed',String(!box.hidden))})}
@@ -3868,6 +3896,30 @@ let W3SW=false;
   document.addEventListener('pointerdown',e=>{sw=null;if(e.target.closest('.wk3 .wbody')&&!e.target.closest('.wb[data-wev]'))sw={x:e.clientX,y:e.clientY}});
   document.addEventListener('pointerup',e=>{if(!sw)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;sw=null;if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){W3SW=true;setTimeout(()=>W3SW=false,350);w3Shift(dx<0?1:-1)}});
   document.addEventListener('pointercancel',()=>{sw=null;w3Clean()})})();
+
+/* ===== v87: mudou o horário? nada é enviado até confirmar ===== */
+let PMV=[];
+function mvPend(e,d0,h0,d1,h1){let m=PMV.find(x=>x.e===e);if(!m){m={e,od:d0,oh:h0};PMV.push(m)}m.d=d1;m.h=h1;e.moved=true;
+  if(m.od===d1&&Math.abs(m.oh-h1)<1e-6){PMV=PMV.filter(x=>x!==m);e.moved=false}mvBar()}
+const mvTxt=m=>`${esc(m.e.n.split(' ')[0])}: ${WD[m.od]} ${hh(m.oh)} → ${WD[m.d]} ${hh(m.h)}`;
+function mvBar(){document.querySelectorAll('.mvbar').forEach(x=>x.remove());document.querySelectorAll('.wb.pm').forEach(x=>x.classList.remove('pm'));if(!PMV.length)return;
+  const b=document.createElement('div');b.className='mvbar';b.setAttribute('role','status');
+  b.innerHTML=`<p>${PMV.length===1?mvTxt(PMV[0]):PMV.length+' aulas mudaram de horário'}<small>${PMV.length===1?esc(EL(PMV[0].e.n))+' ainda não foi avisad'+(oa(PMV[0].e.n,'o','a'))+'.':PMV.map(mvTxt).join(' • ')}</small></p><div class="r"><button data-mvundo>Desfazer</button><button class="ok" data-mvok>Confirmar e avisar</button></div>`;
+  document.body.appendChild(b);PMV.forEach(m=>{const el=document.querySelector(`.wb[data-wev="${m.d}:${m.h}"]`);el&&el.classList.add('pm')})}
+{const _dr=draw;draw=function(){_dr();if(typeof PMV!=='undefined'&&PMV.length)mvBar()}}
+document.addEventListener('click',e=>{const t=e.target;
+  if(t.closest('[data-mvok]')){e.stopPropagation();const n=PMV.map(m=>m.e.n.split(' ')[0]);PMV.forEach(m=>logA&&logA(`Remarcou ${m.e.n.split(' ')[0]} para ${WD[m.d]} ${hh(m.h)}`));const one=PMV.length===1?PMV[0]:null;PMV=[];mvBar();toast(n.length===1?`Pronto. ${n[0]} recebeu o aviso no app.`:`Pronto. ${n.join(', ')} receberam o aviso no app.`);if(one)setTimeout(()=>waChip(one.e.n,`Oi, ${fn(one.e.n)}! Sua aula de ${dTxt(one.od,one.oh)} mudou para ${dTxt(one.d,one.h)}. Qualquer coisa me avisa!`,false),900);return}
+  if(t.closest('[data-mvundo]')){e.stopPropagation();const L=PMV.slice().reverse();PMV=[];L.forEach(m=>{moveEv(m.d,m.h,m.od,m.oh,true);m.e.moved=false});mvBar();draw();toast(L.length===1?'Voltou para o horário anterior. Ninguém foi avisado.':'Tudo voltou como estava. Ninguém foi avisado.');return}},true);
+
+/* ===== v87b: soltou a aula? confirma antes de mexer e avisar ===== */
+let W3WARN=null,W3SKIP=false;
+function mvAsk(e,d0,h0,d1,h1){const w=W3WARN;W3WARN=null;const fn1=esc(e.n.split(' ')[0]);
+  if(W3SKIP){toast(`Pronto. ${fn1} recebeu o aviso no app.`);setTimeout(()=>waChip(e.n,`Oi, ${fn(e.n)}! Sua aula de ${dTxt(d0,h0)} mudou para ${dTxt(d1,h1)}. Qualquer coisa me avisa!`,false),900);return}
+  confirmBox(`Mover ${fn1} para ${WD[d1]} ${hh(h1)}?`,`${WD[d0]} ${DATES[d0]} ${hh(h0)} → <b>${WD[d1]} ${DATES[d1]} ${hh(h1)}</b>.${w?`<br><span class="mvw"><i>⚠</i>${esc(w.msg)}.</span>`:'<br>'}${esc(EL(e.n))} só recebe o aviso se você confirmar.`,'Sim, mover e avisar',()=>{
+    toast(`Pronto. ${fn1} recebeu o aviso no app.`);setTimeout(()=>waChip(e.n,`Oi, ${fn(e.n)}! Sua aula de ${dTxt(d0,h0)} mudou para ${dTxt(d1,h1)}. Qualquer coisa me avisa!`,false),900)});
+  const bx=[...document.querySelectorAll('.cbox')].pop();if(!bx)return;const y=bx.querySelector('[data-cyes]');if(y)y.className='btn solid';
+  bx.addEventListener('click',ev=>{if(ev.target===bx||ev.target.closest('[data-cno]')){moveEv(d1,h1,d0,h0,true);e.moved=false;toast('Não mudou nada. Ninguém foi avisado.')}},true)}
+{const _da2=drawAgenda;drawAgenda=function(){_da2();const l=app.querySelector('.card.next.nxok .nxb .s82');if(l){const w=document.createTreeWalker(l,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))if(/Feita/.test(n.textContent))n.textContent=n.textContent.replace('Feita','Presente ✓')}}}
 
 draw();
 </script>
