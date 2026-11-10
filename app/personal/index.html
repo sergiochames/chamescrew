@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f3f3ef"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="robots" content="noindex">
+<title>Chames Personal</title>
+<link rel="apple-touch-icon" href="/teste/personal/icone-180.png"><link rel="icon" href="/teste/personal/icone-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Archivo:wght@500;600;700;800&display=swap">
+<style>
+:root{--bg:#f3f3ef;--card:#fff;--ln:#e3e3de;--fg:#16171a;--mu:#6d6d68;--g:#2e7d4f;--gbg:#e9f2ec;--y:#9a6b12;--ybg:#fbf1d9;--rd:#a8283f;--rbg:#fbe7ea;--D:"Big Shoulders Display",Impact,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--fg);font-family:Archivo,system-ui,sans-serif;min-height:100dvh}
+button,input,select,textarea{font:inherit;color:inherit}button{background:none;border:0;cursor:pointer}
+#root{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top) + 14px) 18px calc(env(safe-area-inset-bottom) + 40px)}
+.top{display:flex;align-items:center;gap:10px;height:44px}.top .lg{width:32px;height:32px;border-radius:50%;background:var(--fg);color:#fff;display:grid;place-items:center;font-family:var(--D);font-weight:900;font-size:14px}
+.top b{font-size:16px}.top .out{margin-left:auto;font-size:13px;font-weight:700;color:var(--mu)}
+.strip{margin:10px 0 4px;border:1px solid var(--ln);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:650;color:var(--mu);background:var(--card)}
+.h{font-family:var(--D);font-weight:900;font-size:34px;line-height:.95;text-transform:uppercase;margin:22px 0 10px;display:flex;align-items:baseline;gap:10px}.h small{font-family:Archivo;font-size:13px;color:var(--mu);font-weight:700;text-transform:none}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:14px;margin-top:10px}
+.card .nm{font-size:16px;font-weight:800}.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.tags span{font-size:12px;font-weight:700;border:1px solid var(--ln);border-radius:6px;padding:3px 7px}
+.tags span.w{background:var(--rbg);border-color:transparent;color:var(--rd)}.tags span.st{background:var(--ybg);border-color:transparent;color:var(--y)}.tags span.ok{background:var(--gbg);border-color:transparent;color:var(--g)}
+.meta{font-size:13px;color:var(--mu);font-weight:600;margin-top:8px;line-height:1.4}
+.row{display:flex;gap:8px;margin-top:12px}.btn{flex:1;height:44px;border-radius:10px;border:1px solid var(--ln);font-weight:800;font-size:14px;background:var(--card);display:grid;place-items:center;text-decoration:none;color:var(--fg)}.btn.s{background:var(--fg);color:#fff;border-color:var(--fg)}
+.btn:disabled{opacity:.4}
+.empty{color:var(--mu);font-size:14px;font-weight:600;padding:14px 2px}
+.cl{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--ln)}.cl:last-child{border:0}.cl .t{font-family:var(--D);font-size:22px;font-weight:800;width:62px}.cl b{font-size:14.5px}.cl small{display:block;color:var(--mu);font-size:12.5px;font-weight:600}
+.cl .s{margin-left:auto;font-size:12px;font-weight:800;border-radius:6px;padding:3px 8px;background:#efefea;color:var(--mu)}.cl .s.ok{background:var(--gbg);color:var(--g)}.cl .s.no{background:var(--rbg);color:var(--rd)}
+.dh{font-size:12.5px;font-weight:800;color:var(--mu);margin:14px 0 2px;text-transform:uppercase;letter-spacing:.5px}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,10,12,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92dvh;overflow:auto;border-radius:16px 16px 0 0;padding:18px 18px calc(env(safe-area-inset-bottom) + 22px)}
+.sheet .lbl{font-size:12.5px;font-weight:700;color:var(--mu)}.sheet h3{font-family:var(--D);font-weight:900;font-size:32px;text-transform:uppercase;line-height:.95;margin:4px 0 8px}
+.f{display:block;font-size:12.5px;font-weight:700;color:var(--mu);margin:14px 0 6px}
+.in{width:100%;background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:12px 13px;font-size:15px;font-weight:600;outline:none}.in:focus{border-color:var(--fg)}
+textarea.in{min-height:70px}
+.sug{background:var(--gbg);border:1.5px dashed var(--g);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:13px;font-weight:650;color:#1f5c39}
+.dayb{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px;margin-top:10px}.dayb .dt{display:flex;align-items:center;justify-content:space-between;gap:10px}.dayb .dt b{font-size:15px}
+.dayb input[type=time]{width:120px}.mini{font-size:12.5px;color:var(--mu);font-weight:600;margin-top:6px;line-height:1.45}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 30px);transform:translateX(-50%);background:var(--fg);color:#fff;padding:12px 16px;border-radius:10px;font-weight:700;font-size:14px;z-index:99;max-width:90%;text-align:center}
+.ld{display:grid;place-items:center;min-height:80dvh;color:var(--mu);font-weight:700}
+.dev{font-size:11px;font-weight:800;background:var(--fg);color:#fff;border-radius:5px;padding:2px 6px;margin-left:6px}
+</style></head><body><div id="root"><div class="ld">Carregando…</div></div>
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const CFG=window.CC_CONFIG,sb=supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
+const R=document.getElementById('root'),$=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const DOWN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],PER={manha:['Manhã',6,12],tarde:['Tarde',12,18],noite:['Noite',18,22]};
+const LOCS=['Bodytech Barra','Condomínio Península'];
+const pad=n=>String(n).padStart(2,'0'),hm=d=>pad(d.getHours())+':'+pad(d.getMinutes()),dm=d=>pad(d.getDate())+'/'+pad(d.getMonth()+1);
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+function sheet(html,mount){const s=document.createElement('div');s.className='scrim';s.innerHTML=`<div class="sheet">${html}</div>`;s.onclick=e=>{if(e.target===s)s.remove()};document.body.appendChild(s);mount&&mount(s);return s}
+const waNum=p=>{let d=String(p||'').replace(/\D/g,'');if(d.length<=11)d='55'+d;return d};
+let ME=null,DATA={};
+
+async function load(){const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('/app/?p=1');return}
+  const {data:p}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(!p||p.role!=='equipe'){location.replace('/app/');return}ME=p;draw()}
+async function fetchAll(){const now=new Date(),from=new Date(now.getTime()-3*36e5).toISOString(),to=new Date(now.getTime()+21*864e5).toISOString();
+  const [rq,cl,st,iv]=await Promise.all([sb.from('requests').select('*,proposals(*),profiles!requests_student_id_fkey(*)').order('created_at',{ascending:false}),
+    sb.from('classes').select('*,profiles!classes_student_id_fkey(name,phone)').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
+    sb.from('profiles').select('id,name,phone,role,onboarded,goal,level').eq('role','aluno').order('created_at',{ascending:false}),
+    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20)]);
+  DATA={rq:rq.data||[],cl:cl.data||[],st:st.data||[],iv:iv.data||[]};const e=rq.error||cl.error||st.error||iv.error;if(e)toast('Erro ao carregar: '+e.message)}
+async function draw(){R.innerHTML='<div class="ld">Carregando…</div>';await fetchAll();const {rq,cl,iv}=DATA;
+  const open=rq.filter(r=>['aguardando','conversar','proposta'].includes(r.status));
+  const byDay={};cl.forEach(c=>{const d=new Date(c.starts_at),k=d.toDateString();(byDay[k]=byDay[k]||{d,l:[]}).l.push(c)});
+  R.innerHTML=`<div class="top"><span class="lg">CC</span><b>Chames Crew${ME.is_dev?'<span class="dev">DEV</span>':''}</b><button class="out" id="out">Sair</button></div>
+  <div class="strip">Teste real • parte 1: convites, pedidos e aulas. A agenda completa (semana de 3 dias) chega na parte 2.</div>
+  <p class="h">Pedidos <small>${open.length?open.length+' em aberto':'nenhum em aberto'}</small></p>
+  ${open.length?open.map(reqCard).join(''):'<p class="empty">Quando um aluno terminar o cadastro, o pedido aparece aqui.</p>'}
+  <div class="row"><button class="btn s" id="inv">+ Convidar aluno</button></div>
+  ${iv.length?`<p class="dh">Convites ainda não usados</p>${iv.map(i=>`<div class="cl"><span><b>${esc(i.name||'Sem nome')}</b><small>código ${i.code}</small></span><button class="s" data-sh="${i.code}">enviar ›</button></div>`).join('')}`:''}
+  <p class="h">Aulas <small>próximas 3 semanas</small></p>
+  ${Object.values(byDay).length?Object.values(byDay).map(g=>`<p class="dh">${DOWN[g.d.getDay()]} ${dm(g.d)}</p>${g.l.map(c=>{const d=new Date(c.starts_at);return `<div class="cl"><span class="t">${hm(d)}</span><span><b>${esc(c.profiles&&c.profiles.name||'Aluno')}</b><small>${esc(c.location||'')}</small></span><span class="s ${c.status==='confirmada'?'ok':c.status==='cancelada'?'no':''}">${c.status}</span></div>`}).join('')}`).join(''):'<p class="empty">Nenhuma aula ainda. Elas aparecem quando o aluno aceita a proposta.</p>'}
+  <p class="h">Alunos <small>${DATA.st.length}</small></p>
+  ${DATA.st.map(s=>`<div class="cl"><span><b>${esc(s.name||'Sem nome')}</b><small>${s.onboarded?esc([s.goal,s.level].filter(Boolean).join(' • ')):'cadastro incompleto'}</small></span>${s.phone?`<a class="s" style="text-decoration:none" href="https://wa.me/${waNum(s.phone)}" target="_blank" rel="noopener">WhatsApp</a>`:''}</div>`).join('')||'<p class="empty">Nenhum aluno ainda.</p>'}`;
+  $('#out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/?p=1')};
+  $('#inv').onclick=inviteSheet;
+  R.querySelectorAll('[data-sh]').forEach(b=>b.onclick=()=>{const i=iv.find(x=>x.code===b.dataset.sh);shareInvite(i)});
+  R.querySelectorAll('[data-pp]').forEach(b=>b.onclick=()=>proposeSheet(rq.find(r=>r.id===b.dataset.pp)));
+  R.querySelectorAll('[data-rc]').forEach(b=>b.onclick=async()=>{if(!confirmBox('Recusar este pedido?'))return;const {error}=await sb.from('requests').update({status:'recusado',updated_at:new Date().toISOString()}).eq('id',b.dataset.rc);if(error)toast(error.message);else{toast('Pedido recusado');draw()}})}
+const confirmBox=t=>window.confirm(t);
+function reqCard(r){const p=r.profiles||{},per=PER[r.period]||[r.period||''],pq=p.parq||{},yes=Object.values(pq).filter(Boolean).length,pr=(r.proposals||[]).find(x=>x.status==='enviada');
+  return `<div class="card"><span class="nm">${esc(p.name||'Aluno')}</span><div class="tags">
+   <span class="${r.status==='conversar'?'w':r.status==='proposta'?'st':''}">${r.status==='aguardando'?'aguardando você':r.status==='proposta'?'proposta enviada':'quer conversar'}</span>
+   <span>${r.freq||r.days.length}x por semana</span><span>${r.days.map(d=>DOWN[d]).join(' e ')}</span><span>${per[0]}${r.ideal_time?' • '+esc(r.ideal_time):''}</span><span>${esc(r.location||('Outro: '+(r.location_other||'')))}</span>
+   ${r.monthly_price?`<span>R$ ${r.monthly_price}/mês</span>`:''}${p.injury?'<span class="w">lesão/dor</span>':''}${yes?`<span class="w">PAR-Q: ${yes} sim</span>`:''}</div>
+   <p class="meta">${esc([p.goal,p.level].filter(Boolean).join(' • '))}${p.injury?'<br>Lesão/dor: '+esc(p.injury):''}${pr?`<br>Proposta: ${(pr.slots||[]).map(s=>DOWN[s.dow]+' '+s.time).join(' e ')}`:''}</p>
+   <div class="row"><button class="btn s" data-pp="${r.id}">${pr?'Mudar proposta':'Propor horário'}</button>${p.phone?`<a class="btn" href="https://wa.me/${waNum(p.phone)}" target="_blank" rel="noopener">WhatsApp</a>`:''}<button class="btn" data-rc="${r.id}" style="flex:.6">Recusar</button></div></div>`}
+
+/* sugestão de encaixe: logo depois/antes de aulas que já existem nesse dia, dentro do período, sem conflito */
+function nextDate(dow){const d=new Date();d.setHours(0,0,0,0);for(let k=1;k<=7;k++){const x=new Date(d.getTime()+k*864e5);if(x.getDay()===dow)return x}return d}
+function suggest(dow,period,ideal){const day=nextDate(dow),per=PER[period]||['',6,22];
+  const list=DATA.cl.filter(c=>{const d=new Date(c.starts_at);return d.getDay()===dow&&c.status!=='cancelada'}).map(c=>new Date(c.starts_at)).map(d=>d.getHours()*60+d.getMinutes());
+  const uniq=[...new Set(list)].sort((a,b)=>a-b),busy=m=>uniq.some(x=>Math.abs(x-m)<60);
+  const want=(()=>{const m=String(ideal||'').match(/(\d{1,2})(?:[:h](\d{2}))?/);return m?(+m[1])*60+(+(m[2]||0)):null})();
+  const cands=[];uniq.forEach(x=>{cands.push(x+60,x-60)});const inP=m=>m>=per[1]*60&&m+60<=per[2]*60;
+  let best=cands.filter(m=>inP(m)&&!busy(m)).sort((a,b)=>want!=null?Math.abs(a-want)-Math.abs(b-want):a-b)[0],why='';
+  if(best!=null){const nb=uniq.find(x=>x+60===best);why=nb!=null?'logo depois de outra aula, sem buraco':'logo antes de outra aula, sem buraco'}
+  else{best=want!=null&&inP(want)&&!busy(want)?want:per[1]*60;why=want!=null&&best===want?'o horário ideal do aluno':'início do período'}
+  const show=DATA.cl.filter(c=>new Date(c.starts_at).toDateString()===day.toDateString()&&c.status!=='cancelada');
+  return {t:pad(Math.floor(best/60))+':'+pad(best%60),why,day,show}}
+function proposeSheet(r){const p=r.profiles||{};const S=r.days.map(dw=>({dow:dw,...suggest(dw,r.period,r.ideal_time)}));
+  const first=S.map(s=>s.day).sort((a,b)=>a-b)[0],iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  sheet(`<span class="lbl">Proposta para</span><h3>${esc(p.name||'Aluno')}</h3><p class="meta" style="margin:0">${r.days.map(d=>DOWN[d]).join(' e ')} • ${(PER[r.period]||[''])[0]}${r.ideal_time?' • ideal '+esc(r.ideal_time):''} • ${esc(r.location||r.location_other||'')}</p>
+  ${S.map((s,k)=>`<div class="dayb"><div class="dt"><b>${DOWN[s.dow]}</b><input class="in" type="time" step="900" value="${s.t}" data-k="${k}"></div>
+   <div class="sug">Encaixe sugerido: ${s.t} • ${s.why}</div><p class="mini">${s.show.length?`${DOWN[s.dow]} ${dm(s.day)}: `+s.show.map(c=>hm(new Date(c.starts_at))+' '+esc((c.profiles&&c.profiles.name||'').split(' ')[0])).join(' • '):`${DOWN[s.dow]} ${dm(s.day)}: nenhuma aula ainda`}</p></div>`).join('')}
+  <label class="f">Local</label><select class="in" id="lc">${[...LOCS,...(r.location_other?[r.location_other]:[])].map(l=>`<option ${l===(r.location||r.location_other)?'selected':''}>${esc(l)}</option>`).join('')}</select>
+  <label class="f">Começa em</label><input class="in" id="sd" type="date" value="${iso(first)}">
+  <label class="f">Mensagem (opcional)</label><textarea class="in" id="ms" placeholder="Ex.: Esses horários encaixam certinho na minha agenda. Fica bom pra você?"></textarea>
+  <div class="row"><button class="btn s" id="sn">Enviar proposta</button></div>`,s=>{
+   s.querySelector('#sn').onclick=async()=>{const slots=[...s.querySelectorAll('[data-k]')].map(i=>({dow:S[+i.dataset.k].dow,time:i.value,location:s.querySelector('#lc').value}));
+    if(slots.some(x=>!x.time))return toast('Preencha todos os horários');s.querySelector('#sn').disabled=true;
+    await sb.from('proposals').update({status:'recusada'}).eq('request_id',r.id).eq('status','enviada');
+    const {error}=await sb.from('proposals').insert({request_id:r.id,slots,message:s.querySelector('#ms').value.trim()||null,start_date:s.querySelector('#sd').value||null,created_by:ME.id});
+    if(!error){const u=await sb.from('requests').update({status:'proposta',updated_at:new Date().toISOString()}).eq('id',r.id);if(u.error)return toast(u.error.message)}
+    if(error){s.querySelector('#sn').disabled=false;return toast('Não enviou: '+error.message)}
+    s.remove();toast('Proposta enviada');const nm=(p.name||'').split(' ')[0];
+    if(p.phone)sheet(`<span class="lbl">Proposta enviada</span><h3>Avisar ${esc(nm)}?</h3><p class="meta">A proposta já está no app dela(e). Se quiser, mande um aviso no WhatsApp.</p><div class="row"><a class="btn s" target="_blank" rel="noopener" href="https://wa.me/${waNum(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Mandei sua proposta de horário no app: ${location.origin}/app/`)}">Avisar no WhatsApp</a></div>`);
+    draw()}})}
+function inviteSheet(){sheet(`<span class="lbl">Novo aluno</span><h3>Convidar</h3><p class="meta" style="margin:0">O aluno recebe um link no WhatsApp, cria a senha e faz o cadastro.</p>
+  <label class="f">Nome</label><input class="in" id="nm" placeholder="Nome e sobrenome"><label class="f">WhatsApp</label><input class="in" id="ph" inputmode="tel" placeholder="(21) 90000-0000">
+  <div class="row"><button class="btn s" id="go">Criar convite</button></div>`,s=>{s.querySelector('#go').onclick=async()=>{const name=s.querySelector('#nm').value.trim(),phone=s.querySelector('#ph').value.trim();
+   if(!name)return toast('Coloque o nome');s.querySelector('#go').disabled=true;
+   const {data,error}=await sb.from('invites').insert({name,phone,plan:'presencial',created_by:ME.id}).select().single();
+   if(error){s.querySelector('#go').disabled=false;return toast('Não criou: '+error.message)}s.remove();shareInvite(data);draw()}})}
+function shareInvite(i){const link=`${location.origin}/app/?c=${i.code}`,nm=(i.name||'').split(' ')[0],txt=`Oi${nm?', '+nm:''}! Seu acesso ao app de treino com o Sérgio: ${link}`;
+  sheet(`<span class="lbl">Convite • ${esc(i.name||'')}</span><h3>${i.code}</h3><p class="meta" style="word-break:break-all">${esc(link)}</p>
+  <div class="row">${i.phone?`<a class="btn s" target="_blank" rel="noopener" href="https://wa.me/${waNum(i.phone)}?text=${encodeURIComponent(txt)}">Enviar no WhatsApp</a>`:''}<button class="btn" id="cp">Copiar link</button></div>`,s=>{
+   s.querySelector('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(txt);toast('Copiado')}catch(_){toast('Segure o link para copiar')}}})}
+load();
+</script></body></html>

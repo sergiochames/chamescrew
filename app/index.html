@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#141416"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="robots" content="noindex">
+<title>Chames Crew</title>
+<link rel="apple-touch-icon" href="/teste/personal/icone-180.png"><link rel="icon" href="/teste/personal/icone-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Archivo:wght@500;600;700;800&display=swap">
+<style>
+:root{--bg:#1c1d20;--card:#26272b;--ln:#34353a;--fg:#f1f0eb;--mu:#9c9c95;--g:#8fc7a2;--y:#e2c27e;--rd:#e8a0a8;--D:"Big Shoulders Display",Impact,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--fg);font-family:Archivo,system-ui,sans-serif;min-height:100%}
+body{min-height:100dvh}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:var(--fg)}
+#root{max-width:480px;margin:0 auto;min-height:100dvh;position:relative}
+.scr{min-height:100dvh;padding:calc(env(safe-area-inset-top) + 18px) 20px calc(env(safe-area-inset-bottom) + 150px);position:relative}
+.nav{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--mu);font-weight:600;height:32px}
+.nav .bk{font-size:26px;color:var(--fg);width:28px;line-height:1}.nav .bar{flex:1;height:4px;border-radius:2px;background:var(--ln);position:relative;overflow:hidden}.nav .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:2px;background:var(--g);transition:width .3s}
+.nav .sair{color:var(--mu);font-weight:700}
+.q{font-family:var(--D);font-weight:900;font-size:40px;line-height:.95;text-transform:uppercase;margin:30px 0 8px;text-wrap:balance}
+.qs{color:var(--mu);font-size:14.5px;line-height:1.45;text-wrap:pretty}
+.lb{display:block;font-size:12.5px;font-weight:700;color:var(--mu);margin:20px 0 8px}
+.in{width:100%;background:var(--card);border:1.5px solid transparent;border-radius:12px;padding:15px 16px;font-size:16px;font-weight:600;outline:none}
+.in:focus{border-color:var(--g)}.in::placeholder{color:#6e6f74;font-weight:500}
+textarea.in{min-height:90px;resize:vertical}
+.pw{position:relative}.pw button{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12.5px;font-weight:700;color:var(--mu)}
+.cta{position:fixed;left:0;right:0;bottom:0;padding:14px 20px calc(env(safe-area-inset-bottom) + 18px);background:linear-gradient(transparent,var(--bg) 30%);display:grid;gap:10px;max-width:480px;margin:0 auto;z-index:5}
+.b1{height:54px;border-radius:12px;background:var(--fg);color:#1c1d20;font-weight:800;font-size:15.5px;width:100%}.b1:disabled{opacity:.35}
+.b2{height:50px;border-radius:12px;font-weight:800;font-size:15px;width:100%;border:1px solid var(--ln)}.b2.nb{border:0}
+a.b1,a.b2{display:grid;place-items:center;text-decoration:none}a.b1{color:#1c1d20}a.b2{color:var(--fg)}
+.opt{display:flex;align-items:center;gap:12px;background:var(--card);border:1.5px solid transparent;border-radius:12px;padding:16px;margin-top:10px;font-weight:700;font-size:15.5px;width:100%;text-align:left}
+.opt small{display:block;color:var(--mu);font-size:12.5px;font-weight:600;margin-top:3px}.opt .ck{margin-left:auto;width:22px;height:22px;border-radius:50%;border:1.5px solid #55565c;flex:none;display:grid;place-items:center;font-size:12px;font-weight:900;color:#1c1d20}
+.opt.on{border-color:var(--g)}.opt.on .ck{background:var(--g);border-color:var(--g)}
+.seg{display:grid;gap:8px}.seg button{background:var(--card);border:1.5px solid transparent;border-radius:12px;padding:14px 6px;font-size:14.5px;font-weight:750}.seg button small{display:block;color:var(--mu);font-size:11.5px;font-weight:600;margin-top:3px}.seg button.on{border-color:var(--g)}
+.days{display:flex;justify-content:space-between;gap:4px}.days button{width:44px;height:44px;border-radius:50%;border:1.5px solid #4a4b50;font-weight:800;font-size:14px;color:var(--mu)}
+.days button.on{border-color:var(--g);background:rgba(143,199,162,.16);color:var(--g)}
+.plan{margin-top:18px;background:var(--card);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}.plan b{font-family:var(--D);font-size:26px;font-weight:800}.plan small{color:var(--mu);font-size:12.5px;font-weight:600;display:block}
+.err{color:var(--rd);font-size:13.5px;font-weight:650;margin-top:12px;min-height:18px}
+.tg{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-radius:12px;padding:14px 16px;margin-top:12px;font-size:14.5px;font-weight:650}
+.sw{width:46px;height:28px;border-radius:14px;background:#4a4b50;position:relative;flex:none;transition:.2s}.sw:after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.sw.on{background:var(--g)}.sw.on:after{left:21px}
+.wheel{display:grid;gap:8px;margin-top:44px;position:relative}
+.wheel:before{content:"";position:absolute;left:0;right:0;top:50%;height:52px;transform:translateY(-50%);background:var(--card);border-radius:12px;pointer-events:none}
+.wcol{height:260px;overflow-y:scroll;scroll-snap-type:y mandatory;position:relative;z-index:1;-webkit-mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);mask-image:linear-gradient(transparent,#000 30%,#000 70%,transparent);scrollbar-width:none}
+.wcol::-webkit-scrollbar{display:none}
+.wcol div{height:52px;display:grid;place-items:center;scroll-snap-align:center;font-family:var(--D);font-size:28px;font-weight:800;color:#6e6f74}
+.wcol div.on{color:var(--fg)}.wcol .pad{height:104px;scroll-snap-align:none}
+.wlb{display:grid;gap:8px;text-align:center;font-size:12px;color:var(--mu);font-weight:700;margin-top:10px}
+.parq{display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:var(--card);border-radius:12px;padding:12px 14px;margin-top:8px;font-size:13.5px;font-weight:600;line-height:1.35}
+.parq .yn{display:flex;gap:4px;flex:none}.parq .yn button{border:1px solid var(--ln);border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:800;color:var(--mu)}.parq .yn button.on{background:var(--fg);color:#1c1d20;border-color:var(--fg)}
+.box{background:var(--card);border-radius:12px;padding:14px 16px;margin-top:12px;font-size:14px;line-height:1.45}.box b{display:block;margin-bottom:3px}
+.box.y{background:rgba(226,194,126,.12)}.box.g{background:rgba(143,199,162,.1)}
+.rules{max-height:240px;overflow:auto;font-size:13px;color:#cfcfc9;line-height:1.45;padding-right:4px}.rules li{margin:0 0 8px 18px}
+/* entrada */
+.wl{background:#141416;overflow:hidden;padding-top:calc(env(safe-area-inset-top) + 22px)}
+.wl .gl{position:absolute;width:600px;height:600px;left:-200px;top:-140px;border-radius:50%;background:radial-gradient(circle,rgba(143,199,162,.22),transparent 60%);pointer-events:none;transition:background .4s}
+.wl.p .gl{background:radial-gradient(circle,rgba(226,194,126,.2),transparent 60%)}
+.wl .br{font-size:12px;letter-spacing:4px;font-weight:700;color:#cfcfc9}
+.sw2{display:grid;grid-template-columns:1fr 1fr;background:rgba(255,255,255,.07);border-radius:12px;padding:4px;margin-top:22px;position:relative;z-index:2}
+.sw2 button{height:42px;border-radius:9px;font-size:14.5px;font-weight:800;color:#bdbdb6}.sw2 button.on{background:#f1f0eb;color:#1c1d20}
+.wl .ey{display:block;margin-top:60px;font-size:12px;letter-spacing:3px;font-weight:700;color:var(--g)}.wl.p .ey{color:var(--y)}
+.wl h1{font-family:var(--D);font-weight:900;font-size:clamp(58px,20vw,84px);line-height:.86;text-transform:uppercase;letter-spacing:-.5px;margin-top:8px;position:relative}
+.wl.p h1{font-size:clamp(46px,15.5vw,62px)}
+.wl h1 span{color:transparent;-webkit-text-stroke:1.5px #f1f0eb}
+.pl2{display:grid;gap:12px;margin-top:34px;position:relative}.pl2 div{display:flex;gap:12px;align-items:center;font-size:14px;font-weight:650;color:#d6d6d0}
+.pl2 svg{width:20px;height:20px;stroke:var(--g);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}.wl.p .pl2 svg{stroke:var(--y)}
+/* fim */
+.okc{width:96px;height:96px;border-radius:50%;margin:60px auto 22px;border:2px solid var(--g);display:grid;place-items:center;color:var(--g);font-size:44px;font-weight:900;box-shadow:0 0 60px rgba(143,199,162,.25)}
+.nx{margin-top:22px;background:var(--card);border-radius:12px;padding:4px 16px}.nx div{display:flex;gap:12px;padding:13px 0;font-size:14px;font-weight:650;border-bottom:1px solid var(--ln);align-items:center}.nx div:last-child{border:0}
+.nx i{font-style:normal;color:var(--g);font-weight:900;width:18px}.nx small{color:var(--mu);font-weight:600;margin-left:auto;font-size:12.5px}.nx .on i{color:var(--fg)}.nx .done{color:var(--mu)}
+.pro{background:var(--card);border-radius:14px;padding:18px;margin-top:22px}.pro .big{font-family:var(--D);font-weight:900;font-size:44px;line-height:.95;text-transform:uppercase;margin:6px 0 4px}
+.pro .msg{margin-top:14px;border-left:3px solid var(--g);padding:8px 12px;font-size:14px;background:rgba(143,199,162,.08);border-radius:0 8px 8px 0}
+.cls{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:13px 14px;margin-top:8px}.cls b{font-size:15px}.cls small{display:block;color:var(--mu);font-size:12.5px;font-weight:600;margin-top:2px}
+.cls .st{font-size:12px;font-weight:800;border-radius:6px;padding:4px 8px;background:rgba(255,255,255,.07);color:var(--mu)}.cls .st.ok{background:rgba(143,199,162,.16);color:var(--g)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%);background:var(--fg);color:#1c1d20;padding:12px 16px;border-radius:10px;font-weight:700;font-size:14px;z-index:99;max-width:90%;text-align:center}
+.ld{display:grid;place-items:center;min-height:100dvh;color:var(--mu);font-weight:700}
+.link{color:var(--fg);text-decoration:underline;text-underline-offset:3px;font-weight:700}
+</style></head><body><div id="root"><div class="ld">Carregando…</div></div>
+<script src="/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const CFG=window.CC_CONFIG,sb=supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
+const PN='Sérgio',WA_DUV=CFG.whatsappDuvidas||'5521971275039';
+const LOCS=['Bodytech Barra','Condomínio Península'];
+const PRICES={1:260,2:450,3:620};
+const DOWS=['D','S','T','Q','Q','S','S'],DOWN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],DOWL=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const PERIODS=[['manha','Manhã','6h às 12h'],['tarde','Tarde','12h às 18h'],['noite','Noite','18h às 22h']];
+const GOALS=['Ganhar massa muscular','Perder gordura','Ganhar força','Melhorar condicionamento','Saúde e qualidade de vida'];
+const LEVELS=[['Iniciante','Parado ou começando agora'],['Intermediário','Treino há mais de 6 meses'],['Avançado','Treino há mais de 2 anos']];
+const PARQ=['Algum médico já disse que você tem problema no coração e só deve fazer atividade física recomendada por ele?','Você sente dor no peito quando faz atividade física?','No último mês, você sentiu dor no peito sem estar fazendo atividade física?','Você perde o equilíbrio por tontura ou já desmaiou alguma vez?','Você tem algum problema nos ossos ou articulações que pode piorar com exercício?','Você toma remédio para pressão ou para o coração?','Existe algum outro motivo para você não fazer atividade física?'];
+const RULES=['O plano é por número de aulas no mês (ex.: 2x por semana = 8 aulas). Uma aula a mais na semana é aula extra.','Não vai poder ir? Avise até 6 horas antes (aulas antes das 10h: até 22h da véspera). Você pode mudar até 2 vezes por mês no plano de 2x: pede outro horário ou guarda como crédito de 30 dias.','Avisou fora do prazo ou faltou: a aula conta como dada, sem crédito.','Aula extra (R$ 170) é paga na hora de marcar. Cancelou até 24h antes, ou o personal não pôde? O valor vira crédito para outra extra.','Aula do plano que não for usada até o fim do mês se perde.','Saldo de desconto (level e indicações) vale só na renovação do plano.','O valor do plano não é reembolsável. Lesão, doença ou viagem avisada com 1 mês de antecedência: o plano é congelado.','Presença: confirme no app. Se você não confirmar, o personal confirma. Ninguém leva falta sem confirmação.'];
+const $=s=>document.querySelector(s),R=$('#root');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+const qp=new URLSearchParams(location.search);
+let ST={mode:qp.get('p')?'personal':'aluno',inv:null,code:(qp.get('c')||'').toUpperCase(),user:null,prof:null,d:{}};
+try{const s=JSON.parse(localStorage.getItem('cc_draft')||'null');if(s)ST.d=s}catch(_){}
+const saveDraft=()=>{try{localStorage.setItem('cc_draft',JSON.stringify(ST.d))}catch(_){}};
+
+/* ---------- entrada ---------- */
+const IC={cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',ck:'<svg viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg>',dum:'<svg viewBox="0 0 24 24"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>',star:'<svg viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',bar:'<svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg>'};
+function welcome(){const p=ST.mode==='personal';
+  R.innerHTML=`<div class="scr wl${p?' p':''}"><div class="gl"></div><span class="br">CHAMES CREW</span>
+  <div class="sw2"><button data-m="aluno" class="${p?'':'on'}">Sou aluno</button><button data-m="personal" class="${p?'on':''}">Sou personal</button></div>
+  ${p?`<span class="ey">PARA PERSONAL TRAINERS</span><h1>Sua agenda<br>no controle.<br><span>Seus alunos</span><br><span>no</span> resultado.</h1>
+  <div class="pl2"><div>${IC.cal}Agenda que se organiza sozinha</div><div>${IC.ck}Alunos confirmam e remarcam pelo app</div><div>${IC.dum}Treinos montados em minutos</div><div>${IC.bar}Cobrança e renovação automáticas</div></div>`
+  :`<span class="ey">TREINO COM PERSONAL</span><h1>Vamos<br>elevar<br><span>seu</span> treino.</h1>
+  <div class="pl2"><div>${IC.cal}Aulas marcadas e confirmadas no app</div><div>${IC.dum}Seu treino com séries e cargas</div><div>${IC.ck}Check-in da semana em 1 minuto</div><div>${IC.star}Levels e medalhas pela sua constância</div></div>`}
+  <div class="cta"><button class="b1" id="w1">${p?'Começar teste grátis':'Tenho um convite'}</button><button class="b2 nb" id="w2">Já tenho conta • Entrar</button></div></div>`;
+  R.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{ST.mode=b.dataset.m;welcome()});
+  $('#w1').onclick=()=>p?personalSoon():(ST.code?openInvite():askCode());
+  $('#w2').onclick=login}
+function personalSoon(){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Teste grátis para personal</p>
+  <p class="qs">O cadastro aberto para personal trainers chega em breve. Quer ser avisado ou testar antes? Fale com a gente.</p>
+  <div class="cta"><a class="b1" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi! Sou personal trainer e quero testar o app.')}" target="_blank" rel="noopener">Falar no WhatsApp</a><button class="b2 nb" id="lg">Já tenho conta • Entrar</button></div></div>`;
+  $('#bk').onclick=welcome;$('#lg').onclick=login}
+
+/* ---------- login ---------- */
+function login(){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Entrar</p><p class="qs">Use o e-mail e a senha que você criou.</p>
+  <span class="lb">E-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+  <span class="lb">Senha</span><div class="pw"><input class="in" id="pw" type="password" autocomplete="current-password" placeholder="Sua senha"><button id="sh" type="button">mostrar</button></div>
+  <p class="err" id="er"></p>
+  <div class="cta"><button class="b1" id="go">Entrar</button><button class="b2 nb" id="fg">Esqueci minha senha</button></div></div>`;
+  $('#bk').onclick=welcome;$('#sh').onclick=()=>{const i=$('#pw');i.type=i.type==='password'?'text':'password';$('#sh').textContent=i.type==='password'?'mostrar':'esconder'};
+  $('#fg').onclick=()=>{$('#er').innerHTML=`Fale com o ${PN} que ele redefine sua senha. <a class="link" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Esqueci minha senha do app.')}" target="_blank" rel="noopener">Abrir WhatsApp</a>`};
+  $('#go').onclick=async()=>{const em=$('#em').value.trim(),pw=$('#pw').value;if(!em||!pw){$('#er').textContent='Preencha e-mail e senha.';return}
+    $('#go').disabled=true;const {error}=await sb.auth.signInWithPassword({email:em,password:pw});$('#go').disabled=false;
+    if(error){$('#er').textContent=/Invalid/i.test(error.message)?'E-mail ou senha não conferem.':'Não deu para entrar agora. Tente de novo.';return}route()}}
+
+/* ---------- convite ---------- */
+function askCode(){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Seu convite</p><p class="qs">Abra o link que o ${PN} mandou no seu WhatsApp, ou digite o código de 6 letras.</p>
+  <span class="lb">Código do convite</span><input class="in" id="cd" maxlength="6" autocapitalize="characters" placeholder="Ex.: A1B2C3" style="text-transform:uppercase;letter-spacing:3px">
+  <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">Continuar</button></div></div>`;
+  $('#bk').onclick=welcome;$('#go').onclick=()=>{ST.code=$('#cd').value.trim().toUpperCase();if(ST.code.length<6){$('#er').textContent='O código tem 6 letras ou números.';return}openInvite()}}
+async function openInvite(){R.innerHTML='<div class="ld">Abrindo seu convite…</div>';
+  const {data,error}=await sb.rpc('invite_info',{p_code:ST.code});const inv=data&&data[0];
+  if(error||!inv){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Convite não encontrado</p><p class="qs">Esse convite não existe ou já foi usado. Peça um novo ao ${PN}, ou entre se você já tem conta.</p><div class="cta"><button class="b1" id="lg">Entrar</button><button class="b2 nb" id="bk2">Voltar</button></div></div>`;$('#bk').onclick=$('#bk2').onclick=welcome;$('#lg').onclick=login;return}
+  ST.inv=inv;const nm=(inv.name||'').split(' ')[0];
+  R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">CONVITE DO ${PN.toUpperCase()}</span>
+  <h1 style="font-size:clamp(50px,16vw,70px)">${nm?`Bem-vindo(a),<br><span>${esc(nm)}</span>`:'Bem-vindo(a)'}</h1>
+  <p class="qs" style="margin-top:14px">Crie seu acesso. Depois são perguntas rápidas, uma por tela.</p>
+  <span class="lb">Seu e-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+  <span class="lb">Crie uma senha</span><div class="pw"><input class="in" id="pw" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"><button id="sh" type="button">mostrar</button></div>
+  <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">Criar minha conta</button></div></div>`;
+  $('#sh').onclick=()=>{const i=$('#pw');i.type=i.type==='password'?'text':'password';$('#sh').textContent=i.type==='password'?'mostrar':'esconder'};
+  $('#go').onclick=async()=>{const em=$('#em').value.trim(),pw=$('#pw').value;
+    if(!/^\S+@\S+\.\S+$/.test(em)){$('#er').textContent='Confira o e-mail.';return}if(pw.length<8){$('#er').textContent='A senha precisa ter pelo menos 8 caracteres.';return}
+    $('#go').disabled=true;const {data,error}=await sb.auth.signUp({email:em,password:pw,options:{data:{invite:ST.code,name:inv.name||''}}});$('#go').disabled=false;
+    if(error){$('#er').textContent=/registered|exists/i.test(error.message)?'Esse e-mail já tem conta. Volte e toque em Entrar.':'Não deu para criar agora: '+error.message;return}
+    if(!data.session){$('#er').textContent='Conta criada. Confirme pelo e-mail e depois entre.';return}
+    ST.d={name:inv.name||'',phone:inv.phone||''};saveDraft();route()}}
+
+/* ---------- cadastro: uma pergunta por tela ---------- */
+const STEPS=['dados','nasc','medidas','obj','nivel','saude','local','dias','termos'];
+function frame(i,title,sub,body,btn='Continuar'){const n=STEPS.length;
+  R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk" ${i===0?'style="visibility:hidden"':''}>‹</button><span class="bar"><i style="width:${Math.round((i+1)/(n+1)*100)}%"></i></span><span>${i+1}/${n}</span><button class="sair" id="sair">Sair</button></div>
+  <p class="q">${title}</p>${sub?`<p class="qs">${sub}</p>`:''}${body}<p class="err" id="er"></p><div class="cta"><button class="b1" id="go">${btn}</button></div></div>`;
+  $('#bk').onclick=()=>step(i-1);$('#sair').onclick=async()=>{saveDraft();await sb.auth.signOut();toast('Seu progresso fica salvo. Entre de novo para continuar.');ST.user=null;welcome()};window.scrollTo(0,0)}
+const err=t=>{$('#er').textContent=t};
+function wheel(id,vals,sel,fmt=v=>v){return `<div class="wcol" id="${id}"><div class="pad"></div>${vals.map(v=>`<div data-v="${v}">${fmt(v)}</div>`).join('')}<div class="pad"></div></div>`}
+function wheelInit(id,vals,sel){const c=$('#'+id);const i=Math.max(0,vals.indexOf(sel));c.scrollTop=i*52;const mark=()=>{const k=Math.round(c.scrollTop/52);c.querySelectorAll('[data-v]').forEach((d,j)=>d.classList.toggle('on',j===k))};mark();c.addEventListener('scroll',()=>requestAnimationFrame(mark));
+  return ()=>vals[Math.min(vals.length-1,Math.max(0,Math.round(c.scrollTop/52)))]}
+const range=(a,b)=>Array.from({length:b-a+1},(_,k)=>a+k);
+const MES=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.','nov.','dez.'];
+function step(i){if(i<0){return}const D=ST.d;ST.d.step=i;saveDraft();const k=STEPS[i];
+ if(k==='dados'){frame(i,'Quase lá',`Confira seus dados. O documento é usado só para a cobrança e o recibo.`,
+  `<span class="lb">Nome completo</span><input class="in" id="nm" value="${esc(D.name||'')}" autocomplete="name" placeholder="Seu nome">
+  <span class="lb">Celular (WhatsApp)</span><input class="in" id="ph" value="${esc(D.phone||'')}" inputmode="tel" placeholder="(21) 90000-0000">
+  <div class="tg"><span>Sou estrangeiro(a), não tenho CPF</span><button class="sw${D.foreign?' on':''}" id="fo" aria-label="Sou estrangeiro"></button></div>
+  <div id="docs"></div>`);
+  const docs=()=>{$('#docs').innerHTML=D.foreign?`<span class="lb">Passaporte</span><input class="in" id="dn" value="${esc(D.doc||'')}" placeholder="Número do passaporte"><span class="lb">País</span><input class="in" id="ct" value="${esc(D.country||'')}" placeholder="Ex.: Argentina">`
+   :`<span class="lb">CPF</span><input class="in" id="dn" value="${esc(D.doc||'')}" inputmode="numeric" placeholder="000.000.000-00">`;
+   const dn=$('#dn');if(!D.foreign)dn.oninput=()=>{let v=dn.value.replace(/\D/g,'').slice(0,11);dn.value=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/,'$1.$2.$3-$4')}};docs();
+  $('#fo').onclick=()=>{D.foreign=!D.foreign;$('#fo').classList.toggle('on',D.foreign);D.doc='';docs()};
+  $('#go').onclick=()=>{D.name=$('#nm').value.trim();D.phone=$('#ph').value.trim();D.doc=$('#dn').value.trim();if(D.foreign)D.country=($('#ct').value||'').trim();
+   if(D.name.split(' ').length<2)return err('Coloque nome e sobrenome.');if(D.phone.replace(/\D/g,'').length<10)return err('Confira o celular com DDD.');
+   if(!D.foreign&&!cpfOk(D.doc))return err('Esse CPF não é válido. Confira os números.');if(D.foreign&&(!D.doc||!D.country))return err('Preencha passaporte e país.');step(i+1)}}
+ else if(k==='nasc'){const dd=range(1,31),mm=range(0,11),yy=range(1940,2012);frame(i,'Quando você nasceu?','',
+  `<div class="wheel" style="grid-template-columns:.8fr 1.2fr 1.2fr">${wheel('wd',dd)}${wheel('wm',mm,0,m=>MES[m])}${wheel('wy',yy)}</div>`);
+  const b=(D.birth||'1995-06-15').split('-').map(Number);const gd=wheelInit('wd',dd,b[2]),gm=wheelInit('wm',mm,b[1]-1),gy=wheelInit('wy',yy,b[0]);
+  $('#go').onclick=()=>{const y=gy(),m=gm(),d=gd();const dt=new Date(y,m,d);if(dt.getMonth()!==m)return err('Essa data não existe. Confira o dia.');D.birth=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;step(i+1)}}
+ else if(k==='medidas'){const hs=range(130,215),ws=range(35,180);frame(i,'Altura e peso','Só para o '+PN+' acompanhar sua evolução. Você escolhe se mostra o peso.',
+  `<div class="wheel" style="grid-template-columns:1fr 1fr">${wheel('wh',hs,0,v=>v+' cm')}${wheel('ww',ws,0,v=>v+' kg')}</div><div class="wlb" style="grid-template-columns:1fr 1fr"><span>altura</span><span>peso</span></div>`);
+  const gh=wheelInit('wh',hs,D.height||170),gw=wheelInit('ww',ws,D.weight||70);$('#go').onclick=()=>{D.height=gh();D.weight=gw();step(i+1)}}
+ else if(k==='obj'){frame(i,'Qual é o seu objetivo?','O '+PN+' usa isso para montar seu primeiro treino.',GOALS.map(g=>`<button class="opt${D.goal===g?' on':''}" data-g="${g}">${g}<span class="ck">✓</span></button>`).join(''));
+  R.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{D.goal=b.dataset.g;R.querySelectorAll('[data-g]').forEach(x=>x.classList.toggle('on',x===b))});
+  $('#go').onclick=()=>D.goal?step(i+1):err('Escolha um objetivo.')}
+ else if(k==='nivel'){frame(i,'Qual é o seu nível hoje?','',LEVELS.map(([l,s])=>`<button class="opt${D.level===l?' on':''}" data-l="${l}"><span>${l}<small>${s}</small></span><span class="ck">✓</span></button>`).join(''));
+  R.querySelectorAll('[data-l]').forEach(b=>b.onclick=()=>{D.level=b.dataset.l;R.querySelectorAll('[data-l]').forEach(x=>x.classList.toggle('on',x===b))});
+  $('#go').onclick=()=>D.level?step(i+1):err('Escolha seu nível.')}
+ else if(k==='saude'){D.parq=D.parq||{};frame(i,'Sua saúde','Perguntas rápidas de segurança, antes da primeira aula.',
+  `<span class="lb">Alguma lesão ou dor?</span><div class="seg" style="grid-template-columns:1fr 1fr"><button data-in="0" class="${D.hasInj===false?'on':''}">Não</button><button data-in="1" class="${D.hasInj?'on':''}">Sim</button></div>
+  <div id="inj" ${D.hasInj?'':'hidden'}><span class="lb">Conte onde e o que sente</span><textarea class="in" id="it" placeholder="Ex.: dor no joelho direito ao agachar">${esc(D.injury||'')}</textarea></div>
+  <span class="lb">Responda sim ou não</span>${PARQ.map((q,j)=>`<div class="parq"><span>${q}</span><span class="yn"><button data-pq="${j}:0" class="${D.parq[j]===false?'on':''}">Não</button><button data-pq="${j}:1" class="${D.parq[j]===true?'on':''}">Sim</button></span></div>`).join('')}`);
+  R.querySelectorAll('[data-in]').forEach(b=>b.onclick=()=>{D.hasInj=b.dataset.in==='1';R.querySelectorAll('[data-in]').forEach(x=>x.classList.toggle('on',x===b));$('#inj').hidden=!D.hasInj});
+  R.querySelectorAll('[data-pq]').forEach(b=>b.onclick=()=>{const [j,v]=b.dataset.pq.split(':');D.parq[j]=v==='1';b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))});
+  $('#go').onclick=()=>{if(D.hasInj===undefined)return err('Responda se tem lesão ou dor.');if(D.hasInj){D.injury=$('#it').value.trim();if(!D.injury)return err('Conte rapidinho qual é a lesão ou dor.')}else D.injury='';
+   if(PARQ.some((_,j)=>D.parq[j]===undefined))return err('Responda todas as perguntas.');step(i+1)}}
+ else if(k==='local'){const all=[...LOCS,'__outro'];frame(i,'Onde?','Onde você quer treinar com o '+PN+'?',
+  all.map(l=>l==='__outro'?`<button class="opt${D.loc==='__outro'?' on':''}" data-lc="__outro"><span>Outro local<small>Seu prédio, outra academia, ao ar livre…</small></span><span class="ck">✓</span></button>`:`<button class="opt${D.loc===l?' on':''}" data-lc="${l}">${l}<span class="ck">✓</span></button>`).join('')+
+  `<div id="lo" ${D.loc==='__outro'?'':'hidden'}><span class="lb">Qual local?</span><input class="in" id="lt" value="${esc(D.locOther||'')}" placeholder="Ex.: academia do meu prédio, Barra"><div class="box y"><b>O ${PN} vê seu pedido e responde por aqui.</b>Ele confirma se dá para atender nesse local.</div></div>`);
+  R.querySelectorAll('[data-lc]').forEach(b=>b.onclick=()=>{D.loc=b.dataset.lc;R.querySelectorAll('[data-lc]').forEach(x=>x.classList.toggle('on',x===b));$('#lo').hidden=D.loc!=='__outro'});
+  $('#go').onclick=()=>{if(!D.loc)return err('Escolha o local.');if(D.loc==='__outro'){D.locOther=$('#lt').value.trim();if(!D.locOther)return err('Escreva qual é o local.')}step(i+1)}}
+ else if(k==='dias'){D.days=D.days||[];frame(i,'Quando você quer treinar?','O '+PN+' encaixa o horário certo e te manda a proposta.',
+  `<span class="lb">Dias</span><div class="days">${DOWS.map((d,j)=>`<button data-dw="${j}" class="${D.days.includes(j)?'on':''}" aria-label="${DOWL[j]}">${d}</button>`).join('')}</div>
+  <span class="lb">Período</span><div class="seg" style="grid-template-columns:repeat(3,1fr)">${PERIODS.map(([k2,l,s])=>`<button data-pr="${k2}" class="${D.period===k2?'on':''}">${l}<small>${s}</small></button>`).join('')}</div>
+  <span class="lb">Horário ideal (opcional)</span><input class="in" id="ih" value="${esc(D.ideal||'')}" placeholder="Ex.: por volta das 11h">
+  <div id="pl"></div>`);
+  const pl=()=>{const n=D.days.length;$('#pl').innerHTML=n?`<div class="plan"><span><small>${n}x por semana</small><b>${n*4} aulas por mês</b></span><span style="font-weight:800">${PRICES[n]?'R$ '+PRICES[n]+'/mês':'valor a combinar'}</span></div>`:''};pl();
+  R.querySelectorAll('[data-dw]').forEach(b=>b.onclick=()=>{const j=+b.dataset.dw;D.days=D.days.includes(j)?D.days.filter(x=>x!==j):[...D.days,j].sort();b.classList.toggle('on');pl()});
+  R.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{D.period=b.dataset.pr;R.querySelectorAll('[data-pr]').forEach(x=>x.classList.toggle('on',x===b))});
+  $('#go').onclick=()=>{D.ideal=$('#ih').value.trim();if(!D.days.length)return err('Escolha pelo menos um dia.');if(!D.period)return err('Escolha o período.');step(i+1)}}
+ else if(k==='termos'){frame(i,'Combinado é combinado','Último passo. Leia e aceite para enviar seu pedido.',
+  `<div class="box"><ol class="rules">${RULES.map(r=>`<li>${r}</li>`).join('')}</ol></div>
+  <div class="tg"><span>Li e concordo com as regras</span><button class="sw${D.rules?' on':''}" id="t1" aria-label="Concordo com as regras"></button></div>
+  <div class="tg"><span style="font-size:13.5px">Autorizo o uso dos meus dados de saúde para o meu treino. Só eu e o ${PN} vemos (LGPD).</span><button class="sw${D.lgpd?' on':''}" id="t2" aria-label="Autorizo"></button></div>`,'Enviar para o '+PN);
+  $('#t1').onclick=()=>{D.rules=!D.rules;$('#t1').classList.toggle('on',D.rules)};$('#t2').onclick=()=>{D.lgpd=!D.lgpd;$('#t2').classList.toggle('on',D.lgpd)};
+  $('#go').onclick=()=>{if(!D.rules||!D.lgpd)return err('Para enviar, aceite as regras e autorize os dados de saúde.');submit()}}}
+function cpfOk(v){const c=String(v).replace(/\D/g,'');if(c.length!==11||/^(\d)\1+$/.test(c))return false;let s=0;for(let i=0;i<9;i++)s+=+c[i]*(10-i);let d=11-s%11;if(d>9)d=0;if(d!==+c[9])return false;s=0;for(let i=0;i<10;i++)s+=+c[i]*(11-i);d=11-s%11;if(d>9)d=0;return d===+c[10]}
+async function submit(){const D=ST.d,b=$('#go');b.disabled=true;b.textContent='Enviando…';const now=new Date().toISOString();
+  const up={name:D.name,phone:D.phone,doc_type:D.foreign?'passaporte':'cpf',doc_num:D.doc,country:D.foreign?D.country:'Brasil',birth_date:D.birth,height_cm:D.height,weight_kg:D.weight,goal:D.goal,level:D.level,injury:D.injury||null,parq:D.parq,consent_at:now,rules_ok_at:now,onboarded:true,presencial:true,freq:D.days.length};
+  let {error}=await sb.from('profiles').update(up).eq('id',ST.user.id);
+  if(!error){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:PRICES[D.days.length]||null});error=r.error}
+  if(error){b.disabled=false;b.textContent='Enviar para o '+PN;err('Não deu para enviar agora. Tente de novo. ('+error.message+')');return}
+  try{localStorage.removeItem('cc_draft')}catch(_){}ST.d={};home(true)}
+
+/* ---------- depois do pedido ---------- */
+const fmtSlot=s=>`${DOWN[s.dow]} ${s.time}`;
+async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';
+  const [{data:rq},{data:cl}]=await Promise.all([sb.from('requests').select('*,proposals(*)').eq('student_id',ST.user.id).order('created_at',{ascending:false}).limit(1),
+    sb.from('classes').select('*').eq('student_id',ST.user.id).gte('starts_at',new Date(Date.now()-36e5).toISOString()).order('starts_at').limit(12)]);
+  const r=rq&&rq[0],pr=r&&(r.proposals||[]).sort((a,b)=>b.created_at.localeCompare(a.created_at))[0],nm=(ST.prof&&ST.prof.name||'').split(' ')[0];
+  if(cl&&cl.length){const f=t=>{const d=new Date(t);return `${DOWN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+    R.innerHTML=`<div class="scr"><span class="br" style="font-size:12px;letter-spacing:4px;font-weight:700;color:#cfcfc9">CHAMES CREW</span><p class="q">Suas aulas</p><p class="qs">${nm?esc(nm)+', seus':'Seus'} horários com o ${PN} estão marcados. A agenda completa do app chega na próxima atualização do teste.</p>
+    ${cl.map(c=>`<div class="cls"><span><b>${f(c.starts_at)}</b><small>${esc(c.location||'')}</small></span>${c.status==='confirmada'?'<span class="st ok">confirmada</span>':c.status==='cancelada'?'<span class="st">cancelada</span>':`<button class="st" data-cf="${c.id}">Confirmar</button>`}</div>`).join('')}
+    <div class="cta"><button class="b2 nb" id="out">Sair da conta</button></div></div>`;
+    R.querySelectorAll('[data-cf]').forEach(b=>b.onclick=async()=>{const {error}=await sb.from('classes').update({status:'confirmada'}).eq('id',b.dataset.cf);if(error)toast('Não deu: '+error.message);else{toast('Presença confirmada');home()}});
+    $('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()};return}
+  if(pr&&pr.status==='enviada'){const sl=pr.slots||[];
+    R.innerHTML=`<div class="scr"><div class="box g" style="margin-top:20px"><b>O ${PN} respondeu seu pedido</b></div>
+    <div class="pro"><span style="font-size:12.5px;color:var(--mu);font-weight:700">Proposta de horário</span><p class="big">${sl.map(fmtSlot).join(' • ')}</p>
+    <p class="qs">${esc(sl[0]&&sl[0].location||r.location||r.location_other||'')} • com ${PN}${pr.start_date?' • começa '+pr.start_date.split('-').reverse().slice(0,2).join('/'):''}</p>${pr.message?`<div class="msg">“${esc(pr.message)}”</div>`:''}</div>
+    <p class="err" id="er"></p><div class="cta"><button class="b1" id="ac">Aceitar horário</button><button class="b2" id="tk">Conversar com o ${PN}</button></div></div>`;
+    $('#ac').onclick=async()=>{$('#ac').disabled=true;const {error}=await sb.rpc('accept_proposal',{p_id:pr.id});if(error){$('#ac').disabled=false;return err('Não deu para aceitar: '+error.message)}toast('Horário fechado!');home()};
+    $('#tk').onclick=async()=>{await sb.rpc('talk_proposal',{p_id:pr.id});location.href=`https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Sobre a proposta de horário: ')}`};return}
+  const st=r?r.status:'aguardando';
+  R.innerHTML=`<div class="scr" style="text-align:center"><div class="okc">✓</div><p class="q" style="margin-top:0">${fresh?'Pedido enviado!':'Pedido com o '+PN}</p>
+  <p class="qs" style="padding:0 10px">${st==='recusado'?`O ${PN} não conseguiu atender esse pedido. Fale com ele para ver outra opção.`:st==='conversar'?`Você pediu para conversar sobre o horário. O ${PN} vai te chamar.`:`O ${PN} recebe agora e responde por aqui. Você é avisado quando ele mandar a proposta de horário.`}</p>
+  <div class="nx" style="text-align:left"><div class="on"><i>1</i>O ${PN} manda a proposta de horário<small>${st==='aguardando'?'aguardando':''}</small></div><div><i>2</i>Você aceita e as aulas entram na agenda</div><div><i>3</i>Pagamento e anamnese completa<small>em breve</small></div></div>
+  <div class="cta"><button class="b1" id="rf">Atualizar</button><a class="b2" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Acabei de mandar meu pedido pelo app.')}" target="_blank" rel="noopener">Falar com o ${PN}</a></div></div>`;
+  $('#rf').onclick=()=>home()}
+
+/* ---------- rota ---------- */
+async function route(){const {data:{session}}=await sb.auth.getSession();if(!session){ST.code?openInvite():welcome();return}
+  ST.user=session.user;const {data:p}=await sb.from('profiles').select('*').eq('id',ST.user.id).single();ST.prof=p||{};
+  if(p&&p.role==='equipe'){location.replace('/app/personal/');return}
+  if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}step(ST.d.step||0);return}
+  home()}
+route();
+</script></body></html>
