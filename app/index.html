@@ -37,6 +37,7 @@ a.b1,a.b2{display:grid;place-items:center;text-decoration:none}a.b1{color:#1c1d2
 .days{display:flex;justify-content:space-between;gap:4px}.days button{width:44px;height:44px;border-radius:50%;border:1.5px solid #4a4b50;font-weight:800;font-size:14px;color:var(--mu)}
 .days button.on{border-color:var(--g);background:rgba(143,199,162,.16);color:var(--g)}
 .plan{margin-top:18px;background:var(--card);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}.plan b{font-family:var(--D);font-size:26px;font-weight:800}.plan small{color:var(--mu);font-size:12.5px;font-weight:600;display:block}
+.phw{display:grid;grid-template-columns:118px 1fr;gap:8px}.phw .ddi{padding-left:10px;padding-right:6px;-webkit-appearance:none;appearance:none}
 .err{color:var(--rd);font-size:13.5px;font-weight:650;margin-top:12px;min-height:18px}
 .tg{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);border-radius:12px;padding:14px 16px;margin-top:12px;font-size:14.5px;font-weight:650}
 .sw{width:46px;height:28px;border-radius:14px;background:#4a4b50;position:relative;flex:none;transition:.2s}.sw:after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.2s}.sw.on{background:var(--g)}.sw.on:after{left:21px}
@@ -91,6 +92,14 @@ const LEVELS=[['Iniciante','Parado ou começando agora'],['Intermediário','Trei
 const PARQ=['Algum médico já disse que você tem problema no coração e só deve fazer atividade física recomendada por ele?','Você sente dor no peito quando faz atividade física?','No último mês, você sentiu dor no peito sem estar fazendo atividade física?','Você perde o equilíbrio por tontura ou já desmaiou alguma vez?','Você tem algum problema nos ossos ou articulações que pode piorar com exercício?','Você toma remédio para pressão ou para o coração?','Existe algum outro motivo para você não fazer atividade física?'];
 const RULES=['O plano é por número de aulas no mês (ex.: 2x por semana = 8 aulas). Uma aula a mais na semana é aula extra.','Não vai poder ir? Avise até 6 horas antes (aulas antes das 10h: até 22h da véspera). Você pode mudar até 2 vezes por mês no plano de 2x: pede outro horário ou guarda como crédito de 30 dias.','Avisou fora do prazo ou faltou: a aula conta como dada, sem crédito.','Aula extra (R$ 170) é paga na hora de marcar. Cancelou até 24h antes, ou o personal não pôde? O valor vira crédito para outra extra.','Aula do plano que não for usada até o fim do mês se perde.','Saldo de desconto (level e indicações) vale só na renovação do plano.','O valor do plano não é reembolsável. Lesão, doença ou viagem avisada com 1 mês de antecedência: o plano é congelado.','Presença: confirme no app. Se você não confirmar, o personal confirma. Ninguém leva falta sem confirmação.'];
 const $=s=>document.querySelector(s),R=$('#root');
+const DDIS=[['55','🇧🇷 +55'],['54','🇦🇷 +54'],['598','🇺🇾 +598'],['56','🇨🇱 +56'],['351','🇵🇹 +351'],['1','🇺🇸 +1'],['34','🇪🇸 +34'],['39','🇮🇹 +39'],['44','🇬🇧 +44']];
+function phoneHTML(id,val){let ddi='55',num=String(val||'');const m=num.match(/^\+(\d{1,3})\s*(.*)$/);if(m){ddi=DDIS.some(d=>d[0]===m[1])?m[1]:m[1];num=m[2]}
+  return `<div class="phw"><select class="in ddi" id="${id}-ddi">${DDIS.map(d=>`<option value="${d[0]}" ${d[0]===ddi?'selected':''}>${d[1]}</option>`).join('')}</select><input class="in" id="${id}" inputmode="tel" autocomplete="tel-national" value="${String(num).replace(/"/g,'')}" placeholder="(21) 99999-9999"></div>`}
+function phoneInit(id){const i=document.getElementById(id),s=document.getElementById(id+'-ddi');const f=()=>{if(s.value!=='55')return;let v=i.value.replace(/\D/g,'').slice(0,11);
+  i.value=v.length>6?`(${v.slice(0,2)}) ${v.slice(2,v.length-4)}-${v.slice(-4)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v};i.addEventListener('input',f);s.addEventListener('change',()=>{i.placeholder=s.value==='55'?'(21) 99999-9999':'Número com código de área';f()});f();
+  return ()=>{const d=i.value.replace(/\D/g,'');return d?`+${s.value} ${i.value.trim()}`:''}}
+const phoneOk=v=>{const m=String(v).match(/^\+(\d+)\s(.*)$/);if(!m)return false;const d=m[2].replace(/\D/g,'');return m[1]==='55'?d.length>=10&&d.length<=11:d.length>=6};
+
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
 const qp=new URLSearchParams(location.search);
@@ -166,15 +175,15 @@ const MES=['jan.','fev.','mar.','abr.','mai.','jun.','jul.','ago.','set.','out.'
 function step(i){if(i<0){return}const D=ST.d;ST.d.step=i;saveDraft();const k=STEPS[i];
  if(k==='dados'){frame(i,'Quase lá',`Confira seus dados. O documento é usado só para a cobrança e o recibo.`,
   `<span class="lb">Nome completo</span><input class="in" id="nm" value="${esc(D.name||'')}" autocomplete="name" placeholder="Seu nome">
-  <span class="lb">Celular (WhatsApp)</span><input class="in" id="ph" value="${esc(D.phone||'')}" inputmode="tel" placeholder="(21) 90000-0000">
+  <span class="lb">Celular (WhatsApp)</span>${phoneHTML('ph',D.phone)}
   <div class="tg"><span>Sou estrangeiro(a), não tenho CPF</span><button class="sw${D.foreign?' on':''}" id="fo" aria-label="Sou estrangeiro"></button></div>
   <div id="docs"></div>`);
   const docs=()=>{$('#docs').innerHTML=D.foreign?`<span class="lb">Passaporte</span><input class="in" id="dn" value="${esc(D.doc||'')}" placeholder="Número do passaporte"><span class="lb">País</span><input class="in" id="ct" value="${esc(D.country||'')}" placeholder="Ex.: Argentina">`
    :`<span class="lb">CPF</span><input class="in" id="dn" value="${esc(D.doc||'')}" inputmode="numeric" placeholder="000.000.000-00">`;
    const dn=$('#dn');if(!D.foreign)dn.oninput=()=>{let v=dn.value.replace(/\D/g,'').slice(0,11);dn.value=v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})\.(\d{3})(\d)/,'$1.$2.$3').replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/,'$1.$2.$3-$4')}};docs();
-  $('#fo').onclick=()=>{D.foreign=!D.foreign;$('#fo').classList.toggle('on',D.foreign);D.doc='';docs()};
-  $('#go').onclick=()=>{D.name=$('#nm').value.trim();D.phone=$('#ph').value.trim();D.doc=$('#dn').value.trim();if(D.foreign)D.country=($('#ct').value||'').trim();
-   if(D.name.split(' ').length<2)return err('Coloque nome e sobrenome.');if(D.phone.replace(/\D/g,'').length<10)return err('Confira o celular com DDD.');
+  const gp=phoneInit('ph');$('#fo').onclick=()=>{D.foreign=!D.foreign;$('#fo').classList.toggle('on',D.foreign);D.doc='';docs()};
+  $('#go').onclick=()=>{D.name=$('#nm').value.trim();D.phone=gp();D.doc=$('#dn').value.trim();if(D.foreign)D.country=($('#ct').value||'').trim();
+   if(D.name.split(' ').length<2)return err('Coloque nome e sobrenome.');if(!phoneOk(D.phone))return err('Confira o celular com DDD.');
    if(!D.foreign&&!cpfOk(D.doc))return err('Esse CPF não é válido. Confira os números.');if(D.foreign&&(!D.doc||!D.country))return err('Preencha passaporte e país.');step(i+1)}}
  else if(k==='nasc'){const dd=range(1,31),mm=range(0,11),yy=range(1940,2012);frame(i,'Quando você nasceu?','',
   `<div class="wheel" style="grid-template-columns:.8fr 1.2fr 1.2fr">${wheel('wd',dd)}${wheel('wm',mm,0,m=>MES[m])}${wheel('wy',yy)}</div>`);
