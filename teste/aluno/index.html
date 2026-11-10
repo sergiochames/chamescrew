@@ -4630,7 +4630,7 @@ setTimeout(()=>{renderMot();renderRank()},0);
 /* alerta do check-in: some quando envia; pisca depois das 20h */
 function renderCiAlert(){const a=$('#ci-alert');if(!a)return;const pend=!sent.dia;a.hidden=!pend;a.classList.toggle('late',pend&&CI_HOUR>=20);
   const t=$('#h-ci-txt');if(pend&&t&&CI_HOUR>=20&&!t.dataset.late){t.dataset.late=1;t.innerHTML=`8 toques • <span class="ci-late">faltam ${24-CI_HOUR}h para meia-noite</span>`}}
-var CI_HOUR=21;setInterval(renderCiAlert,500);
+var CI_HOUR=21;window.__ciSet=v=>{CI_HOUR=v;const t=$('#h-ci-txt');if(t&&t.dataset.late&&v<20){delete t.dataset.late;t.textContent='8 toques, 1 minuto'}};setInterval(renderCiAlert,500);
 /* perfil no ranking */
 const EQUIV=[[500,'piano de cauda','pianos de cauda'],[1200,'carro popular','carros populares'],[1500,'hipopótamo','hipopótamos'],[2700,'caminhonete','caminhonetes'],[6000,'elefante africano','elefantes africanos'],[8000,'tiranossauro rex','tiranossauros rex'],[13000,'ônibus','ônibus'],[30000,'carreta carregada','carretas carregadas'],[45000,'trio elétrico','trios elétricos'],[60000,'tanque de guerra','tanques de guerra'],[100000,'foguete Falcon 9 abastecido','foguetes Falcon 9 abastecidos'],[150000,'baleia-azul','baleias-azuis'],[180000,'Boeing 747','Boeings 747'],[204000,'Estátua da Liberdade','Estátuas da Liberdade'],[300000,'guindaste portuário','guindastes portuários'],[635000,'Cristo Redentor','Cristos Redentores'],[7300000,'Torre Eiffel','Torres Eiffel'],[50000000,'navio cargueiro','navios cargueiros']];
 function equivList(kg){return EQUIV.filter(([w])=>kg/w>=1&&kg/w<=60).map(([w,a,b])=>{const q=kg/w;const n=q>=10?Math.round(q):Math.round(q*10)/10;return `${String(n).replace('.',',')} ${n>=2?b:a}`})}
@@ -5989,7 +5989,7 @@ const st=document.createElement('style');st.textContent='svg.ei{width:1.05em;hei
  // contador do dia já certo na primeira abertura
  try{renderDay()}catch(_){}
  // check-in usa o relógio da demonstração, não o do celular
- const ciFix=()=>{try{CI_HOUR=Math.floor(((typeof NOWH==='number'?NOWH:8)%24+24)%24);const t=document.getElementById('h-ci-txt');if(t&&t.dataset.late&&CI_HOUR<20){delete t.dataset.late;t.textContent='8 toques, 1 minuto'}}catch(_){}};ciFix();setInterval(ciFix,400);
+ const ciFix=()=>{try{CI_HOUR=Math.floor(((typeof NOWH==='number'?NOWH:8)%24+24)%24);window.__ciSet&&window.__ciSet(CI_HOUR);const t=document.getElementById('h-ci-txt');if(t&&t.dataset.late&&CI_HOUR<20){delete t.dataset.late;t.textContent='8 toques, 1 minuto'}}catch(_){}};ciFix();setInterval(ciFix,400);
  // dieta no check-in só quando o aluno tem dieta
  const dietQ=()=>{const a=document.getElementById('auto-diet');if(!a)return;const q=a.closest('.q');if(q)q.hidden=!!(window.DIETA_ON&&!window.DIETA_ON())};setInterval(dietQ,600);dietQ();
  // série: não conclui com campos vazios
