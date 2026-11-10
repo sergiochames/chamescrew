@@ -908,13 +908,13 @@ body:not(.dlock) #dlock{display:none}
     <div class="hero">
       <span class="motto">Resultados constroem liberdade</span>
       <h2 class="d">Bora, Ana</h2>
-      <p class="sub">Quarta, 28 de outubro • semana 6 na matilha</p>
+      <p class="sub">Segunda, 2 de novembro • semana 7 na matilha</p>
       <button class="mot-line" id="h-mot" data-go="matilha" hidden></button>
     </div>
     <div class="week" id="week" aria-label="Dias completos da semana"></div>
     <div class="cycle"><span class="lbl">Ciclo 3 de 4 semanas</span><b id="cyc-txt">7 de 12 dias completos</b><div class="bar"><i id="cyc-bar" style="width:58%"></i></div><span class="meta" style="font-size:12.5px;margin:0" id="cyc-sub">Faltam 5 dias completos em 13 dias. Mínimo 9 para o ciclo contar.</span></div>
 
-    <button class="rn-ban" data-renew id="rn-ban"><span><small>Plano trimestral</small><b>Vence em 12 dias</b></span><span class="rn-cta">Renovar • R$ 81 de desconto</span></button>
+    <button class="rn-ban" data-renew id="rn-ban"><span><small>Plano trimestral</small><b>Vence em 07/12</b></span><span class="rn-cta">Renovar • R$ 81 de desconto</span></button>
     <div class="block ink aula" id="aula"></div>
 
     <div class="block ink sday">
@@ -2678,7 +2678,7 @@ $('#finish').onclick=()=>{
     <div class="fin-top">${RA.emblem(2,false,76)}</div>
     <span class="motto" style="display:block;margin-top:10px">Treino concluído</span>
     <p class="d" style="font-size:52px;margin:6px 0 2px">Treino A</p>
-    <p class="meta" style="margin:0">Inferiores • quarta, 28 de outubro</p>
+    <p class="meta" style="margin:0">Inferiores • segunda, 2 de novembro</p>
     <span class="status flag ${status[0]}">${status[1]}</span>
     <div class="stats">
       <div class="stat"><span>Volume total</span><b>${vol.toLocaleString('pt-BR')} kg</b><em class="${dVol>0?'up':''}">${(dVol>0?'+':'')+dVol}% vs último treino A</em></div>
@@ -3539,7 +3539,7 @@ function renderMedals(){
   if(typeof renderCrew==='function'&&$('#crew'))renderCrew();if(typeof renderCase==='function'&&$('#cmed'))renderCase();
   if(window._agOnce){if(window._rmAgain)window._rmAgain();return}window._agOnce=1;
 /* aula presencial: confirmação, remarcação sem custo, crédito, extra */
-let NOWH=8;const DAYS_AG=['Hoje','Amanhã','Sex','Sáb'],DOFF={Hoje:0,'Amanhã':24,Sex:48,'Sáb':72};
+let NOWH=128;const DAYS_AG=['Hoje','Amanhã','Sex','Sáb'],DOFF={Hoje:0,'Amanhã':24,Sex:48,'Sáb':72};
 const AG={slots:[{d:'Hoje',h:16,conf:false},{d:'Sex',h:7.25,conf:false,mv:'07:00',pm:1}],free:[['Hoje',18],['Amanhã',7],['Amanhã',18],['Sex',9],['Sex',18],['Sáb',9]],quota:8,week:2,done:3,wdone:1,credit:0,rem:1,moving:null};
 const hh2=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
 const agLeft=x=>DOFF[x.d]+x.h-NOWH;
@@ -3715,7 +3715,7 @@ const doneToday=()=>ORD.find(k=>TR.done[k]==='hoje');
 function pickToday(){if(CFG.modo==='fixo')return 'A';return seqNext()}
 function afterOf(k){if(CFG.modo==='fixo')return ORD[(ORD.indexOf(k)+1)%4];return seqNext(k)}
 const MODETXT={livre:'Você escolhe a ordem. O app sugere o próximo para equilibrar a semana.',seq:'Seu personal definiu uma ordem: um treino depois do outro, no dia que você puder.',fixo:'Cada treino tem seu dia, definido pelo seu personal.'};
-function setHero(){if(TR.on){if(CFG.modo!=='fixo')$('#tr-sub').textContent=PLANS[curPlan].focus;return}$('#tr-title').textContent=CFG.semTreino?'Treino':'Seus treinos';$('#tr-sub').textContent=CFG.semTreino?'Em preparo pelo Sérgio':'Semana de 26/10 a 1/11'}
+function setHero(){if(TR.on){if(CFG.modo!=='fixo')$('#tr-sub').textContent=PLANS[curPlan].focus;return}$('#tr-title').textContent=CFG.semTreino?'Treino':'Seus treinos';$('#tr-sub').textContent=CFG.semTreino?'Em preparo pelo Sérgio':'Semana de 2/11 a 8/11'}
 function renderTrHome(){const h=$('#trh');if(!h)return;setHero();updHoje();
   if(CFG.semTreino){h.innerHTML=`<div class="block ink trwait"><span class="lbl">Quase pronto</span><p class="d" style="font-size:40px;margin:6px 0">Seu treino está sendo montado</p>
     <div class="trck"><div><i>✓</i><span>Convite aceito</span></div><div><i>✓</i><span>Seus dados</span></div><div><i>✓</i><span>Anamnese enviada</span></div><div class="wt"><i></i><span>Treino em preparo<small>Você recebe um aviso quando ficar pronto</small></span></div></div>
@@ -3803,7 +3803,7 @@ for(let n=4;n<=40;n++){const dt=dDate(n),wd=dt.getDay();if(wd===0)continue;const
 {const f=AG.free.find(f=>f[0]==='Amanhã'&&f[1]===18);if(f)f[2]='des'}
 AG.free.push(['Amanhã',17.25],['Sáb',8.25]);
 const DONE_PAST=[{n:-2,h:18}];
-const AGV={v:'sem',w:0,sel:0,mo:10};
+const AGV={v:'sem',w:1,sel:5,mo:11};
 const fmtD=n=>{const d=dDate(n);return d.getDate()+' '+MESC[d.getMonth()]};
 function dayItems(n){const k=keyOf(n),it=[];
   AG.slots.forEach((x,i)=>{if(x.d===k)it.push({t:'mine',h:x.h,x,i})});
@@ -4081,7 +4081,7 @@ const _ns14=nextSlot;nextSlot=function(){if(AG.moving&&agLeft(AG.moving)>0)retur
 agAll=(prev=>function(){if(typeof NX!=='undefined')NX.i=0;prev()})(agAll);
 agAll();
 /* ===== v15: "Não vou poder ir" (uma regra só), plano com data de fim, bolinhas só das suas aulas ===== */
-AG.chgLim=2;var CURMO=()=>monOf(keyOf(TDN()));AG.planEnd=12;AG.planNome='trimestral';
+AG.chgLim=2;var CURMO=()=>monOf(keyOf(TDN()));AG.planEnd=40;AG.planNome='trimestral';
 function chgOf(m){return remOf(m)+credOf(m)}
 const PLE=()=>fmtDM(AG.planEnd);
 AG.slots=AG.slots.filter(x=>nOf(x.d)<=AG.planEnd||x.pend);
@@ -4145,9 +4145,9 @@ const _rc15=renderCal;renderCal=function(){_rc15();const el=$('#ag-free');if(!el
 agAll();
 /* ===== v18: semana do treino (letra por dia, verde/vermelho, refazer) ===== */
 const WKP=[{c:1},{r:1},{k:'A'},{k:'B'},{k:'C'},{k:'D'},{r:1}];
-const WKD=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],TODAYI=2;
+const WKD=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],TODAYI=0;
 TR.log={0:['cardio']};TR.sel=TODAYI;
-const dDay=i=>dDate(i-TODAYI).getDate();
+const dDay=i=>dDate(i-TODAYI+5).getDate();
 function dayState(i){const P=WKP[i],L=i===TODAYI?todayLog():(TR.log[i]||[]);if(P.r&&!L.length)return 'off';if(L.length)return 'ok';if(i<TODAYI&&CFG.modo!=='livre')return 'miss';if(i===TODAYI)return 'today';return 'next'}
 function resetPlan(k){$$(`[data-plan="${k}"] .ck`).forEach(b=>{b.setAttribute('aria-pressed','false');b.classList.remove('on')});$$(`[data-plan="${k}"] input`).forEach(i=>i.value='');$$(`[data-plan="${k}"] .ex`).forEach(a=>a.classList.remove('closed','done'))}
 function redoTr(k){TR.redo=true;resetPlan(k);startTr(k,true)}
@@ -4184,7 +4184,7 @@ renderTrHome();
 const HEART='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.1 3.1 4 7 4c2.1 0 3.6 1.1 5 2.8C13.4 5.1 14.9 4 17 4c3.9 0 6.1 4.1 4.6 7.7C19.5 16.4 12 21 12 21z"/></svg>';
 const MOON='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15 3a9 9 0 1 0 6 15.7A7.5 7.5 0 0 1 15 3z"/></svg>';
 const XIC='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
-TR.man={0:[{c:1,tipo:'Bike',min:30,int:'Moderada'}]};TR.log={};
+TR.man={};TR.log={};
 const CTIPOS=['Corrida','Bike','Esteira','Caminhada','Natação','Elíptico','Outro'],CINT=['Leve','Moderada','Forte'],SKIPW=['Cansaço','Dor','Trabalho','Viagem','Outro'];
 function items(i){if(TR.man[i]&&(TR.man[i].some(x=>x.k||x.c)||(i===TODAYI&&ORD.some(k=>TR.done[k]==='hoje'))))TR.man[i]=TR.man[i].filter(x=>!x.skip&&!x.rest);return [...(TR.man[i]||[]),...(i===TODAYI?[...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])].map(k=>({k,app:1})):[])]}
 const did=i=>items(i).some(x=>x.k||x.c);
@@ -4597,12 +4597,11 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
     if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
     if(Q.perdidas){const wk=Object.keys({}).length;L+=`<div class="r93 lost"><span class="ic">×</span><span><b>${Q.perdidas} ${Q.perdidas===1?'aula não usada':'aulas não usadas'} em ${MESN(M)}</b><small>${M<NOWMO()?'O prazo do mês acabou.':`Não cabem mais no plano até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}: sua semana já está completa no plano (${AG.week} por semana). ${AG.creds.length?'Use seu crédito ou peça uma aula extra.':'Um horário a mais seria extra.'}`}</small></span></div>`}
     L+=Q.ex.map(x=>`<div class="r93 ex"><span class="ic">+</span><span><b>${dts(nOf(x.d))} • ${hh2(x.h)}</b><small>aula extra • paga à parte</small></span></div>`).join('');
-    s.querySelector('#mx').innerHTML=`${months.length>1?`<div class="seg pvs" style="grid-template-columns:repeat(${months.length},1fr);margin-bottom:12px">${months.map(m=>`<button data-mm="${m}" aria-selected="${m===M}">${MESC2(m)}</button>`).join('')}</div>`:''}
-      <span class="lbl">Seu mês</span><p class="d" style="font-size:40px;margin:4px 0 10px">${MESC2(M)}</p>${bar}
+    s.querySelector('#mx').innerHTML=`${M<NOWMO()?`<button class="bk93" data-mm="${NOWMO()}">‹ Voltar para ${MESN(NOWMO())}</button>`:''}<span class="lbl">${M<NOWMO()?'Histórico':MESC2(M)}</span><p class="d" style="font-size:40px;margin:4px 0 10px">${M<NOWMO()?'Histórico de '+MESN(M):'Suas aulas'}</p>${bar}
       <div class="lg93">${lg.map(([k,v,t])=>`<span><i class="${k}"></i><b>${v}</b> ${t}</span>`).join('')}</div>
       <div class="chg93${full?' full':''}"><span class="dots">${Array.from({length:lim},(_,i)=>`<i class="${i<u?'on':''}"></i>`).join('')}</span><span>${full?`Você já usou as ${lim} mudanças de ${MESN(M)}. Se não for, a aula conta como feita.`:`Mudanças sem custo: <b>${u} de ${lim}</b> usadas`}</span></div>
       <div class="l93">${L||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>
-      <p class="ft93">${N} aulas no plano de ${MESN(M)}${Q.I.ex?` • +${Q.I.ex} extra à parte`:''}</p>`;
+      <p class="ft93">${N} aulas no plano de ${MESN(M)}${Q.I.ex?` • +${Q.I.ex} extra à parte`:''}</p>${M===NOWMO()&&M-1>=10?`<button class="btn wide" data-mm="${M-1}" style="margin-top:10px">Histórico de ${MESN(M-1)}</button>`:''}`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)});
     s.querySelectorAll('[data-m93]').forEach(b=>b.onclick=()=>{s.remove();go('agenda');setTimeout(()=>{const h=$('#ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">Histórico de créditos</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
@@ -5462,11 +5461,9 @@ const hb=document.createElement('div');hb.className='hbtns';wa.parentNode.insert
 hb.insertAdjacentHTML('beforeend',`<button class="hic" id="h-bell" aria-label="Notificações"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="bd" id="h-bd">3</span></button><button class="hic av" id="h-me" aria-label="Minha conta">${ALU.ini}</button>`);
 /* ---------- notificações ---------- */
 const NOT=[
- {k:'vaga',new:1,t:'Abriu um horário amanhã às 18:00',s:'A Carla cancelou. Quer mudar sua aula de sexta para esse horário?',w:'há 10 min',a:[['Quero esse horário','vaga'],['Agora não','x']]},
- {k:'pg',new:1,t:'Seu plano trimestral vence em 5 dias',s:'Renove com seu saldo de desconto de R$ 81 • vence 09/11',w:'hoje 09:00',a:[['Pagar agora','pagar']]},
  {k:'tr',new:1,t:'Treino novo publicado',s:'O Sérgio atualizou seu Treino A. Entrou búlgaro no lugar do afundo.',w:'ontem',a:[['Ver treino','treino']]},
  {k:'med',t:'Medalha nova: Sono regulado • Ouro',s:'16 semanas dormindo bem. Já está no seu estojo.',w:'seg',a:[['Ver no estojo','med']]},
- {k:'aula',t:'Aula confirmada',s:'Sexta 07:00 • Condomínio Península',w:'dom',dd:30,a:[['Ver agenda','agenda']]}];
+ {k:'aula',t:'Aula confirmada',s:'Quarta 04/11 • 18:00 • Bodytech Barra',w:'dom',dd:4,a:[['Ver agenda','agenda']]}];
 window.NOTRD=i=>{if(NOT[i]){NOT[i].new=0;bd()}};const bd=()=>{const n=NOT.filter(x=>x.new).length;$('#h-bd').textContent=n;$('#h-bd').hidden=!n};
 function notSheet(){sheet(`<span class="lbl">Avisos</span><p class="d" style="font-size:44px;margin:6px 0 8px">Notificações</p><div id="ntl">${NOT.map((x,i)=>`<div class="nt ${x.new?'new':''}"><i></i><div><em>${x.w}</em><b>${x.t}</b><small>${x.s}</small>${x.a?`<div class="acts">${x.a.map(([l,k])=>`<button class="btn small" data-na="${k}" data-ni="${i}" data-dd="${x.dd||''}">${l}</button>`).join('')}</div>`:''}</div></div>`).join('')}</div>
   <button class="btn small wide" data-go2="pref" style="margin-top:10px">Escolher o que eu recebo</button>`,s=>{bd();if(NOT.some(x=>x.new))s.querySelector('#ntl').insertAdjacentHTML('afterend','<button class="btn small wide" id="nt-all" style="margin-top:10px">Marcar todas como lidas</button>');const na=s.querySelector('#nt-all');if(na)na.onclick=()=>{NOT.forEach(x=>x.new=0);bd();s.querySelectorAll('.nt.new').forEach(n=>n.classList.remove('new'));na.remove()};s.addEventListener('click',e=>{const b=e.target.closest('[data-na]'),p=e.target.closest('[data-go2="pref"]');if(p){s.remove();prefSheet();return}if(!b)return;const k=b.dataset.na;s.remove();
@@ -5498,7 +5495,7 @@ function privSheet(){sheet(`<span class="lbl">Seus dados</span><p class="d" styl
 /* ---------- conta ---------- */
 function meSheet(){sheet(`<div style="display:flex;align-items:center;gap:14px"><span class="hic av" style="width:56px;height:56px;border-radius:28px;font-size:18px">${ALU.ini}</span><div><p class="d" style="font-size:34px;margin:0">${ALU.n}</p><span class="meta" style="margin:0">${ALU.email} • aluna do ${PERS.nome}</span></div></div>
   <div class="cl" style="margin-top:16px">
-   <button class="ci" data-m="pay"><span>💳</span><span><b>Plano e pagamentos</b><small>2x por semana • trimestral • renova 09/11</small></span><span class="nb">vence em 5d</span></button>
+   <button class="ci" data-m="pay"><span>💳</span><span><b>Plano e pagamentos</b><small>2x por semana • trimestral • renova 07/12</small></span></button>
    <button class="ci" data-m="agenda"><span>📅</span><span><b>Minhas aulas</b><small>Marcar, remarcar e regras da agenda</small></span><span class="go">›</span></button>
    <button class="ci" data-m="anam"><span>📋</span><span><b>Minha anamnese</b><small>Atualize se mudou algo: lesão, remédio, rotina</small></span><span class="go">›</span></button>
    <button class="ci" data-m="pref"><span>🔔</span><span><b>Notificações</b><small>O que você recebe e quando</small></span><span class="go">›</span></button>
@@ -5577,7 +5574,7 @@ function applyBrand(){if(brandNow!==CFG.marca){swapText(document.body,brandNow,C
   const em=$('#logo-emb');if(em)em.dataset.ini=CFG.marca.split(' ').map(w=>w[0]).join('').slice(0,2)}
 new MutationObserver(ms=>{if(brandNow==='Chames Crew')return;ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)swapText(n,'Chames Crew',brandNow);else if(n.nodeType===3&&n.nodeValue.includes('Chames Crew'))n.nodeValue=n.nodeValue.split('Chames Crew').join(brandNow)}))}).observe(document.body,{childList:true,subtree:true});
 /* avisos do personal: mudou ou cancelou aula */
-NOT.unshift({k:'aula',new:1,t:'O Sérgio mudou sua aula de sexta',s:'Era 07:00, agora é 07:15 • Sex 30/10. Não conta como remarcação sua.',w:'há 1h',dd:30,a:[['Ver agenda','agenda']]});bd();
+
 document.addEventListener('click',e=>{const b=e.target.closest('[data-na="agenda"],[data-na="med"]');if(!b)return;e.stopImmediatePropagation();const s=b.closest('.scrim');if(s)s.remove();
   if(b.dataset.na==='med'){go('matilha');setTimeout(()=>{const c=document.getElementById('sec-case');c&&c.scrollIntoView({behavior:'smooth',block:'start'})},80);return}
   go('agenda');const dd=b.dataset.dd;if(dd)setTimeout(()=>{const pick=()=>[...document.querySelectorAll('.agds button')].find(x=>(x.querySelector('b')||x).textContent.trim().endsWith(String(dd))||new RegExp('(^|\\D)'+dd+'$').test(x.innerText.trim()));let d=pick();
@@ -5889,7 +5886,7 @@ setInterval(()=>{if(!$('#v-hoje').hidden)renderQL()},1500);
   s.querySelector('#pv-lvu').onclick=()=>{s.remove();window.lvUpTest()};s.querySelector('#pv-stk').onchange=e=>{CFG.streak=e.target.checked;renderStreakX()}}}
 /* card de desconto no Hoje = saldo em reais */
 function renderDiscX(){const c=$('#v-hoje .disc-card');if(!c||!window.WALX)return;const W=window.walAvailX();
-  c.innerHTML=`<div class="row"><span class="lbl">Seu saldo de desconto</span><span class="pill">renova 09/11</span></div><p class="d" style="font-size:56px;margin:6px 0 4px">${W.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p>
+  c.innerHTML=`<div class="row"><span class="lbl">Seu saldo de desconto</span><span class="pill">renova 07/12</span></div><p class="d" style="font-size:56px;margin:6px 0 4px">${W.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</p>
    <div class="dsc-rows">${window.WALX.items.map(x=>`<div${x.ok?'':' style="opacity:.55"'}><span>${x.o}</span><b>${x.ok?'+'+x.val.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'aguardando'}</b></div>`).join('')}</div>
    <p class="meta" style="font-size:12.5px;margin:6px 0 0">É abatido na sua próxima renovação, em qualquer plano. O que sobrar fica para a seguinte.</p>
    <button class="btn solid wide" style="margin-top:12px" data-renew>Renovar meu plano</button><button class="btn wide" style="margin-top:8px" data-invite>Convidar um amigo</button>`}
@@ -6258,5 +6255,8 @@ header.top{top:env(safe-area-inset-top,0px)!important}
 .d,h1,h2,h3,.lbl{text-wrap:balance}
 p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 </style>
+<style>.bk93{background:none;border:0;padding:0 0 8px;font:inherit;font-weight:700;font-size:13.5px;color:var(--fg);text-decoration:underline;text-underline-offset:3px}</style>
+<style>.bk93{display:block}</style>
+<style>.g93>summary b{text-decoration:none!important}</style>
 
 </body></html>
