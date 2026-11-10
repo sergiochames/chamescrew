@@ -3921,6 +3921,17 @@ function mvAsk(e,d0,h0,d1,h1){const w=W3WARN;W3WARN=null;const fn1=esc(e.n.split
   bx.addEventListener('click',ev=>{if(ev.target===bx||ev.target.closest('[data-cno]')){moveEv(d1,h1,d0,h0,true);e.moved=false;toast('Não mudou nada. Ninguém foi avisado.')}},true)}
 {const _da2=drawAgenda;drawAgenda=function(){_da2();const l=app.querySelector('.card.next.nxok .nxb .s82');if(l){const w=document.createTreeWalker(l,NodeFilter.SHOW_TEXT);let n;while((n=w.nextNode()))if(/Feita/.test(n.textContent))n.textContent=n.textContent.replace('Feita','Presente ✓')}}}
 
+/* ===== v91: cada notificação abre o lugar certo ===== */
+{const okN=PNOT.find(x=>x.k==='ok'&&/Marina aceitou/.test(x.t));if(okN&&stu('Carla Mota')){okN.t='Carla Mota atualizou a anamnese';okN.s='Mudou rotina de sono e tirou a dor no ombro'}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-pgo]');if(!b)return;const x=PNOT[+b.dataset.pgo];if(!x||x.dem||x.ren||x.cad||x.wt)return;
+  const who=STU.find(s=>x.t.startsWith(s.n)||x.t.includes(s.n+' ')||x.t.includes(s.n+':'));const sc=b.closest('.scrim');
+  const done=()=>{e.stopImmediatePropagation();e.preventDefault();PNOT.forEach(z=>z.new=0);sc&&sc.remove()};
+  if(x.k==='req'){let hit=null;Object.entries(S.sp).forEach(([d,H])=>Object.entries(H||{}).forEach(([h,y])=>{if(!hit&&y&&y.req&&who&&y.req.n===who.n)hit=[+d,+h]}));
+    done();S.tab='agenda';S.view='dia';S.wo=0;if(hit){S.day=hit[0];draw();reqSheet(hit[0],hit[1])}else{draw();toast('Esse pedido já foi respondido')}return}
+  if(x.k==='novo'){done();S.tab='alunos';A2.open=null;A2.view='novos';draw();const sc2=document.querySelector('.scroller');if(sc2)sc2.scrollTop=0;return}
+  if((x.k==='ck'||x.k==='ok')&&who){done();S.tab='alunos';A2.view='alunos';A2.open=who.n;draw();const sc2=document.querySelector('.scroller');if(sc2)sc2.scrollTop=0;return}
+  if(x.k==='pg'){done();S.tab='fin';A2.open=null;draw();const sc2=document.querySelector('.scroller');if(sc2)sc2.scrollTop=0;return}},true);
+
 draw();
 </script>
 

@@ -2528,7 +2528,7 @@ function planHTML(P){return PLANS[P].ex.map((e,i)=>{
     <div class="exbody"><h3 id="nm-${P}-${i}">${e.name}</h3><div id="st-${P}-${i}"></div><p class="meta">${e.sets} séries × ${e.reps} reps • ${e.rest?'descanso '+e.rest+'s':'sem descanso, vai direto pro próximo'}</p>
     ${e.tg?`<span class="tag up">🎯 Meta do Sérgio: ${e.tg.map(t=>String(t[0]).replace('.',',')).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')} kg</span>`:''}${window.metTags?metTags(e)+conjTag(metGroups(PLANS[P].ex)[i]):''}${e.obs?`<span class="tag">📌 ${e.obs}</span>`:''}${sg?`<span class="tag up">↑ Passou da meta (+${sg.excess} reps): ${sg.kg} kg (+${sg.pct}%)</span>`:''}
     <div class="sets">${rows}</div>
-    <div class="tools"><button class="btn small" data-demo="${P}-${i}">▶ Ver execução</button><button class="btn small" data-rep="${P}-${i}">↻ Repetir anterior</button><button class="btn small" data-skip="${P}-${i}">⤼ Pular</button></div></div></article>`}).join('')}
+    <div class="tools"><button class="btn small" data-demo="${P}-${i}">▶ Execução</button><button class="btn small" data-rep="${P}-${i}">↻ Repetir</button><button class="btn small" data-skip="${P}-${i}">⤼ Pular</button></div></div></article>`}).join('')}
 $('#exs').innerHTML=Object.keys(PLANS).map(k=>`<div data-plan="${k}" ${k===curPlan?'':'hidden'}>${planHTML(k)}</div>`).join('');
 function renderPlans(){
   $('#plans').innerHTML=Object.entries(PLANS).map(([k,p])=>`<button class="plan" role="tab" aria-selected="${k===curPlan}" data-plan-btn="${k}"><b>${k}</b><small>${p.day}</small></button>`).join('');
@@ -3937,7 +3937,7 @@ function resolvePend(x,ok,quiet){const p=x.pend;if(!p)return;delete x.pend;
   if(window.pushNot)window.pushNot(t,sub);
   sheet(`<div class="pdok ${ok?'ok':'no'}">${ok?'✓':'✕'}</div><span class="lbl">Aviso</span><p class="d" style="font-size:36px;margin:6px 0 4px">${t}</p><p class="meta">${sub}</p><button class="btn solid wide" data-close2>Ok</button>`,s=>s.querySelector('[data-close2]').onclick=()=>s.remove())}
 doMove=function(i,over,why){const m=AG.moving,[dd,h]=AG.free[i],from={d:m.d,h:m.h};AG.free.splice(i,1);
-  m.pend={d:m.d,h:m.h,over,wasExtra:!!m.extra,mo:(window.CURMO_X?window.CURMO_X():10)};const _w0=wkOf(m.d);m.d=dd;m.h=h;m.conf=false;m.mv=null;if(!m.rep&&wkOf(dd)!==_w0)m.rep='mv';if(over)m.extra=true;else remInc(m.pend.mo);
+  m.pend={d:m.d,h:m.h,over,wasExtra:!!m.extra,mo:(window.MONOF_X?window.MONOF_X(m.d):window.CURMO_X?window.CURMO_X():10)};const _w0=wkOf(m.d);m.d=dd;m.h=h;m.conf=false;m.mv=null;if(!m.rep&&wkOf(dd)!==_w0)m.rep='mv';if(over)m.extra=true;else remInc(m.pend.mo);
   AG.moving=null;try{pushAviso('remarcou',from,{d:dd,h},why,true)}catch(_){}
   AGV.sel=nOf(dd);AGV.w=wkOf(dd);agAll();pendSheet('remarcação',dd,h)};
 const _ac8=actSheet;actSheet=function(i){const x=AG.slots[i];if(!x||!x.pend){_ac8(i);return}
@@ -4088,7 +4088,7 @@ AG.slots=AG.slots.filter(x=>nOf(x.d)<=AG.planEnd||x.pend);
 function outPlan(dd){return nOf(dd)>AG.planEnd}
 function planSheet(dd){sheet(`<span class="lbl">Fora do seu plano</span><p class="d" style="font-size:36px;margin:6px 0">${dlab(dd)}</p><div class="avb"><b>Seu plano ${AG.planNome} vai até ${PLE()}.</b><span>Para marcar depois dessa data, renove o plano. Assim que renovar, seus horários fixos voltam a aparecer.</span></div><button class="btn solid wide" data-renew id="pl-rn">Renovar meu plano</button>`,s=>{const b=s.querySelector('#pl-rn');b.addEventListener('click',()=>s.remove())})}
 function startMove(x){AG.moving=x;AGV.v='sem';AGV.sel=Math.max(0,nOf(x.d));AGV.w=wkOf(x.d);go('agenda');agAll();setTimeout(()=>$('#ag-cal-h').scrollIntoView({behavior:'smooth',block:'start'}),60)}
-function outSheet(x){const ok=inTime(x),mo=CURMO(),u=chgOf(mo),lim=AG.chgLim,cap=u<lim;
+function outSheet(x){const ok=inTime(x),mo=monOf(x.d),u=chgOf(mo),lim=AG.chgLim,cap=u<lim;
   const head=`<span class="lbl">${dlab(x.d)} • ${hh2(x.h)} • 📍 ${locOf(x)}</span><p class="d" style="font-size:40px;margin:6px 0 4px">Não vou poder ir</p>`;
   if(x.extra&&ok){sheet(head+`<p class="meta">É uma aula avulsa: dá para cancelar sem cobrança.</p><button class="btn solid wide" id="o-x">Cancelar aula avulsa</button><button class="btn wide" style="margin-top:8px" data-close3>Manter minha aula</button>`,s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-x').onclick=()=>{s.remove();freeX(x,'avulsa')}});return}
   if(!ok||!cap){sheet(head+`<div class="avb red"><b>A aula conta como dada.</b><span>${!ok?`O prazo para mudar sem perder era ${agDl(x).txt}.`:`Você já usou suas ${lim} mudanças de ${MES[mo]}.`} Se liberar o horário, ele fica para outra pessoa.</span></div>${whyHTML('falta')}<button class="btn solid wide" id="o-x">Liberar o horário mesmo assim</button><button class="btn wide" style="margin-top:8px" data-close3>Manter minha aula</button>`,
@@ -4098,12 +4098,17 @@ function outSheet(x){const ok=inTime(x),mo=CURMO(),u=chgOf(mo),lim=AG.chgLim,cap
     <button class="opt3" id="o-later"><b>Guardar para depois</b><small>Vira 1 crédito, vale até ${fmtDM(Math.min(nOf(x.d)+AG.credVal,AG.planEnd))}. O horário fica livre para outra pessoa.</small></button>
     ${whyHTML('mudança')}<button class="btn wide" data-close3>Manter minha aula</button>`,
     s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-now').onclick=()=>{s.remove();startMove(x)};s.querySelector('#o-later').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'credito',w)}})}
-function freeX(x,kind,why){const mo=CURMO();try{pushAviso('cancelou',x,null,why||{},kind==='credito')}catch(_){}
+function freeX(x,kind,why){const mo=monOf(x.d);try{pushAviso('cancelou',x,null,why||{},kind==='credito')}catch(_){}
   AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);AG.canc.push({d:x.d,h:x.h,ok:kind==='credito',why:kind==='dada'?'dada':''});
   if(kind==='credito'){AG.credM[mo]=credOf(mo)+1;AG.creds.push({from:x.d,exp:Math.min(nOf(x.d)+AG.credVal,AG.planEnd)});AG.creds.sort((a,b)=>a.exp-b.exp);syncCred()}
   if(kind==='dada')AG.dadas.push({d:x.d,h:x.h});
   agAll();toast(kind==='credito'?`Guardado: 1 crédito para usar até ${fmtDM(Math.min(nOf(x.d)+AG.credVal,AG.planEnd))}.`:kind==='avulsa'?'Aula avulsa cancelada, sem cobrança.':'Horário liberado. A aula contou como dada.')}
-cancelX=outSheet;limSheet=outSheet;window.CURMO_X=CURMO;
+cancelX=outSheet;limSheet=outSheet;window.CURMO_X=CURMO;window.MONOF_X=monOf;
+window.VAGA_X=function(){const n0=TDN(),qd=keyOf(n0+1),fd=keyOf(n0+2),fri=AG.slots.find(x=>x.d===fd&&!x.extra&&!x.pend);
+  go('agenda');if(!fri){toast('Você não tem aula na sexta para trocar.');return}
+  let i=AG.free.findIndex(f=>f[0]===qd&&Math.abs(f[1]-18)<.01);if(i<0){AG.free.push([qd,18]);i=AG.free.length-1}
+  sheet(`<span class="lbl">Vaga que abriu</span><p class="d" style="font-size:38px;margin:6px 0 4px">${dlab(qd)} • 18:00</p><p class="meta">Trocar sua aula de ${dlab(fri.d).toLowerCase()} • ${hh2(fri.h)} para esse horário? Não conta como remarcação sua. Sua aula de sexta continua garantida até o ${PN()} confirmar.</p><button class="btn solid wide" id="vg-ok">Pedir esse horário</button><button class="btn wide" style="margin-top:8px" data-close>Agora não</button>`,
+    s=>{s.querySelector('#vg-ok').onclick=()=>{s.remove();const mo=monOf(fri.d);AG.moving=fri;doMove(i,false,{});try{remDec(mo)}catch(_){}agAll();toast(`Pedido enviado. Fica “aguardando” até o ${PN()} confirmar.`)}})};
 window.addEventListener('click',e=>{const b=e.target.closest('[data-ag-move],[data-ag-cancel]');if(b&&!b.closest('.sheet .agr')){const x=AG.slots[+(b.getAttribute('data-ag-move')??b.getAttribute('data-ag-cancel'))];if(x){e.stopImmediatePropagation();e.preventDefault();outSheet(x)}return}
   const k=!window.NB&&e.target.closest('[data-ag-book]');if(k){const f=AG.free[+k.getAttribute('data-ag-book')];if(f&&outPlan(f[0])){e.stopImmediatePropagation();planSheet(f[0])}}},true);
 /* botões: um só "Não vou poder ir" */
@@ -4241,7 +4246,7 @@ window.addEventListener('click',e=>{if(window.NB)return;const k=e.target.closest
 /* ===== v48: remarcar acima do limite vira aula extra paga ===== */
 
  // remarcar acima do limite: aula extra paga, com valor antes do aceite
- {const _out=outSheet;outSheet=function(x){let ok,u,lim,mo;try{ok=inTime(x);mo=CURMO();u=chgOf(mo);lim=AG.chgLim}catch(_){return _out(x)}if(x.extra||!ok||u<lim)return _out(x);
+ {const _out=outSheet;outSheet=function(x){let ok,u,lim,mo;try{ok=inTime(x);mo=monOf(x.d);u=chgOf(mo);lim=AG.chgLim}catch(_){return _out(x)}if(x.extra||!ok||u<lim)return _out(x);
    const head=`<span class="lbl">${dlab(x.d)} • ${hh2(x.h)} • 📍 ${locOf(x)}</span><p class="d" style="font-size:40px;margin:6px 0 4px">Não vou poder ir</p>`;
    sheet(head+`<p class="meta" style="margin:0 0 10px">Você já usou ${lim===1?'a sua mudança':'as suas '+lim+' mudanças'} de ${MES[mo]}.</p><div class="avb"><b>Esta aula conta como dada, sem crédito.</b><span>Se quiser treinar em outro horário, ele vira aula extra.</span></div>
      <button class="opt3" id="o-ex" style="margin-top:10px"><b>Pedir aula extra • R$ ${AVU}</b><small>Você escolhe um horário livre. Só é cobrada se o ${PN()} aprovar, na cobrança do fim do mês.</small></button>
@@ -4527,20 +4532,20 @@ credSheet=function(M0){const months=[...new Set([9,10,11,12].filter(m=>m<=NOWMO(
 sumRender=(prev=>function(){prev();const c=$('#sumbar .crs');if(!c)return;const old=AG.creds.filter(x=>monOf(x.from||'Hoje')<NOWMO()).length;if(old&&!/de /.test(c.textContent))c.textContent+=` (${old} de ${MES[NOWMO()-1]})`})(sumRender);
 
 /* ===== v42: resumo do mês (tudo num lugar só) ===== */
-function monthInfo(M){const L=AG.slots.filter(x=>monOf(x.d)===M),norm=L.filter(x=>!x.extra&&x.rep!=='cr').length,rep=L.filter(x=>x.rep==='cr').length,ex=L.filter(x=>x.extra).length,G=(AG.canc||[]).filter(c=>c.ok&&monOf(c.d)===M),D=(AG.dadas||[]).filter(c=>monOf(c.d)===M);return {M,L,norm,rep,ex,G,D,tot:norm+rep}}
+function monthInfo(M){const L=AG.slots.filter(x=>monOf(x.d)===M),norm=L.filter(x=>!x.extra&&x.rep!=='cr').length,rep=L.filter(x=>x.rep==='cr').length,ex=L.filter(x=>x.extra).length,G=(AG.canc||[]).filter(c=>c.ok&&monOf(c.d)===M),D=(AG.dadas||[]).filter(c=>monOf(c.d)===M);return {M,L,norm,rep,ex,G,D,tot:norm+rep,used:(typeof usedM==='function'?usedM(M):norm+rep+D.length)}}
 weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m>=10&&m<=NOWMO());
   const draw=s=>{const I=monthInfo(M);const ev=[...I.L.map(x=>({x,t:agLeft(x)})),...I.G.map(c=>({g:c,t:(nOf(c.d)*24+c.h)-NOWH})),...I.D.map(c=>({g:c,lost:1,t:(nOf(c.d)*24+c.h)-NOWH}))].sort((a,b)=>a.t-b.t);
-    let lastW=null,h='';ev.forEach(e=>{const d=e.x?e.x.d:e.g.d,w=wkOf(d);if(w!==lastW){lastW=w;const cur=Math.floor((TDN()+2)/7);h+=`<p class="lbl wkh">${w===cur?'Esta semana':'Semana de '+fmtD(-2+7*w)}</p>`}
+    let lastW=null,h='';ev.forEach(e=>{const d=e.x?e.x.d:e.g.d,w=wkOf(d);
       if(e.lost){h+=`<div class="gd pst"><span><b>${dlab(e.g.d)} • ${hh2(e.g.h)}</b><small>não foi • contou como dada</small></span></div>`;return}
       if(e.g){h+=`<div class="gd"><span><b>${dlab(e.g.d)} • ${hh2(e.g.h)}</b><small>não foi • virou 1 crédito</small></span><em class="k credito">+1 crédito</em></div>`;return}
       const x=e.x;h+=`<div class="${agLeft(x)<=0?'pst':''}"><span><b>${dlab(x.d)} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():agLeft(x)<=0?'feita':x.conf?'confirmada':'marcada'}</small></span>${x.extra?'<em class="k extra">extra</em>':x.rep==='cr'?'<em class="k credito">reposição</em>':''}</div>`});
-    const parts=[`${I.norm} do plano`];if(I.rep)parts.push(`${I.rep} ${I.rep>1?'reposições':'reposição'}`);if(I.ex)parts.push(`${I.ex} extra`);if(I.D.length)parts.push(`${I.D.length} contou como dada`);
+    const dn=Math.max(0,I.used-I.norm-I.rep-I.D.length),parts=[];if(dn)parts.push(`${dn} ${dn>1?'feitas':'feita'} antes`);parts.push(`${I.norm} na agenda`);if(I.rep)parts.push(`${I.rep} ${I.rep>1?'reposições':'reposição'}`);if(I.D.length)parts.push(`${I.D.length} ${I.D.length>1?'contaram':'contou'} como dada`);if(I.ex)parts.push(`+ ${I.ex} extra, paga à parte`);if(AG.creds.length)parts.push(`${AG.creds.length} ${AG.creds.length>1?'créditos guardados':'crédito guardado'}`);
     s.querySelector('#mx').innerHTML=`${months.length>1?`<div class="seg pvs" style="grid-template-columns:repeat(${months.length},1fr);margin-bottom:12px">${months.map(m=>`<button data-mm="${m}" aria-selected="${m===M}">${MESC2(m)}</button>`).join('')}</div>`:''}
-     <span class="lbl">${MESC2(M)}</span><p class="d" style="font-size:38px;margin:6px 0 2px">${I.tot+I.ex} ${I.tot+I.ex===1?'aula':'aulas'}</p><p class="meta" style="margin:0 0 12px">${parts.join(' • ')}</p>
+     <span class="lbl">${MESC2(M)}</span><p class="d" style="font-size:38px;margin:6px 0 2px">${I.used} de ${AG.quota} aulas</p><p class="meta" style="margin:0 0 12px">${parts.join(' • ')}</p>
      <div class="wkl mol">${h||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">${AG.creds.length?`Ver meus créditos (${AG.creds.length})`:'Extrato de créditos'}</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
-sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I=monthInfo(NOWMO()),n=I.tot+I.ex;const sp=bar.querySelector('span');if(sp)sp.innerHTML=`<b>${MESC2(NOWMO())}:</b> ${n} ${n===1?'aula':'aulas'}${I.ex?` (${I.ex} extra)`:''}`;bar.onclick=()=>weekListSheet()})(sumRender);
+sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I=monthInfo(NOWMO()),n=I.tot+I.ex;const sp=bar.querySelector('span');if(sp)sp.innerHTML=`<b>${MESC2(NOWMO())}:</b> ${I.used} de ${AG.quota} aulas${I.ex?` + ${I.ex} extra`:''}`;bar.onclick=()=>weekListSheet()})(sumRender);
 agAll();
 
 /* ===== v43: locais, deslocamento do personal e confirmação automática ===== */
@@ -4805,10 +4810,10 @@ function lvUp(ups,k,done){const x=ups[k];const el=document.createElement('div');
   const conf=Array.from({length:26},(_,i)=>`<i class="conf" style="left:${(i*37)%100}%;background:${['#f3d38a','#fff','#9fb6c9','#d98b98'][i%4]};animation-delay:${(i%9)*.12}s"></i>`).join('');
   el.innerHTML=`${conf}<div class="dw flip">${(MED[x.m.id]?rdisc(MED[x.m.id],x.t1,190):RA.disc(x.m,x.t1).replace('class="rdisc','style="--s:190px" class="rdisc'))}</div><small>Medalha desbloqueada</small><h2>${x.m.name}</h2><div class="tier">Tier ${TIERS[x.t1]}</div>
     <p>${x.after} semanas no total. Próximo: ${TIERS[x.t1+1]||'máximo'}${x.m.th[x.t1+1]?' em '+x.m.th[x.t1+1]:''}.</p><button class="lvsh">Compartilhar no Stories</button><button class="lvgo">${k<ups.length-1?'Próxima':'Continuar'}</button>`;
-  document.body.appendChild(el);try{navigator.vibrate&&navigator.vibrate([30,60,30,60,120])}catch(_){}el.querySelector('.lvsh').onclick=()=>toast('No app real, gera o card da medalha para o Stories.');el.querySelector('.lvgo').onclick=()=>{el.remove();if(k<ups.length-1)lvUp(ups,k+1,done);else if(done)done()}}
+  document.body.appendChild(el);try{navigator.vibrate&&navigator.vibrate([30,60,30,60,120])}catch(_){}el.querySelector('.lvsh').onclick=()=>window.medalPNG({name:x.m.name,tier:TIERS[x.t1],t:x.t1,icon:MED[x.m.id]||((RA.disc(x.m,x.t1).match(/<svg[\s\S]*<\/svg>/)||[''])[0]),txt:x.m.icon||''});el.querySelector('.lvgo').onclick=()=>{el.remove();if(k<ups.length-1)lvUp(ups,k+1,done);else if(done)done()}}
 function wkDots(w){const f=w.f??(window.WEEK.el-w.d);const a=[];for(let i=0;i<7;i++)a.push(i<w.d?'on':!w.nox&&i<w.d+Math.max(0,f)?'x':'');
   return `<div class="wkd" aria-label="${w.d} de ${w.t} na semana">${a.map((c,i)=>`<i class="${c}${i===w.t-1?' t':''}"></i>`).join('')}</div>`}
-window.medalRun=medalRun;window.RMEDV=()=>RMED_V;
+window.medalRun=medalRun;window.__MEDI=MED;window.__LVUP=lvUp;window.RMEDV=()=>RMED_V;
 async function storyPNG(d){
   try{await Promise.all([document.fonts.load('900 120px "Big Shoulders Display"'),document.fonts.load('800 40px Manrope')])}catch(_){}
   const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
@@ -4818,22 +4823,23 @@ async function storyPNG(d){
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 100 100"><path d="M50 4 90 27v46L50 96 10 73V27Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><g transform="translate(21 21) scale(.58)">${RA.wolfSVG(5).replace(/^<svg[^>]*>/,'').replace('</svg>','').replace(/var\(--eye\)/g,'#000').replace(/currentColor/g,'#fff')}</g></svg>`;
   const img=new Image();await new Promise(r=>{img.onload=r;img.onerror=r;img.src=window.LOGO_SRC?window.LOGO_SRC():'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
   try{x.save();x.beginPath();x.arc(W/2,330,80,0,Math.PI*2);x.clip();x.drawImage(img,W/2-80,250,160,160);x.restore()}catch(_){}
-  x.font=`800 30px ${B}`;x.letterSpacing='8px';x.fillText('TREINO CONCLUÍDO',W/2,480);x.letterSpacing='0px';
+  const B2='Archivo,Manrope,system-ui,sans-serif';try{await document.fonts.load('600 40px Archivo')}catch(_){}
+  x.font=`600 36px ${B2}`;x.globalAlpha=.9;x.fillText('Treino concluído',W/2,486);x.globalAlpha=1;
   x.font=`900 210px ${D}`;x.fillText('TREINO A',W/2,690);
-  x.font=`700 40px ${B}`;x.fillText('Inferiores • 28/10',W/2,760);
-  const st=[['VOLUME',d.vol.toLocaleString('pt-BR')+' kg',(d.dVol>0?'+':'')+d.dVol+'%'],['TEMPO',d.dur,'treino'],['RECORDES',String(d.recs),'de carga']];
-  st.forEach((v,i)=>{const cx=W/2+(i-1)*330;x.font=`800 28px ${B}`;x.fillText(v[0],cx,900);x.font=`900 96px ${D}`;x.fillText(v[1],cx,995);x.font=`700 30px ${B}`;x.fillText(v[2],cx,1040)});
-  x.fillRect(140,1110,W-280,3);
-  x.textAlign='left';let y=1200;d.cmp.slice(0,4).forEach(r=>{x.font=`800 40px ${B}`;x.fillText(r.n.length>22?r.n.slice(0,21)+'…':r.n,140,y);x.textAlign='right';x.font=`900 56px ${D}`;x.fillText(`${r.a} → ${r.b} KG`,W-140,y+4);x.textAlign='left';y+=96});
-  x.textAlign='center';x.font=`900 46px ${D}`;x.letterSpacing='4px';x.fillText(((window.CFG&&CFG.marca)||'Chames Crew').toUpperCase(),W/2,H-210);x.letterSpacing='0px';
-  x.font=`700 26px ${B}`;x.globalAlpha=.8;x.fillText(((window.CFG&&CFG.frase)||'resultados constroem liberdade').toLowerCase(),W/2,H-165);x.globalAlpha=1;
-  const url=c.toDataURL('image/png');
-  sheet(`<span class="lbl">Card para o Stories</span><p class="d" style="font-size:36px;margin:6px 0 10px">PNG transparente</p>
-    <div class="story-prev"><img src="${url}" alt="Card do treino A com volume, tempo, recordes e evolução de carga"></div>
-    <p class="meta" style="font-size:13px">O fundo é transparente: no Stories, coloque por cima da sua foto ou vídeo do treino.</p>
-    <button class="btn solid wide" id="png-save">Salvar PNG</button>`,sh=>{sh.querySelector('#png-save').onclick=()=>c.toBlob(async blob=>{let dl=null;try{dl=window.claude&&await window.claude.use('downloads')}catch(_){}
-      if(dl){try{await dl.save({filename:'treino-a-chames-crew.png',data:blob});toast('PNG salvo')}catch(err){if(err&&err.code!=='declined')toast('Não deu para salvar aqui.')}}
-      else{const a=document.createElement('a');a.download='treino-a-chames-crew.png';a.href=URL.createObjectURL(blob);a.click()}},'image/png')})}
+  x.font=`600 40px ${B2}`;x.fillText('Inferiores • 28/10',W/2,760);
+  const mx=(d.cmp||[]).reduce((m,r)=>(+r.b>(m?+m.b:-1)?r:m),null);
+  const st=[['Tempo',d.dur,'de treino'],['Séries',String(d.total||0),'concluídas'],['Carga total',(d.vol||0).toLocaleString('pt-BR')+' kg','no treino']];
+  st.forEach((v,i)=>{const cx=W/2+(i-1)*330;x.font=`600 30px ${B2}`;x.globalAlpha=.85;x.fillText(v[0],cx,900);x.globalAlpha=1;x.font=`900 96px ${D}`;x.fillText(v[1],cx,995);x.font=`600 30px ${B2}`;x.globalAlpha=.85;x.fillText(v[2],cx,1042);x.globalAlpha=1});
+  x.fillRect(240,1112,W-480,2);
+  const LV=['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'];let lvN='Atleta';try{const t=(document.querySelector('.crew .d')||{}).textContent||'';const m=LV.find(n=>t.toLowerCase().includes(n.toLowerCase()));if(m)lvN=m}catch(_){}
+  const li=Math.max(0,LV.indexOf(lvN));
+  const hx=`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 100 100"><path d="M50 4 90 27v46L50 96 10 73V27Z" fill="rgba(255,255,255,.12)" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><g transform="translate(22 22) scale(.56)">${RA.wolfSVG(li).replace(/^<svg[^>]*>/,'').replace('</svg>','').replace(/var\(--eye\)/g,'#000').replace(/currentColor/g,'#fff').replace(/class="[^"]*"/g,'')}</g></svg>`;
+  const hi=new Image();await new Promise(r=>{hi.onload=r;hi.onerror=r;hi.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(hx)});
+  try{x.drawImage(hi,W/2-70,1170,140,140)}catch(_){}
+  x.font=`900 64px ${D}`;x.fillText('LEVEL '+lvN.toUpperCase(),W/2,1390);
+  x.font=`600 36px ${B2}`;x.globalAlpha=.9;x.fillText('treinando com '+(typeof PERS_NOME==='function'?PERS_NOME():typeof PERS!=='undefined'?PERS.nome:'Sérgio'),W/2,1446);x.globalAlpha=1;
+  x.font=`900 40px ${D}`;x.globalAlpha=.75;x.letterSpacing='3px';x.fillText(((window.CFG&&CFG.marca)||'Chames Crew').toUpperCase(),W/2,H-200);x.letterSpacing='0px';x.globalAlpha=1;
+  window.shareCard(c,'treino-a-chames-crew.png','Card do treino','Card do treino A com tempo, séries, carga total e level')}
 window.storyPNG=storyPNG;
 }
 renderMedals();
@@ -5390,12 +5396,12 @@ const NOT=[
  {k:'vaga',new:1,t:'Abriu um horário amanhã às 18:00',s:'A Carla cancelou. Quer mudar sua aula de sexta para esse horário?',w:'há 10 min',a:[['Quero esse horário','vaga'],['Agora não','x']]},
  {k:'pg',new:1,t:'Seu plano trimestral vence em 5 dias',s:'Renove com seu saldo de desconto de R$ 81 • vence 09/11',w:'hoje 09:00',a:[['Pagar agora','pagar']]},
  {k:'tr',new:1,t:'Treino novo publicado',s:'O Sérgio atualizou seu Treino A. Entrou búlgaro no lugar do afundo.',w:'ontem',a:[['Ver treino','treino']]},
- {k:'med',t:'Medalha nova: Sono regulado • Ouro',s:'16 semanas dormindo bem. Já está no seu estojo.',w:'seg'},
- {k:'aula',t:'Aula confirmada',s:'Sexta 07:00 • Bodytech Barra',w:'dom'}];
+ {k:'med',t:'Medalha nova: Sono regulado • Ouro',s:'16 semanas dormindo bem. Já está no seu estojo.',w:'seg',a:[['Ver no estojo','med']]},
+ {k:'aula',t:'Aula confirmada',s:'Sexta 07:00 • Condomínio Península',w:'dom',dd:30,a:[['Ver agenda','agenda']]}];
 const bd=()=>{const n=NOT.filter(x=>x.new).length;$('#h-bd').textContent=n;$('#h-bd').hidden=!n};
-function notSheet(){sheet(`<span class="lbl">Avisos</span><p class="d" style="font-size:44px;margin:6px 0 8px">Notificações</p><div id="ntl">${NOT.map((x,i)=>`<div class="nt ${x.new?'new':''}"><i></i><div><em>${x.w}</em><b>${x.t}</b><small>${x.s}</small>${x.a?`<div class="acts">${x.a.map(([l,k])=>`<button class="btn small" data-na="${k}" data-ni="${i}">${l}</button>`).join('')}</div>`:''}</div></div>`).join('')}</div>
+function notSheet(){sheet(`<span class="lbl">Avisos</span><p class="d" style="font-size:44px;margin:6px 0 8px">Notificações</p><div id="ntl">${NOT.map((x,i)=>`<div class="nt ${x.new?'new':''}"><i></i><div><em>${x.w}</em><b>${x.t}</b><small>${x.s}</small>${x.a?`<div class="acts">${x.a.map(([l,k])=>`<button class="btn small" data-na="${k}" data-ni="${i}" data-dd="${x.dd||''}">${l}</button>`).join('')}</div>`:''}</div></div>`).join('')}</div>
   <button class="btn small wide" data-go2="pref" style="margin-top:10px">Escolher o que eu recebo</button>`,s=>{NOT.forEach(x=>x.new=0);bd();s.addEventListener('click',e=>{const b=e.target.closest('[data-na]'),p=e.target.closest('[data-go2="pref"]');if(p){s.remove();prefSheet();return}if(!b)return;const k=b.dataset.na;s.remove();
-    if(k==='vaga'){NOT.splice(+b.dataset.ni,1);toast('Pronto: sua aula de sexta foi para amanhã às 18:00. Não conta como remarcação.')}
+    if(k==='vaga'){NOT.splice(+b.dataset.ni,1);if(window.VAGA_X)window.VAGA_X();else go('agenda')}
     else if(k==='pagar')paySheet();else if(k==='treino')go('treino');else{NOT.splice(+b.dataset.ni,1);toast('Ok, o horário fica para outra pessoa')}})})}
 function prefSheet(){const P=[['Aulas e horários','Confirmação, vaga aberta, mudanças do personal',1,1],['Lembrete do treino','Uma hora antes da aula ou no seu horário de treino',1],['Lembrete do check-in','Às 20h, se ainda não fez',1],['Pagamentos','Vencimento e recibo',1,1],['Medalhas e level','Quando você ganha ou está perto',1],['Ranking','Quando alguém passa você',0]];
   sheet(`<span class="lbl">Notificações</span><p class="d" style="font-size:40px;margin:6px 0 8px">O que eu recebo</p>${P.map(([t,s,on,fix],i)=>`<label class="sw2" for="pf${i}"><span><b>${t}</b><small>${s}${fix?' • obrigatório':''}</small></span><input type="checkbox" id="pf${i}" ${on?'checked':''} ${fix?'disabled':''}></label>`).join('')}<p class="meta" style="font-size:12.5px">Avisos de aula e pagamento não dá para desligar: são eles que garantem seu horário.</p>`)}
@@ -5502,8 +5508,11 @@ function applyBrand(){if(brandNow!==CFG.marca){swapText(document.body,brandNow,C
   const em=$('#logo-emb');if(em)em.dataset.ini=CFG.marca.split(' ').map(w=>w[0]).join('').slice(0,2)}
 new MutationObserver(ms=>{if(brandNow==='Chames Crew')return;ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)swapText(n,'Chames Crew',brandNow);else if(n.nodeType===3&&n.nodeValue.includes('Chames Crew'))n.nodeValue=n.nodeValue.split('Chames Crew').join(brandNow)}))}).observe(document.body,{childList:true,subtree:true});
 /* avisos do personal: mudou ou cancelou aula */
-NOT.unshift({k:'aula',new:1,t:'O Sérgio mudou sua aula de sexta',s:'Era 07:00, agora é 07:15 • Sex 30/10. Não conta como remarcação sua.',w:'há 1h',a:[['Ver agenda','agenda']]});bd();
-document.addEventListener('click',e=>{const b=e.target.closest('[data-na="agenda"]');if(!b)return;e.stopImmediatePropagation();const s=b.closest('.scrim');if(s)s.remove();go('agenda')},true);
+NOT.unshift({k:'aula',new:1,t:'O Sérgio mudou sua aula de sexta',s:'Era 07:00, agora é 07:15 • Sex 30/10. Não conta como remarcação sua.',w:'há 1h',dd:30,a:[['Ver agenda','agenda']]});bd();
+document.addEventListener('click',e=>{const b=e.target.closest('[data-na="agenda"],[data-na="med"]');if(!b)return;e.stopImmediatePropagation();const s=b.closest('.scrim');if(s)s.remove();
+  if(b.dataset.na==='med'){go('matilha');setTimeout(()=>{const c=document.getElementById('sec-case');c&&c.scrollIntoView({behavior:'smooth',block:'start'})},80);return}
+  go('agenda');const dd=b.dataset.dd;if(dd)setTimeout(()=>{const pick=()=>[...document.querySelectorAll('.agds button')].find(x=>(x.querySelector('b')||x).textContent.trim().endsWith(String(dd))||new RegExp('(^|\\D)'+dd+'$').test(x.innerText.trim()));let d=pick();
+    if(!d){const nx=document.querySelector('[data-agw="1"]');if(nx&&!nx.disabled){nx.click();d=pick()}}if(d){d.click();setTimeout(()=>{const h=document.getElementById('ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)}},80)},true);
 /* pagamento: QR do Pix e estrangeiro só cartão */
 function qrSVG(){let r='',s=7;const rnd=()=>(s=(s*9301+49297)%233280)/233280;const N=29,fp=(x,y)=>x<8&&y<8||x>N-9&&y<8||x<8&&y>N-9;
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(fp(x,y))continue;if(rnd()<.48)r+=`M${x} ${y}h1v1h-1z`}
@@ -5636,7 +5645,7 @@ const _pv7=prevSheet;prevSheet=function(){_pv7();const s=[...document.querySelec
   b.insertAdjacentHTML('afterend',`<span class="lbl pvl">Hora agora (para testar prazos da agenda)</span><div class="seg pvs" style="grid-template-columns:repeat(3,1fr)" id="pvh">${hs.map(h=>`<button data-nh="${h}" aria-selected="${window.NOWH_X&&window.NOWH_X()===h}">${f(h)}</button>`).join('')}</div>`);
   s.querySelector('#pvh').addEventListener('click',e=>{const x=e.target.closest('[data-nh]');if(!x)return;window.setNowH(+x.dataset.nh);s.querySelectorAll('[data-nh]').forEach(y=>y.setAttribute('aria-selected',y===x));toast('Agora são '+x.textContent)})};
 /* ===== v8: avisos, ordem do Hoje e tour do primeiro acesso ===== */
-window.pushNot=(t,s)=>{NOT.unshift({k:'aula',new:1,t,s,w:'agora'});bd()};
+window.pushNot=(t,s,dd)=>{const m=/(\d{1,2})\/(\d{1,2})/.exec((t||'')+' '+(s||''));NOT.unshift({k:'aula',new:1,t,s,w:'agora',dd:dd||(m?+m[1]:''),a:[['Ver agenda','agenda']]});bd()};
 {const h=$('#v-hoje .hero');h.after($('#aula'));$('#aula').after($('#v-hoje .sday'))}
 const CK='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>';
 const TOUR=()=>{const T=TEMAS[CFG.tema],n=PERS.nome,g=gameOn();return [
@@ -5739,9 +5748,9 @@ function cropPhoto(file,done){const r=new FileReader();r.onload=()=>{const img=n
   const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pin=null;if(!pts.size)drag=null};st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
   zr.oninput=()=>{z=+zr.value;paint()};ov.querySelector('#cx').onclick=()=>ov.remove();
   ov.querySelector('#cok').onclick=()=>{const c=document.createElement('canvas');c.width=c.height=400;const k=400/S0,gg=c.getContext('2d');gg.beginPath();gg.arc(200,200,200,0,Math.PI*2);gg.clip();const w=img.width*base*z,h=img.height*base*z;gg.drawImage(img,(S0/2-w/2+x)*k,(S0/2-h/2+y)*k,w*k,h*k);ov.remove();done(c.toDataURL('image/jpeg',.88))}};img.src=r.result};r.readAsDataURL(file)}
-function pickPhoto(done){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=()=>{if(i.files[0])cropPhoto(i.files[0],done)};i.click()}
+function pickPhoto(done){const i=document.createElement('input');i.type='file';i.accept='image/*';i.style.display='none';document.body.appendChild(i);i.onchange=()=>{const f=i.files&&i.files[0];i.remove();if(f)cropPhoto(f,done)};i.click()}
 function applyAv(){const h=$('#h-me');if(h)h.innerHTML=ALU.foto?avH(38):ALU.ini}
-window.setFoto=d=>{ALU.foto=d;applyAv()};
+window.setFoto=d=>{ALU.foto=d;try{if(PROF&&PROF.Ana)PROF.Ana.ph=PROF.Ana.ph||d}catch(_){}applyAv();try{renderRank()}catch(_){}};
 const _ms22=meSheet;meSheet=function(){_ms22();const s=[...document.querySelectorAll('.scrim')].pop();if(!s)return;const av=s.querySelector('.hic.av');
   if(av){av.outerHTML=`<button class="avbtn" id="m-av" aria-label="Trocar foto">${avH(64)}<i>${ICO.cam}</i></button>`;s.querySelector('#m-av').onclick=()=>pickPhoto(d=>{window.setFoto(d);s.querySelector('#m-av').firstElementChild.outerHTML=avH(64);toast('Foto atualizada')})}
   const cl=s.querySelector('.cl');if(cl)cl.insertAdjacentHTML('beforebegin',`<div class="igf"><span>@</span><input class="inp" id="m-ig" placeholder="seu Instagram (opcional)" value="${ALU.ig}" autocomplete="off"></div>`);
@@ -5998,6 +6007,7 @@ const st=document.createElement('style');st.textContent='svg.ei{width:1.05em;hei
     const bw=!kg.placeholder||kg.placeholder==='0';const miss=(!kg.value&&!bw)||!rp.value;
     const old=c.parentElement.querySelector(`.need82[data-for="${id}"]`);if(old)old.remove();kg.classList.remove('need');rp.classList.remove('need');
     if(!miss){if(bw&&!kg.value)kg.value='0';return}
+    if((kg.value||bw||kg.placeholder)&&(rp.value||rp.placeholder)){if(!kg.value)kg.value=bw?'0':kg.placeholder;if(!rp.value)rp.value=rp.placeholder;return}
     e.stopImmediatePropagation();e.preventDefault();if(!kg.value&&!bw)kg.classList.add('need');if(!rp.value)rp.classList.add('need');
     const sk=bw?'':(kg.value||kg.placeholder)+' kg × ',sr=rp.value||rp.placeholder;
     c.insertAdjacentHTML('afterend',`<div class="need82" data-for="${id}"><span>Preencha a carga e as repetições que você fez.</span>${sr?`<button data-usesug="${id}">Usar ${sk}${sr}</button>`:''}</div>`);(miss&&!rp.value&&kg.value?rp:kg).focus();return}
@@ -6080,6 +6090,61 @@ body,button,input,select,textarea{font-family:var(--body)!important}
 .qla,.rn-ban,.nextlv,.tws,.trr,.twmode,.auto,.gift,.sumbar,.cal-wrap,.agr,.aprn,.pz1,.pz2{border-radius:10px!important}
 .mk3,.rn-cta,.mot-line,.prev2 button,.twmore button{border-radius:8px!important}
 .pz1 svg,.pz2 svg,.pz1 .ic,.pz2 .ic{color:var(--fg)!important}
+</style>
+
+<style>/* v89: compartilhar, botões do exercício numa linha */
+.scrim.shtop{z-index:300!important}
+.tools{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important}
+.tools .btn.small{min-width:0;padding:0 6px!important;font-size:12.5px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:40px;justify-content:center}
+.story-prev{border-radius:10px!important}
+.shrow{display:grid;grid-template-columns:1fr;gap:8px}
+.lvup small{text-transform:none!important;letter-spacing:0!important}
+.lvup .lvsh,.lvup .lvgo{border-radius:8px!important}
+</style>
+
+<script>/* v89: card para Stories — salvar na galeria (menu do iPhone) ou copiar */
+window.shareCard=async function(c,fname,title,alt){
+  const blob=await new Promise(r=>c.toBlob(r,'image/png'));const url=URL.createObjectURL(blob);let file=null;try{file=new File([blob],fname,{type:'image/png'})}catch(_){}
+  const canFile=!!(file&&navigator.canShare&&navigator.canShare({files:[file]})),canCopy=!!(navigator.clipboard&&window.ClipboardItem);
+  const s=sheet(`<span class="lbl">${title}</span><div class="story-prev"><img src="${url}" alt="${alt}"></div>
+    <p class="meta" style="font-size:13px">Fundo transparente: no Stories, coloque por cima da sua foto ou vídeo do treino.</p>
+    <div class="shrow"><button class="btn solid wide" id="sh-save">${canFile?'Salvar na galeria':'Baixar imagem'}</button>${canCopy?'<button class="btn wide" id="sh-copy">Copiar e colar no Stories</button>':''}</div>
+    <p class="meta" style="font-size:12px;margin:0">${canFile?'Abre o menu do celular: toque em “Salvar imagem”, ou mande direto para o Instagram.':'Ou segure a imagem acima e toque em salvar.'}</p>`,sh=>{
+    sh.classList&&sh.classList.add('shtop');
+    sh.querySelector('#sh-save').onclick=async()=>{if(canFile){try{await navigator.share({files:[file]})}catch(e){if(e&&e.name!=='AbortError')toast('Não abriu. Segure a imagem e toque em salvar.')}}else{const a=document.createElement('a');a.download=fname;a.href=url;a.click()}};
+    const cp=sh.querySelector('#sh-copy');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);toast('Copiado. No Stories, segure a tela e toque em Colar.')}catch(e){toast('Não deu para copiar. Segure a imagem e toque em Copiar.')}}});
+  if(s&&s.classList)s.classList.add('shtop');return s};
+window.medalPNG=async function(m){
+  try{await Promise.all([document.fonts.load('900 120px "Big Shoulders Display"'),document.fonts.load('600 40px Archivo')])}catch(_){}
+  const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  const D='"Big Shoulders Display",Impact,sans-serif',B='Archivo,Manrope,system-ui,sans-serif';
+  const TC=[['#9a9ea6','#5f636b'],['#e9edf2','#a9b0bb'],['#f6dc8c','#c79a2e'],['#f08a9c','#a8283f'],['#dff6ff','#8fd0e8']][Math.max(0,Math.min(4,m.t))];
+  const cx=W/2,cy=640,R=260;x.save();x.shadowColor='rgba(0,0,0,.45)';x.shadowBlur=40;const g=x.createLinearGradient(cx-R,cy-R,cx+R,cy+R);g.addColorStop(0,TC[0]);g.addColorStop(1,TC[1]);
+  x.beginPath();x.arc(cx,cy,R,0,Math.PI*2);x.fillStyle=g;x.fill();x.restore();x.lineWidth=10;x.strokeStyle='rgba(255,255,255,.85)';x.beginPath();x.arc(cx,cy,R-5,0,Math.PI*2);x.stroke();
+  if(m.icon){const sv=m.icon.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"').replace(/currentColor/g,'#1d1e21');const im=new Image();await new Promise(r=>{im.onload=r;im.onerror=r;im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(sv)});try{x.drawImage(im,cx-150,cy-150,300,300)}catch(_){}}
+  else{x.fillStyle='#1d1e21';x.textAlign='center';x.font=`900 150px ${D}`;x.fillText(m.txt||'★',cx,cy+52)}
+  x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=18;x.fillStyle='#fff';x.textAlign='center';
+  x.font=`600 38px ${B}`;x.globalAlpha=.9;x.fillText('Medalha desbloqueada',W/2,1040);x.globalAlpha=1;
+  x.font=`900 150px ${D}`;const nm=m.name.toUpperCase();let fs=150;while(x.measureText(nm).width>W-140&&fs>80){fs-=8;x.font=`900 ${fs}px ${D}`}x.fillText(nm,W/2,1200);
+  x.font=`700 48px ${B}`;x.fillText('Tier '+m.tier,W/2,1280);
+  x.font=`600 36px ${B}`;x.globalAlpha=.9;x.fillText('treinando com '+(typeof PERS_NOME==='function'?PERS_NOME():'Sérgio'),W/2,1350);x.globalAlpha=1;
+  x.font=`900 40px ${D}`;x.globalAlpha=.75;x.letterSpacing='3px';x.fillText(((window.CFG&&CFG.marca)||'Chames Crew').toUpperCase(),W/2,H-200);x.letterSpacing='0px';x.globalAlpha=1;
+  return window.shareCard(c,(m.name||'medalha').toLowerCase().normalize('NFD').replace(/[^\w ]/g,'').replace(/\s+/g,'-')+'-chames-crew.png','Card da medalha','Card da medalha '+m.name+', tier '+m.tier)};
+</script>
+
+<style>/* v90: recorte da foto na frente de tudo */
+.crp,.crop{z-index:600!important;background:rgba(0,0,0,.96)!important}
+.crp .btn.solid,.crop .btn.solid{background:#fff!important;color:#000!important;border-color:#fff!important}.crp .btn:not(.solid),.crop .btn:not(.solid){color:#fff!important;border-color:#666!important;background:transparent!important}
+</style>
+<style>/* v90: formato do recorte da foto */
+.crop-shp{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;max-width:320px;margin:12px 0 0}
+.crop-shp button{height:38px;border-radius:8px;border:1px solid #555;color:#fff;background:transparent;font-weight:650}
+.crop-shp button[aria-pressed="true"]{background:#fff;color:#000;border-color:#fff}
+</style>
+
+<style>/* v91: caixas de aviso no escuro sem bege forte */
+:root[data-theme="dark"] .avb:not(.red){background:var(--a82bg)!important;color:var(--fg)!important;border-color:color-mix(in srgb,var(--y83) 35%,transparent)!important}:root[data-theme="dark"] .avb:not(.red) b,.avb:not(.red) span{color:var(--fg)!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .avb:not(.red){background:var(--a82bg)!important;color:var(--fg)!important;border-color:color-mix(in srgb,var(--y83) 35%,transparent)!important}:root:not([data-theme="light"]) .avb:not(.red) b,.avb:not(.red) span{color:var(--fg)!important}}
 </style>
 
 </body></html>
