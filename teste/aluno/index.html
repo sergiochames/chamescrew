@@ -2921,7 +2921,7 @@ function renderFin(){const el=$('#pn-fin');if(!el)return;const sum=st=>FIN.filte
   const L=FIN.filter(f=>FIN_F==='all'||(FIN_F==='pend'?['enviado','atrasado'].includes(f.st):f.st==='pago'));
   const tag={enviado:['f-mid','aguardando'],atrasado:['f-bad','atrasado'],pago:['f-ok','pago ✓'],cancelado:['','cancelado']};
   const PV=[['João','Mensal','assinatura no cartão','venceu 24/10','f-bad','cartão recusado • nova tentativa amanhã'],['Carla','Trimestral','Pix ou cartão','vence 02/11','f-mid','oferta enviada • abriu 1 vez'],
-    ['Ana','Trimestral','Pix ou cartão','vence '+PLN.ends,PLN.ends==='09/11'?'f-mid':'f-ok',PLN.ends==='09/11'?'oferta enviada hoje':'renovado ✓'],['Duda','Mensal','assinatura no cartão','renova 15/11','f-ok','automático'],['Pedro','Semestral','pago à vista','vence 15/03','f-ok','em dia'],['Lia','Trimestral','pago 3x cartão','vence 20/12','f-ok','em dia']];
+    ['Ana','Trimestral','Pix ou cartão','vence '+PLN.ends,PLN.ends==='07/12'?'f-mid':'f-ok',PLN.ends==='07/12'?'oferta enviada hoje':'renovado ✓'],['Duda','Mensal','assinatura no cartão','renova 15/11','f-ok','automático'],['Pedro','Semestral','pago à vista','vence 15/03','f-ok','em dia'],['Lia','Trimestral','pago 3x cartão','vence 20/12','f-ok','em dia']];
   const cnt=k=>PV.filter(x=>x[1]===k).length;
   const planos=`<div class="block frost" style="margin:14px 0 0"><div class="row"><span class="lbl">Planos e vencimentos</span><span class="pill">${cnt('Mensal')} mensal • ${cnt('Trimestral')} tri • ${cnt('Semestral')} sem</span></div>
     ${PV.map(x=>`<div class="prow"><span><b>${x[0]} • ${x[1]}</b><br><small>${x[2]} • ${x[5]}</small></span><span class="flag ${x[4]}">${x[3]}</span></div>`).join('')}
@@ -2953,7 +2953,7 @@ document.addEventListener('click',e=>{const f=e.target.closest('[data-finf]'),x=
      sh=>{sh.querySelector('#cc-ok').onclick=()=>{it.st='cancelado';it.info='cancelada por você';sh.remove();renderFin()}});
   if(a==='undo'){it.st='enviado';it.info='pagamento desfeito por você';renderFin()}});
 /* ===== renovação: página própria, pagamento pelo Asaas por trás ===== */
-const PLN={base:450,cur:'tri',ends:'09/11',days:12,auto:false};
+const PLN={base:450,cur:'tri',ends:'07/12',days:35,auto:false};
 const PLANS3=[{k:'mes',n:'Mensal',m:1,off:0,tag:'',end:'09/12/2026',note:'Cobrança automática todo mês. Sem fidelidade.'},
   {k:'tri',n:'Trimestral',m:3,off:.10,tag:'Mais escolhido',end:'09/02/2027',note:'3 meses. À vista no Pix ou até 3x no cartão.'},
   {k:'sem',n:'Semestral',m:6,off:.20,tag:'Melhor preço',end:'09/05/2027',note:'6 meses. À vista no Pix ou até 6x no cartão.'}];
