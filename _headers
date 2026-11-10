@@ -1,0 +1,6 @@
+/app/*
+  Cache-Control: no-cache
+/teste/*
+  Cache-Control: no-cache
+/config.js
+  Cache-Control: no-cache
