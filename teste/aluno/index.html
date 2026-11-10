@@ -950,6 +950,7 @@ body:not(.dlock) #dlock{display:none}
     <div class="cal-wrap" id="ag-free"></div>
     <p class="meta" style="font-size:12.5px;margin:0">Quando alguém cancela, você recebe o aviso. Elite e Prestígio recebem 10 minutos antes.</p>
 
+    <button class="hx94" id="hx94" hidden></button>
     <div class="sec-h"><span class="d">Seu plano</span></div>
     <div class="block frost aplan">
       <div class="row"><div><span class="lbl">Plano presencial</span><p class="d" style="font-size:34px;margin:4px 0 0">8 aulas por mês</p><span class="meta" style="font-size:13px;margin:0">2x por semana • 8 aulas no mês</span></div></div>
@@ -3929,11 +3930,11 @@ function pendSheet(kind,dd,h){sheet(`<div class="pdok"><svg viewBox="0 0 24 24" 
   <div class="avb"><b>Esse horário ainda vai ser confirmado pelo ${PN()}.</b><span>Até lá, ele aparece como "aguardando" na sua agenda. Quando o ${PN()} responder, você recebe um aviso aqui no app.</span></div>
   <button class="btn solid wide" data-close2>Entendi</button>`,s=>s.querySelector('[data-close2]').onclick=()=>s.remove())}
 function resolvePend(x,ok,quiet){const p=x.pend;if(!p)return;delete x.pend;
-  if(p.novo){if(ok){if(x.extra&&x.paid&&window.pushCharge)window.pushCharge('Ana',`Aula avulsa • ${x.d} ${hh2(x.h)}`,AVU)}else{AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);if(p.credit)addCred(x.d)}}
+  if(p.novo){if(ok){}else{if(x.extra&&x.paid)AG.xcr=(AG.xcr||0)+1;AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);if(p.credit)addCred(x.d)}}
   else{if(ok){AG.free.push([p.d,p.h]);if(p.over){AG.dadas.push({d:p.d,h:p.h});if(window.pushCharge)window.pushCharge('Ana',`Aula avulsa (remarcação além do limite) • ${x.d} ${hh2(x.h)}`,AVU)}}
     else{AG.free.push([x.d,x.h]);x.d=p.d;x.h=p.h;x.extra=p.wasExtra;if(!p.over)remDec(p.mo)}}
   agAll();if(quiet)return;
-  const t=ok?`${PN()} confirmou sua aula`:`${PN()} não pôde nesse horário`,sub=ok?`${dlab(x.d)} • ${hh2(x.h)}${x.extra?` • aula extra, entra na cobrança do fim do mês`:''}`:p.novo?'O horário voltou a ficar livre. Escolha outro na agenda.':`Sua aula continua em ${dlab(x.d)} • ${hh2(x.h)}.`;
+  const t=ok?`${PN()} confirmou sua aula`:`${PN()} não pôde nesse horário`,sub=ok?`${dlab(x.d)} • ${hh2(x.h)}${x.extra?` • aula extra paga`:''}`:p.novo?'O horário voltou a ficar livre. Escolha outro na agenda.':`Sua aula continua em ${dlab(x.d)} • ${hh2(x.h)}.`;
   if(window.pushNot)window.pushNot(t,sub);
   sheet(`<div class="pdok ${ok?'ok':'no'}">${ok?'✓':'✕'}</div><span class="lbl">Aviso</span><p class="d" style="font-size:36px;margin:6px 0 4px">${t}</p><p class="meta">${sub}</p><button class="btn solid wide" data-close2>Ok</button>`,s=>s.querySelector('[data-close2]').onclick=()=>s.remove())}
 doMove=function(i,over,why){const m=AG.moving,[dd,h]=AG.free[i],from={d:m.d,h:m.h};AG.free.splice(i,1);
@@ -4263,7 +4264,7 @@ window.addEventListener('click',e=>{if(window.NB)return;const k=e.target.closest
  {const _out=outSheet;outSheet=function(x){let ok,u,lim,mo;try{ok=inTime(x);mo=monOf(x.d);u=chgOf(mo);lim=AG.chgLim}catch(_){return _out(x)}if(x.extra||!ok||u<lim)return _out(x);
    const head=`<span class="lbl">${dlab(x.d)} • ${hh2(x.h)} • 📍 ${locOf(x)}</span><p class="d" style="font-size:40px;margin:6px 0 4px">Não vou poder ir</p>`;
    sheet(head+`<p class="meta" style="margin:0 0 10px">Você já usou ${lim===1?'a sua mudança':'as suas '+lim+' mudanças'} de ${MES[mo]}.</p><div class="avb"><b>Esta aula conta como dada, sem crédito.</b><span>Se quiser treinar em outro horário, ele vira aula extra.</span></div>
-     <button class="opt3" id="o-ex" style="margin-top:10px"><b>Pedir aula extra • R$ ${AVU}</b><small>Você escolhe um horário livre. Só é cobrada se o ${PN()} aprovar, na cobrança do fim do mês.</small></button>
+     <button class="opt3" id="o-ex" style="margin-top:10px"><b>Pedir aula extra • R$ ${AVU}</b><small>Você escolhe um horário livre e paga na hora de marcar.</small></button>
      <button class="opt3" id="o-fr"><b>Só liberar o horário</b><small>Fica para outra pessoa. Sem cobrança extra.</small></button>${whyHTML('falta')}<button class="btn wide" data-close3>Manter minha aula</button>`,
      s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-fr').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'dada',w)};
        s.querySelector('#o-ex').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'dada',w);AG.forceExtra=true;go('agenda');try{agAll()}catch(_){}toast(`Escolha um horário livre. A aula extra custa R$ ${AVU}.`)}})}}
@@ -4473,10 +4474,25 @@ const lockedK=k=>monOf(k)!==NOWMO()&&nOf(k)>TDN()+7;
 /* extra: cancelar até XCAN h sem cobrança */
 const _os29=outSheet;outSheet=function(x){if(!x.extra){_os29(x);return}const left=agLeft(x),ok=left>=XCAN;
   sheet(`<span class="lbl">${dlab(x.d)} • ${hh2(x.h)} • aula extra</span><p class="d" style="font-size:40px;margin:6px 0 4px">Não vou poder ir</p>
-   ${ok?`<p class="meta">Dá para cancelar sem cobrança até ${XCAN}h antes da aula. A extra sai da cobrança do fim do mês.</p>`:`<div class="avb red"><b>Essa extra vai ser cobrada mesmo cancelando.</b><span>O prazo para cancelar sem cobrança era ${XCAN}h antes. Liberando o horário, o ${PN()} pode encaixar outro aluno.</span></div>`}
+   ${ok?`<p class="meta">Cancelando até ${XCAN}h antes, os R$ ${AVU} viram crédito para outra aula extra.</p>`:`<div class="avb red"><b>O valor dessa extra não volta.</b><span>O prazo para virar crédito era ${XCAN}h antes. Liberando o horário, o ${PN()} pode encaixar outro aluno.</span></div>`}
    <button class="btn solid wide" id="xc-ok">${ok?'Cancelar aula extra':'Liberar o horário'}</button><button class="btn wide" style="margin-top:8px" id="xc-no">Manter minha aula</button>`,
-   s=>{s.querySelector('#xc-no').onclick=()=>s.remove();s.querySelector('#xc-ok').onclick=()=>{s.remove();AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);AG.canc.push({d:x.d,h:x.h,ok:false,why:ok?'':'dada'});if(!ok)AG.xcob.push({d:x.d,h:x.h});agAll();toast(ok?'Aula extra cancelada, sem cobrança.':'Horário liberado. A extra continua na cobrança do fim do mês.')}})};
+   s=>{s.querySelector('#xc-no').onclick=()=>s.remove();s.querySelector('#xc-ok').onclick=()=>{s.remove();AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);AG.canc.push({d:x.d,h:x.h,ok:false,why:ok?'':'dada'});if(ok&&x.paid)AG.xcr=(AG.xcr||0)+1;if(!ok)AG.xcob.push({d:x.d,h:x.h});agAll();toast(ok?'Aula extra cancelada. O valor virou crédito para outra extra.':'Horário liberado. O valor da extra não volta.')}})};
 {const _bs=bookSheet;bookSheet=function(i){_bs(i);const s=[...document.querySelectorAll('.scrim')].pop();if(!s)return;const b=s.querySelector('.bkt.ex');if(b){const m=s.querySelectorAll('.meta')[1]||s.querySelector('.meta');if(m)m.insertAdjacentHTML('afterend',`<p class="xnote">Cancelamento sem cobrança até ${XCAN}h antes.</p>`)}}}
+AG.xcr=AG.xcr||0;window.CARD94=window.CARD94||{b:'VISA',n:'4821'};
+{const _b2=bookSheet;bookSheet=function(i){const f=AG.free[i];if(!f)return _b2(i);const [dd,h]=f,D=ENG.decide(liveSt(),dd);if(D.t!=='extra')return _b2(i);
+  const m=monOf(dd),why=D.why==='semana'?`Sua semana já tem as ${AG.week} aulas do plano.`:`Suas ${AG.quota} aulas de ${MES[m]} já estão marcadas.`;
+  const book=via=>{const j=AG.free.indexOf(f);if(j<0)return;AG.free.splice(j,1);const x={d:dd,h,conf:false,extra:true,paid:true,pend:{novo:true}};AG.slots.push(x);
+    if(window.FIN)FIN.unshift({id:FIN_ID++,who:'Ana',what:`Aula extra • ${dd} ${hh2(h)}`,val:AVU,st:'pago',info:`pago agora • Asaas • ${via}`});AGV.sel=nOf(dd);agAll();pendSheet('aula',dd,h)};
+  sheet(`<div class="pay94"><span class="lbl">Aula extra</span><p class="d" style="font-size:36px;margin:4px 0 2px">${dlab(dd)} • ${hh2(h)}</p><p class="meta" style="margin:0 0 14px">${why}</p>
+    <div class="tot"><span>Aula extra</span><span>R$ ${AVU},00</span></div><p class="meta" style="font-size:12.5px;margin:2px 0 0">À parte do plano. Não usa aula do mês.</p>
+    ${AG.xcr?`<button class="btn solid wide" id="p94-cr" style="min-height:48px;margin-top:14px">Usar meu crédito de extra</button><p class="meta" style="font-size:12.5px;margin:6px 0 0">Você tem ${AG.xcr} crédito${AG.xcr>1?'s':''} de aula extra. Não cobra nada.</p>`:
+    `<div class="cc"><i>${CARD94.b}</i><span>Cartão final ${CARD94.n}</span><button id="p94-tr">Trocar</button></div><button class="btn solid wide" id="p94-go" style="min-height:48px">Confirmar e pagar R$ ${AVU},00</button><button class="btn wide" id="p94-pix" style="margin-top:8px">Pagar com Pix</button>`}
+    <p class="meta" style="font-size:12.5px;margin:10px 0 0">O horário fica reservado por 30 minutos. Cancelou até ${XCAN}h antes, ou o ${PN()} não pôde? O valor vira crédito para outra extra.</p></div>`,s=>{
+    const q=k=>s.querySelector(k);
+    if(q('#p94-cr'))q('#p94-cr').onclick=()=>{s.remove();AG.xcr--;const j=AG.free.indexOf(f);if(j<0)return;AG.free.splice(j,1);AG.slots.push({d:dd,h,conf:false,extra:true,paid:true,pend:{novo:true}});AGV.sel=nOf(dd);agAll();pendSheet('aula',dd,h)};
+    if(q('#p94-go'))q('#p94-go').onclick=()=>{s.remove();toast('Pagamento aprovado no cartão');book('cartão final '+CARD94.n)};
+    if(q('#p94-tr'))q('#p94-tr').onclick=()=>toast('No app real, abre a troca de cartão.');
+    if(q('#p94-pix'))q('#p94-pix').onclick=()=>{s.remove();sheet(`<span class="lbl">Pix • aula extra</span><p class="d" style="font-size:40px;margin:6px 0">R$ ${AVU},00</p><p class="meta">Copie o código e pague no app do seu banco. O horário fica reservado por 30 minutos.</p><button class="btn wide" id="px-cp">Copiar código Pix</button><button class="btn solid wide" id="px-ok" style="margin-top:8px">Simular pagamento (protótipo)</button>`,t=>{t.querySelector('#px-cp').onclick=()=>toast('Código Pix copiado');t.querySelector('#px-ok').onclick=()=>{t.remove();toast('Pix confirmado');book('Pix')}})}})}}
 /* só aulas do mês atual no carrossel */
 {const _ns=nextSlot;nextSlot=function(){if(AG.moving&&agLeft(AG.moving)>0)return AG.moving;const up=AG.slots.filter(x=>agLeft(x)>0&&monOf(x.d)===NOWMO());if(!up.length){NX.n=0;return null}NX.n=up.length;NX.i=Math.max(0,Math.min(NX.i,up.length-1));return up[NX.i]}}
 renderNext=(prev=>function(){prev();const el=$('#ag-next');if(!el)return;if(!nextSlot()&&!AG.moving)el.innerHTML=`<div class="block frost"><span class="lbl">${MESC2(NOWMO())}</span><p class="d" style="font-size:32px;margin:6px 0">Suas aulas de ${MES[NOWMO()]} terminaram</p><p class="meta" style="margin:0">As aulas de ${MES[NOWMO()+1]} aparecem aqui a partir do dia 1º.</p></div>`;
@@ -4561,6 +4577,9 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
      <div class="wkl mol">${h||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">${AG.creds.length?`Ver meus créditos (${AG.creds.length})`:'Extrato de créditos'}</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
+setTimeout(()=>{const hx=document.getElementById('hx94');const P=NOWMO()-1;if(hx&&P>=10){const Q=monthData(P),N=AG.quota;const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.perdidas+Q.falta).fill('x')].slice(0,Math.max(N,Q.f+Q.d));
+  hx.innerHTML=`<p class="d">Histórico de ${MESN(P)}</p><div class="mb93" style="grid-template-columns:repeat(${seg.length},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div><div class="st"><span><b>${Q.f}</b> ${Q.f===1?'feita':'feitas'}</span>${Q.d?`<span><b>${Q.d}</b> contou como dada</span>`:''}${Q.perdidas+Q.falta?`<span><b>${Q.perdidas+Q.falta}</b> não usada${Q.perdidas+Q.falta>1?'s':''}</span>`:''}<span><b>${chgOf(P)} de ${AG.chgLim}</b> mudanças</span></div><div class="go"><span>Ver as aulas de ${MESN(P)}</span><span>›</span></div>`;
+  hx.hidden=false;hx.onclick=()=>weekListSheet(P)}},0);
 sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I=monthInfo(NOWMO()),n=I.tot+I.ex;const sp=bar.querySelector('span');if(sp)sp.innerHTML=`<b>${MESC2(NOWMO())}:</b> ${I.used} de ${AG.quota} aulas${I.ex?` + ${I.ex} extra`:''}`;bar.onclick=()=>weekListSheet()})(sumRender);
 agAll();
 
@@ -4587,11 +4606,11 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
     const u=chgOf(M),lim=AG.chgLim,full=u>=lim;
     const dts=n=>{const d=dDate(n);return `${WDN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`};
     const rowF=z=>`<div class="r93 done"><span class="ic">✓</span><span><b>${dts(z.n)} • ${hh2(z.h)}</b><small>feita</small></span></div>`;
-    const rowU=x=>`<div class="r93 next"><span class="ic"></span><span><b>${nOf(x.d)===TDN()?'Hoje, '+dts(nOf(x.d)).toLowerCase():dts(nOf(x.d))} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():x.conf?'confirmada':'a confirmar'}${x.mv?` • ${PN()} mudou de ${x.mv}`:''}${x.rep==='cr'?' • com crédito':''}</small></span></div>`;
+    const rowU=x=>`<div class="r93 next"><span class="ic"></span><span><b>${nOf(x.d)===TDN()?'Hoje, '+dts(nOf(x.d)).toLowerCase():dts(nOf(x.d))} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():x.conf?'confirmada':x===Q.up.find(y=>!y.conf&&!y.pend)?'a confirmar':'marcada'}${x.extra?' • extra paga':''}${x.mv?` • ${PN()} mudou de ${x.mv}`:''}${x.rep==='cr'?' • com crédito':''}</small></span></div>`;
     let L='';
     if(Q.f>4)L+=`<details class="g93"><summary class="r93 done"><span class="ic">✓</span><span><b>${Q.f} aulas feitas</b><small>ver as datas</small></span><span class="go">›</span></summary>${Q.doneL.map(rowF).join('')}</details>`;else L+=Q.doneL.map(rowF).join('');
     L+=Q.dadas.map(z=>`<div class="r93 dada"><span class="ic">–</span><span><b>${dts(nOf(z.d))} • ${hh2(z.h)}</b><small>não foi • contou como dada</small></span></div>`).join('');
-    const UP=Q.up.slice(0,3),MORE=Q.up.slice(3);L+=UP.map(rowU).join('');
+    const UP=Q.up.length>12?Q.up.slice(0,3):Q.up,MORE=Q.up.length>12?Q.up.slice(3):[];L+=UP.map(rowU).join('');
     if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'marcada':'marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
     L+=Q.creds.map(c=>`<div class="r93 cr"><span class="ic">+1</span><span><b>1 crédito para usar</b><small>vale até ${fmtDM(c.exp)} • da aula de ${dlab(c.from).toLowerCase()}</small></span><button class="btn small solid" data-m93="use">Usar</button></div>`).join('');
     if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
@@ -4601,7 +4620,7 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
       <div class="lg93">${lg.map(([k,v,t])=>`<span><i class="${k}"></i><b>${v}</b> ${t}</span>`).join('')}</div>
       <div class="chg93${full?' full':''}"><span class="dots">${Array.from({length:lim},(_,i)=>`<i class="${i<u?'on':''}"></i>`).join('')}</span><span>${full?`Você já usou as ${lim} mudanças de ${MESN(M)}. Se não for, a aula conta como feita.`:`Mudanças sem custo: <b>${u} de ${lim}</b> usadas`}</span></div>
       <div class="l93">${L||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>
-      <p class="ft93">${N} aulas no plano de ${MESN(M)}${Q.I.ex?` • +${Q.I.ex} extra à parte`:''}</p>${M===NOWMO()&&M-1>=10?`<button class="btn wide" data-mm="${M-1}" style="margin-top:10px">Histórico de ${MESN(M-1)}</button>`:''}`;
+      <p class="ft93">${N} aulas no plano de ${MESN(M)}${Q.I.ex?` • +${Q.I.ex} extra à parte`:''}</p>`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)});
     s.querySelectorAll('[data-m93]').forEach(b=>b.onclick=()=>{s.remove();go('agenda');setTimeout(()=>{const h=$('#ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">Histórico de créditos</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
@@ -6258,5 +6277,12 @@ p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 <style>.bk93{background:none;border:0;padding:0 0 8px;font:inherit;font-weight:700;font-size:13.5px;color:var(--fg);text-decoration:underline;text-underline-offset:3px}</style>
 <style>.bk93{display:block}</style>
 <style>.g93>summary b{text-decoration:none!important}</style>
+<style>.hx94{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;background:var(--card,transparent);padding:14px 14px 12px;margin:18px 0 4px;color:var(--fg);font:inherit;cursor:pointer}
+.hx94 .d{font-size:26px;line-height:1;margin:0 0 10px}.hx94 .mb93{margin-bottom:9px}
+.hx94 .st{display:flex;gap:6px 14px;font-size:13px;color:var(--muted);font-weight:600;flex-wrap:wrap}.hx94 .st b{color:var(--fg)}
+.hx94 .go{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:12px;padding-top:10px;font-weight:700;font-size:13.5px}
+.pay94 .tot{display:flex;justify-content:space-between;font-weight:800;font-size:16px;padding:4px 0 2px}
+.pay94 .cc{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;margin:14px 0 10px}.pay94 .cc i{font-style:normal;font-weight:800;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:3px 6px}
+.pay94 .cc span{flex:1;font-weight:650;font-size:14px}.pay94 .cc button{background:none;border:0;color:var(--muted);font:inherit;font-weight:700;font-size:13px}</style>
 
 </body></html>
