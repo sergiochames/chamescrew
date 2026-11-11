@@ -3981,13 +3981,13 @@ if(!ME||ME.role!=='equipe'){location.replace('/app/');return}
 const pad=n=>String(n).padStart(2,'0'),DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],PER={manha:['Manhã',6,12],tarde:['Tarde',12,18],noite:['Noite',18,22]};
 const today=new Date();today.setHours(0,0,0,0);const wk0=new Date(today.getFullYear(),today.getMonth(),today.getDate()-((today.getDay()+6)%7));
 const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0)/864e5);
-let DBC={},STUD=[],RQ=[],IV=[],CLS=[],FXS=[];
+let DBC={},STUD=[],RQ=[],IV=[],CLS=[],FXS=[],WKS=[];
 async function fetchAll(){const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
-  const [st,cl,rq,iv,fx]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
+  const [st,cl,rq,iv,fx,wo]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).order('created_at',{ascending:false}),
-    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20),sb.from('fixed_slots').select('*').eq('active',true)]);
-  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[];FXS=fx.data||[]}
+    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20),sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position')]);
+  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[];FXS=fx.data||[];WKS=wo.data||[]}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
 const nameOf=id=>{const s=STUD.find(x=>x.id===id);return s&&s.name||'Aluno'};
 
@@ -3995,9 +3995,11 @@ const nameOf=id=>{const s=STUD.find(x=>x.id===id);return s&&s.name||'Aluno'};
 function apply(){
   S.ev={};S.sp={};S.av.length=0;try{PNOT.length=0}catch(_){}
   if(!window.__STPL&&STU[0])window.__STPL=JSON.parse(JSON.stringify(STU[0]));const T=window.__STPL||{};
+  try{FAVW.length=0;T2.fav.clear();T2.mine.length=0}catch(_){}
   STU.length=0;STUD.filter(s=>s.onboarded).forEach(s=>{const q=(s.freq||2)*4,nm=s.name||'Aluno';STU.push({n:nm,q:[0,q],ph:(s.phone||'').replace(/\D/g,''),_id:s.id,loc:1,
     gen:'',cpf:s.doc_num||'',prof:'',ap:nm.split(' ')[0],ig:'',em:'',nasc:s.birth_date?s.birth_date.split('-').reverse().join('/'):'',obj:s.goal||'',niv:s.level||'',rest:s.injury||'',emg:'',pvt:'',
-    wc:JSON.parse(JSON.stringify(T.wc||{})),pin:false,tags:[],desc:0,remu:0,cred:0,ind:{},msgs:[],mode:T.mode||'',mod:JSON.parse(JSON.stringify(T.mod||[])),due:T.due||0,sx:''})});
+    wc:JSON.parse(JSON.stringify(T.wc||{})),pin:false,tags:[],desc:0,remu:0,cred:0,ind:{},msgs:[],mode:T.mode||'',mod:JSON.parse(JSON.stringify(T.mod||[])),sx:'',
+    due:s.access_until?Math.ceil((new Date(s.access_until+'T12:00:00')-new Date())/864e5):999,wk:wkFromDB(s.id)})});
   try{const U=[...new Set(CLS.map(c=>c.location).filter(Boolean))];if(U.length){LOCS.length=0;U.forEach((n,i)=>LOCS.push({id:i+1,n,ad:''}))}}catch(_){}
   const locId=n=>{try{const l=LOCS.find(x=>x.n===n);return l?l.id:undefined}catch(_){return undefined}};
   DBC={};const now=new Date();
@@ -4089,6 +4091,16 @@ function invList(){if(!IV.length)return inviteSheet();sheet(`<span class="lbl">A
 window.addEventListener('pointerdown',e=>{if(e.target.closest('.wb.can'))e.stopPropagation()},true);
 document.addEventListener('click',()=>setTimeout(sync,150),true);
 /* ---- abas ainda em demonstração ---- */
+function wkFromDB(id){const R=WKS.filter(w=>w.user_id===id),cf=R.find(w=>w.letter==='_cfg'),P=R.filter(w=>w.letter!=='_cfg').sort((a,b)=>(a.position||0)-(b.position||0));
+  const c=(cf&&cf.exercises)||{};return {plans:P.map(w=>({name:w.title||('Treino '+w.letter),days:(w.exercises&&w.exercises.days)||[],ex:(w.exercises&&w.exercises.ex)||[]})),cardio:c.cardio||[],cd:c.cd||{},mode:c.mode||'livre',single:c.single,start:c.start?new Date(c.start):undefined,end:c.end?new Date(c.end):undefined}}
+async function saveWk(x){const w=x.wk;if(!w||!x._id)return;if(w.plans.length&&!w.end){w.start=new Date(TD);w.end=addD(TD,42)}const L='ABCDEFGHIJ';
+  const rows=w.plans.map((p,i)=>({user_id:x._id,letter:L[i],title:p.name,focus:p.name,position:i,exercises:{days:p.days||[],ex:p.ex||[]},updated_by:ME.id}));
+  rows.push({user_id:x._id,letter:'_cfg',title:'config',focus:'',position:99,exercises:{cardio:w.cardio||[],cd:w.cd||{},mode:w.mode||'livre',single:!!w.single,start:w.start?new Date(w.start).toISOString():null,end:w.end?new Date(w.end).toISOString():null},updated_by:ME.id});
+  const d=await sb.from('workouts').delete().eq('user_id',x._id);if(d.error){toast('Não salvou o treino: '+d.error.message);return}
+  const {error}=await sb.from('workouts').insert(rows);if(error){toast('Não salvou o treino: '+error.message);return}
+  WKS=WKS.filter(r=>r.user_id!==x._id).concat(rows)}
+try{const _td=tDates;tDates=function(x){const w=weekOf(x);if(x&&x._id&&!w.end&&w.plans.length){w.start=new Date(TD);w.end=addD(TD,42)}return _td(x)}}catch(_){}
+window.addEventListener('click',e=>{const b=e.target.closest('[data-bdone]');if(!b||T2.tpl||!T2.stu)return;const x=stu(T2.stu);if(x&&x._id)saveWk(x)},true);
 const DOWL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 function realTab(t){const ap=document.getElementById('app')||document.querySelector('.scroller');if(!ap||ap.querySelector('.rl-tab'))return;const br=ap.querySelector('.brand');
   [...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
@@ -4118,7 +4130,7 @@ const _draw=draw;
 draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{if(S.tab==='fin'){const ap=document.getElementById('app')||document.querySelector('.scroller');if(ap&&!ap.querySelector('.rl-fin')){const br=ap.querySelector('.brand');[...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
   const n=CLS.filter(c=>c.status!=='cancelada'&&new Date(c.starts_at)>=new Date(new Date().getFullYear(),new Date().getMonth(),1)).length;
   ap.insertAdjacentHTML('beforeend',`<div class="rl-fin" style="padding:6px 0"><span class="lbl">Financeiro</span><h2 class="d" style="font-size:44px;margin:4px 0 12px">Em breve</h2><div class="rlp" style="display:block"><b>Ainda sem cobranças pelo app</b><small style="line-height:1.45">Os pagamentos dos alunos (plano, aula extra e renovação) entram aqui quando ligarmos o Asaas. Por enquanto, nada de valores de exemplo para não confundir.</small></div><div class="rlp" style="display:block"><b>${STU.length} ${STU.length===1?'aluno ativo':'alunos ativos'} • ${n} ${n===1?'aula':'aulas'} neste mês</b><small>Contado das aulas reais da agenda.</small></div></div>`)}}}catch(_){}
-try{if(S.tab==='alunos'||S.tab==='treinos')realTab(S.tab)}catch(e){console.error(e)}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
+try{if(S.tab==='alunos')realTab(S.tab)}catch(e){console.error(e)}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 try{SUB.card='cartão de teste (conta dev, nada é cobrado)'}catch(_){}
 S.tab='agenda';draw();
