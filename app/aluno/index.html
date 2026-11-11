@@ -6295,7 +6295,7 @@ p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:var(--muted,#888);z-index:9999;background:var(--bg,#1c1d20)}
 body.rl .prev,body.rl #h-mot,body.rl .sday,body.rl #crew,body.rl .disc-card,body.rl #week,body.rl .cycle,body.rl #ci-alert,body.rl #h-next,body.rl #h-macros{display:none!important}
-body.rl #v-treino>*:not(.rl-empty):not(#rl-tr),body.rl #v-dieta>*:not(.rl-empty),body.rl #v-checkin>*:not(.rl-empty):not(#rl-ci),body.rl #v-matilha>*:not(.rl-empty){display:none!important}
+body.rl #v-treino>*:not(.rl-empty):not(#rl-tr),body.rl #v-dieta>*:not(.rl-empty),body.rl #v-checkin>*:not(.rl-empty):not(#rl-ci),body.rl #v-matilha>*:not(.rl-empty):not(#rl-mt){display:none!important}
 .rl-empty{padding:8px 0}.rl-empty .d{font-size:44px;line-height:.95;margin:4px 0 12px}.rl-empty .box{border:1px dashed var(--line);border-radius:12px;padding:18px 16px;font-size:14px;line-height:1.5;color:var(--muted)}.rl-empty .box b{display:block;color:var(--fg);font-size:16px;margin-bottom:4px}
 body.rl #o-now{display:none!important}
 body::before{z-index:2147483000!important}
@@ -6310,6 +6310,8 @@ body.rl #v-painel{display:none!important}
 #rl-ci .rl-ok{border:1.5px solid var(--ok);background:var(--ok-bg);border-radius:16px;padding:14px 16px;margin:12px 0}#rl-ci .rl-ok .d{font-size:34px;margin:4px 0 2px}
 #rl-ci .rl-cnt{text-align:center;margin:8px 0 0}#rl-ci .rl-lock{border:1px dashed var(--line);border-radius:12px;padding:14px;font-size:13.5px;color:var(--muted);line-height:1.45;margin-top:12px}#rl-ci .rl-lock b{color:var(--fg);display:block}
 #rl-cih{margin:0 0 14px}#rl-cih .row{align-items:center}
+#rl-mt .lv-hero{margin:0 0 6px}#rl-mt .case{margin-top:10px}#rl-mt .rl-note{font-size:12.5px;color:var(--muted);font-weight:600;margin:10px 2px 0;line-height:1.45}
+.rl-tiers{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:14px 0}.rl-tiers div{text-align:center;font-size:11.5px;font-weight:800;color:var(--muted)}.rl-tiers div.on{color:var(--fg)}.rl-tiers b{display:block;font-family:var(--display);font-size:22px}
 .rl-soon b{color:var(--fg);display:block;margin-bottom:2px}
 </style>
 <div id="rl-ld">Carregando…</div>
@@ -6380,7 +6382,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-
 const me=document.getElementById('h-me');if(me){me.innerHTML=ini;me.onclick=()=>sheet(`<span class="lbl">Minha conta</span><p class="d" style="font-size:36px;margin:6px 0 4px">${(P.name||'').replace(/</g,'')}</p><p class="meta" style="margin:0 0 14px">${session.user.email}</p>
   <button class="btn wide" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`,s=>{s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}
 const EMP={treino:['Treino','Seu treino aparece aqui','Quando o Sérgio publicar o seu treino, ele aparece nesta aba com as séries, as cargas e o vídeo de cada exercício.'],dieta:['Dieta','Sua dieta aparece aqui','Quando o Sérgio enviar a sua dieta, ela aparece nesta aba.'],checkin:['Check-in','Em breve','O check-in do dia e da semana entra aqui na próxima etapa do teste.'],matilha:['Matilha','Seu level começa agora','Levels e medalhas contam a partir dos seus primeiros treinos registrados no app. Isso entra na próxima etapa do teste.']};
-const ensureEmp=()=>Object.entries(EMP).forEach(([k,[l,t,x]])=>{if(k==='treino'&&window.__HASTR||k==='checkin')return;const v=document.getElementById('v-'+k);if(v&&!v.querySelector('.rl-empty')){const d=document.createElement('div');d.className='rl-empty';d.innerHTML=`<span class="lbl">${l}</span><p class="d">${t}</p><div class="box"><b>${l==='Matilha'?'Recruta':'Nada por aqui ainda'}</b>${x}</div>`;v.prepend(d)}});
+const ensureEmp=()=>Object.entries(EMP).forEach(([k,[l,t,x]])=>{if(k==='treino'&&window.__HASTR||k==='checkin'||k==='matilha')return;const v=document.getElementById('v-'+k);if(v&&!v.querySelector('.rl-empty')){const d=document.createElement('div');d.className='rl-empty';d.innerHTML=`<span class="lbl">${l}</span><p class="d">${t}</p><div class="box"><b>${l==='Matilha'?'Recruta':'Nada por aqui ainda'}</b>${x}</div>`;v.prepend(d)}});
 
 /* ===== ETAPA B: treino real (fichas do personal em workouts, registro em workout_logs) ===== */
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -6550,6 +6552,75 @@ if(cbox){
   drawCI()}
 window.__rlCI={DCS,WCS};
 }
+
+/* ===== ETAPA B: level e medalhas reais (calculados dos registros; todos começam como Recruta) ===== */
+try{
+const RAx=typeof RA!=='undefined'?RA:null;const TI=['Ferro','Aço','Ouro','Rubi','Diamante'];
+const [{data:AL},{data:AC},{data:AW},{data:AP},{data:AK}]=await Promise.all([
+  sb.from('workout_logs').select('day,sets').eq('user_id',uid),sb.from('daily_checkins').select('day,answers').eq('user_id',uid),
+  sb.from('week_closes').select('week_start').eq('user_id',uid),sb.from('awards').select('medal_id,tier').eq('user_id',uid),
+  sb.from('classes').select('starts_at,status').eq('student_id',uid).in('status',['confirmada','feita']).lt('starts_at',new Date().toISOString())]);
+const ws=d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};
+const TRD=new Set([...(AL||[]).map(l=>l.day),...(AK||[]).map(c=>ymd(new Date(c.starts_at)))]);
+const CW=new Set((AW||[]).map(w=>w.week_start)),curW=ws(TODAY);
+/* semanas completas (antes da semana atual) */
+const WK={};const wk=k=>WK[k]=WK[k]||{tr:0,cardio:0,ci:0,agua:0,sono:0,ff:0,carga:false};
+TRD.forEach(d=>wk(ws(d)).tr++);
+(AC||[]).forEach(c=>{const w=wk(ws(c.day)),a=c.answers||{};w.ci++;if(a.cardio>0)w.cardio++;if(a.agua===2)w.agua++;if(a.sono===2)w.sono++;if(a.livre===2)w.ff++});
+{const best={};(AL||[]).slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>{const w=wk(ws(l.day));(l.sets||[]).forEach(x=>{if(x.cardio||!x.n)return;const k=+x.kg||0;if(best[x.n]!=null&&k>best[x.n])w.carga=true;best[x.n]=Math.max(best[x.n]||0,k)})})}
+const done=Object.entries(WK).filter(([k])=>k<curW);
+const cnt=f=>done.filter(([k,w])=>f(w,k)).length;
+const trg=Math.max(2,Math.min(freq,4));
+const MD=[
+ {id:'tempo',name:'Tempo de matilha',how:'Feche a semana no check-in (domingo a terça)',unit:'semanas fechadas',th:[4,13,26,52,104],v:CW.size},
+ {id:'limite',name:'Quebrou o limite',how:'Treine 4x ou mais na semana (app ou aula)',unit:'semanas com 4+ treinos',th:[2,6,12,24,48],v:cnt(w=>w.tr>=4)},
+ {id:'carga',name:'Evolução de carga',how:'Suba a carga de algum exercício na semana',unit:'semanas subindo carga',th:[4,8,16,26,52],v:cnt(w=>w.carga)},
+ {id:'resist',name:'Mais resistência',how:'Faça 2 ou mais cardios na semana',unit:'semanas com 2+ cardios',th:[4,8,16,26,52],v:cnt(w=>w.cardio>=2)},
+ {id:'agua',name:'Água em dia',how:'Bata a meta de água em 5 dias da semana',unit:'semanas com água em dia',th:[4,8,16,26,52],v:cnt(w=>w.agua>=5)},
+ {id:'sono',name:'Sono regulado',how:'Durma 7h ou mais em 5 noites da semana',unit:'semanas dormindo 7h+',th:[4,8,16,26,52],v:cnt(w=>w.sono>=5)},
+ {id:'zero',name:'Zero fast food',how:'Semana sem fast food (com 5+ check-ins do dia)',unit:'semanas sem fast food',th:[2,6,12,24,48],v:cnt(w=>w.ci>=5&&w.ff===0)},
+ {id:'destaque',name:'Destaque da equipe',how:'Liberada pelo Sérgio por dedicação',unit:'destaques',th:[1,2,3,5,8],v:0},
+ {id:'perfeita',name:'Semana perfeita',secret:true,how:'Segredo. Continua firme…',unit:'semanas perfeitas',th:[1,3,6,12,24],v:cnt((w,k)=>w.ci>=7&&w.tr>=trg&&CW.has(k))}];
+MD.find(m=>m.id==='destaque').v=(AP||[]).filter(a=>a.medal_id==='destaque').length;
+const tierOf=m=>{let t=-1;m.th.forEach((q,i)=>{if(m.v>=q)t=i});return t};
+const nTr=TRD.size,nWk=CW.size,LVS=RAx?RAx.LEVELS:[{name:'Recruta',treinos:0,semanas:0,perks:[]}];
+let lv=0;LVS.forEach((L,i)=>{if(nTr>=L.treinos&&nWk>=L.semanas)lv=i});lv=Math.min(LVS.length-1,lv+(+P.level_bonus||0));
+const NX=LVS[lv+1];
+const disc=(m,t,sz)=>RAx?RAx.disc(RAx.MEDALS.find(x=>x.id===m.id)||m,t).replace('class="rdisc',`style="--s:${sz}px" class="rdisc`):'';
+const emb=(i,dim,sz)=>RAx?RAx.emblem(i,dim,sz):'';
+function mtHTML(){const got=MD.filter(m=>tierOf(m)>=0).length,rare=MD.filter(m=>tierOf(m)>=3).length;
+  const pct=NX?Math.round(Math.min(1,Math.min(nTr/NX.treinos,nWk/NX.semanas))*100):100;
+  return `<div class="hero"><span class="motto">Resultados constroem liberdade</span><h2 class="d">Minha matilha</h2><p class="sub">Seu level e suas conquistas. Tudo conta a partir dos seus registros no app.</p></div>
+  <div class="block ink lv-hero"><button data-rlv="${lv}" style="display:grid;place-items:center;background:none;border:0;color:inherit">${emb(lv,false,104)}</button>
+   <div style="min-width:0"><span class="lbl">Meu level</span><p class="d" style="font-size:48px;margin:4px 0 10px">${LVS[lv].name}</p>
+   ${NX?`<div class="bar"><i style="width:${pct}%"></i></div><p class="meta" style="font-size:13px;color:inherit;opacity:.75">Para ${NX.name}: ${Math.min(nTr,NX.treinos)} de ${NX.treinos} treinos • ${Math.min(nWk,NX.semanas)} de ${NX.semanas} semanas fechadas</p>`:'<p class="meta">Level máximo</p>'}
+   <p style="font-size:13px;font-weight:800;margin:6px 0 0">${lv?'Benefício: '+(LVS[lv].perks||[]).join(' + '):'Próximo benefício: '+((NX&&NX.perks)||[]).join(' + ')}</p></div></div>
+  <p class="rl-note">Conta como treino: treino finalizado no app e aula presencial confirmada. Semana fechada: o check-in da semana, de domingo 18h a terça.</p>
+  <div class="sec-h"><span class="d">Estojo</span></div>
+  <div class="case"><div class="casehead"><span><b class="d">${lv+1}/${LVS.length}</b><small>insígnias</small></span><span><b class="d">${got}/${MD.length}</b><small>medalhas</small></span><span><b class="d">${rare}</b><small>raras</small></span></div>
+   <p class="casecap">Insígnias</p><div class="insig">${LVS.map((L,i)=>`<button class="slot2${i<=lv?' on':''}" data-rlv="${i}">${emb(i,i>lv,56)}<span>${L.name}</span></button>`).join('')}</div>
+   <p class="casecap">Medalhas</p><div class="cmed">${MD.map(m=>{const t=tierOf(m),nx=m.th[t+1];return `<button class="cm" data-rmd="${m.id}">${disc(m,t,78)}<b>${m.secret&&t<0?'???':m.name}</b><small>${t<0?(m.secret?'Medalha secreta':`${m.v} de ${m.th[0]} pro Ferro`):TI[t]}</small><div class="bar"><i style="width:${Math.round((nx?m.v/nx:1)*100)}%"></i></div></button>`}).join('')}</div></div>
+  <p class="rl-note">Medalhas contam semanas completas (segunda a domingo). A semana atual entra quando acabar.</p>`}
+function medSheet(id){const m=MD.find(x=>x.id===id),t=tierOf(m),nx=m.th[t+1];
+  sheet(`<div style="display:grid;place-items:center;margin:6px 0 4px">${disc(m,t,120)}</div><span class="lbl" style="display:block;text-align:center">${t<0?'Ainda não desbloqueada':'Tier '+TI[t]}</span>
+   <p class="d" style="font-size:40px;margin:6px 0 4px;text-align:center">${m.secret&&t<0?'???':m.name}</p><p class="meta" style="text-align:center;margin:0">${m.how}</p>
+   <div class="rl-tiers">${m.th.map((q,i)=>`<div class="${i<=t?'on':''}"><b>${q}</b>${TI[i]}</div>`).join('')}</div>
+   <p class="meta" style="text-align:center">${nx?`${m.v} de ${nx} ${m.unit} para ${TI[t+1]}`:`Topo alcançado: ${m.v} ${m.unit}`}</p>`)}
+function lvSheet(i){const L=LVS[i];sheet(`<div style="display:grid;place-items:center;margin:6px 0">${emb(i,i>lv,120)}</div><span class="lbl" style="display:block;text-align:center">${i<=lv?'Conquistado':'Bloqueado'}</span>
+   <p class="d" style="font-size:44px;margin:6px 0 4px;text-align:center">${L.name}</p><p class="meta" style="text-align:center;margin:0">${i?`${L.treinos} treinos e ${L.semanas} semanas fechadas • ${(L.when||'').toLowerCase()}`:'Início'}</p>
+   <p style="font-weight:800;text-align:center;margin:14px 0 0">${(L.perks||[]).join(' • ')}</p>`)}
+const hostM=document.getElementById('v-matilha');
+if(hostM){const mb=document.createElement('div');mb.id='rl-mt';hostM.prepend(mb);mb.innerHTML=mtHTML();
+  mb.addEventListener('click',e=>{const a=e.target.closest('[data-rmd]');if(a){medSheet(a.dataset.rmd);return}const b=e.target.closest('[data-rlv]');if(b)lvSheet(+b.dataset.rlv)})}
+/* aviso de medalha nova */
+const SKM='rl:medseen:'+uid;let seen=null;try{seen=JSON.parse(localStorage.getItem(SKM)||'null')}catch(_){}
+const curT={};MD.forEach(m=>curT[m.id]=tierOf(m));curT._lv=lv;
+if(seen){const nw=MD.filter(m=>curT[m.id]>(seen[m.id]??-1));const up=lv>(seen._lv??0);
+  if(up||nw.length)setTimeout(()=>{if(up)sheet(`<div style="display:grid;place-items:center;margin:6px 0">${emb(lv,false,130)}</div><span class="lbl" style="display:block;text-align:center">Level novo</span><p class="d" style="font-size:52px;margin:6px 0;text-align:center">${LVS[lv].name}</p><p style="font-weight:800;text-align:center">${(LVS[lv].perks||[]).join(' • ')}</p>`);
+    else{const m=nw[0];sheet(`<div style="display:grid;place-items:center;margin:6px 0">${disc(m,curT[m.id],130)}</div><span class="lbl" style="display:block;text-align:center">Medalha nova${nw.length>1?' (+'+(nw.length-1)+')':''}</span><p class="d" style="font-size:44px;margin:6px 0;text-align:center">${m.name}</p><p class="meta" style="text-align:center">${TI[curT[m.id]]} • ${m.v} ${m.unit}</p>`)}},900)}
+try{localStorage.setItem(SKM,JSON.stringify(curT))}catch(_){}
+window.__rlMT={MD,lv,nTr,nWk};
+}catch(err){console.error('matilha',err)}
 ensureEmp();setInterval(ensureEmp,600);document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha conta'&&b.id!=='h-me')b.onclick=e=>{e.stopImmediatePropagation();document.getElementById('h-me').click()}});document.addEventListener('click',()=>setTimeout(ensureEmp,30),true);
 
 /* ---- grava no banco o que a pessoa faz na agenda ---- */
