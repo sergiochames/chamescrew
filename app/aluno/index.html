@@ -1121,6 +1121,10 @@ body:not(.dlock) #dlock{display:none}
   <button data-go="matilha"><svg viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M14 8L36 32H64L86 8L83 44L94 58L76 66L66 92H34L24 66L6 58L17 44Z"/></svg>Matilha</button>
 </nav></div>
 
+<script>/* app real: o que o protótipo guarda no aparelho fica separado do teste (foto, anamnese, rascunhos) */
+(function(){try{const L=window.localStorage,P='rl:',K=k=>String(k).startsWith('sb-')?k:P+k;
+const W={getItem:k=>L.getItem(K(k)),setItem:(k,v)=>L.setItem(K(k),v),removeItem:k=>L.removeItem(K(k)),clear:()=>{Object.keys(L).filter(k=>k.startsWith(P)).forEach(k=>L.removeItem(k))},key:i=>Object.keys(L).filter(k=>k.startsWith(P)).map(k=>k.slice(P.length))[i]??null,get length(){return Object.keys(L).filter(k=>k.startsWith(P)).length}};
+Object.defineProperty(window,'localStorage',{value:W,configurable:true})}catch(e){}})();</script>
 <script>
 const RA=(function(){const SEASON={id:"season",name:"Primavera 26"};
 const LEVELS = [
@@ -6293,6 +6297,7 @@ body.rl-wait>*:not(#rl-ld){visibility:hidden}
 body.rl .sday,body.rl #crew,body.rl .disc-card,body.rl .prev,body.rl #week,body.rl .cycle,body.rl #h-mot{display:none!important}
 body.rl .tabs [data-go="treino"],body.rl .tabs [data-go="dieta"],body.rl .tabs [data-go="checkin"],body.rl .tabs [data-go="matilha"]{opacity:.38}
 body.rl #o-now{display:none!important}
+body.rl #v-anamnese,body.rl #v-painel,body.rl #v-treino,body.rl #v-dieta,body.rl #v-checkin,body.rl #v-matilha{display:none!important}
 .rl-soon{margin:14px 0 0;border:1px dashed var(--line);border-radius:10px;padding:14px;font-size:13.5px;line-height:1.45;color:var(--muted)}
 .rl-soon b{color:var(--fg);display:block;margin-bottom:2px}
 </style>
@@ -6356,6 +6361,11 @@ document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
 
 /* ---- abas que ainda são demonstração ---- */
+const OKGO=new Set(['hoje','agenda']);
+document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-go2]');if(!t)return;const v=t.dataset.go||t.dataset.go2;if(OKGO.has(v)||v==='pref')return;
+  if(t.closest('.tabs'))return;e.stopImmediatePropagation();e.preventDefault();toast('Essa parte chega na próxima etapa do teste')},true);
+const me=document.getElementById('h-me');if(me){me.innerHTML=ini;me.onclick=()=>sheet(`<span class="lbl">Minha conta</span><p class="d" style="font-size:36px;margin:6px 0 4px">${(P.name||'').replace(/</g,'')}</p><p class="meta" style="margin:0 0 14px">${session.user.email}</p>
+  <button class="btn wide" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`,s=>{s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}
 const SOON={treino:'Seu treino com séries e cargas',dieta:'Sua dieta',checkin:'Check-in do dia',matilha:'Levels e medalhas'};
 document.querySelectorAll('.tabs [data-go]').forEach(b=>{const k=b.dataset.go;if(!SOON[k])return;b.addEventListener('click',e=>{e.stopImmediatePropagation();e.preventDefault();toast(SOON[k]+': chega na próxima etapa do teste')},true)});
 const sc=document.createElement('div');sc.className='rl-soon';sc.innerHTML=`<b>Treino, check-in e medalhas chegam na próxima etapa</b>Por enquanto o teste é da agenda: confirmar presença, cancelar ou remarcar e ver o seu mês.`;
