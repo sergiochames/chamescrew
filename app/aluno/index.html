@@ -3795,7 +3795,7 @@ function dDate(n){return new Date(2026,9,28+n)}
 function keyOf(n){if(n===0)return'Hoje';if(n===1)return'Amanhã';if(n===2)return'Sex';if(n===3)return'Sáb';const dt=new Date(2026,9,28+n),W=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];const k=W[dt.getDay()]+' '+dt.getDate()+'/'+(dt.getMonth()+1);
   if(DOFF[k]===undefined){DOFF[k]=n*24;DLAB[k]=[W[dt.getDay()].toUpperCase(),String(dt.getDate()).padStart(2,'0'),String(dt.getMonth()+1).padStart(2,'0')]}return k}
 function nOf(k){return DOFF[k]/24}
-function monOf(k){return dDate(DOFF[k]/24).getMonth()+1}
+function monOf(k){const d=dDate(DOFF[k]/24),A=window.__CYA||1;return d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}
 function wkOf(k){return Math.floor((DOFF[k]/24+2)/7)}
 function agDlX(x){const n=DOFF[x.d]/24;if(x.h<10){const p=n-1;const nm=p===0?'hoje':p===-1?'ontem':p===1?'amanhã':keyOf(p).toLowerCase();return{h:DOFF[x.d]-2,txt:`até 22:00 de ${nm}`}}
   return{h:DOFF[x.d]+x.h-6,txt:`até ${hh2(x.h-6)}${n===0?'':' de '+x.d.toLowerCase()}`}}
@@ -4475,7 +4475,7 @@ agAll();
 /* ===== v29: extra com prazo próprio, só o mês atual, mês seguinte travado, tela reorganizada, cores neutras ===== */
 const IW2=p=>`<svg class="lic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const XCAN=24;AG.xcob=AG.xcob||[];
-var NOWMO=()=>monOf(keyOf(TDN()));
+var NOWMO=()=>Math.max(monOf(keyOf(TDN())),window.__CYM0||0);
 const lockedK=k=>monOf(k)!==NOWMO()&&nOf(k)>TDN()+7;
 /* extra: cancelar até XCAN h sem cobrança */
 const _os29=outSheet;outSheet=function(x){if(!x.extra){_os29(x);return}const left=agLeft(x),ok=left>=XCAN;
@@ -4593,7 +4593,7 @@ sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I
 agAll();
 
 /* ===== v93: tela do mês clara (barra, lista por data, mudanças, créditos) ===== */
-const MESN=m=>MES[m]||'';
+const MESN=m=>{const A=window.__CYA||1;if(A>1){const e=new Date(2026,m,A-1);return `${A}/${m} a ${e.getDate()}/${e.getMonth()+1}`}return MES[m]||''};
 function monthData(M){const I=monthInfo(M),cur=M===NOWMO();
   let doneL=[];if(M===10){const H=Object.keys(HIST).map(Number).filter(n=>n<TDN()&&dDate(n).getMonth()+1===M).sort((a,b)=>a-b);H.forEach(n=>(HIST[n]||[]).forEach(e=>{if(e.st==='feita')doneL.push({n,h:e.h})}));doneL=doneL.slice(-(AG.done||0))}
   const pastS=I.L.filter(x=>!x.extra&&agLeft(x)<=0).map(x=>({n:nOf(x.d),h:x.h,x}));doneL=doneL.concat(pastS);
@@ -4601,7 +4601,7 @@ function monthData(M){const I=monthInfo(M),cur=M===NOWMO();
   const dadas=(AG.dadas||[]).filter(c=>monOf(c.d)===M),creds=AG.creds.filter(c=>monOf(c.from)===M);
   const f=doneL.length,m=up.length,c=creds.length,d=dadas.length,resto=Math.max(0,AG.quota-f-m-c-d);
   /* quanto ainda cabe no plano até o fim do mês, respeitando o limite da semana */
-  let cap=0;const st=liveSt(),last=new Date(2026,M,0);const n0=TDN()+1,nEnd=Math.round((last-dDate(0))/864e5);const W={};
+  let cap=0;const st=liveSt(),last=new Date(2026,M,(window.__CYA||1)-1);const n0=TDN()+1,nEnd=Math.round((last-dDate(0))/864e5);const W={};
   if(M>NOWMO())cap=resto;else if(M===NOWMO()){for(let n=n0;n<=nEnd;n++){if(dDate(n).getDay()===0)continue;const w=Math.floor((n+2)/7);W[w]=(W[w]||0)+1}
     Object.entries(W).forEach(([w,dias])=>{let pw=0;try{pw=ENG.planW(st,+w)}catch(_){}cap+=Math.min(dias,Math.max(0,AG.week-pw))})}
   const falta=Math.min(resto,cap),perdidas=resto-falta;
@@ -4622,8 +4622,8 @@ weekListSheet=function(M0){let M=NOWMO();const months=[10,11,12].filter(m=>m>=10
     const UQ=[...Q.up,...Q.ex].sort((a,b)=>nOf(a.d)-nOf(b.d)||a.h-b.h),UP=UQ.length>12?UQ.slice(0,3):UQ,MORE=UQ.length>12?UQ.slice(3):[];L+=UP.map(rowU).join('');
     if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'marcada':'marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
     L+=Q.creds.map(c=>`<div class="r93 cr"><span class="ic">+1</span><span><b>1 crédito para usar</b><small>vale até ${fmtDM(c.exp)} • da aula de ${dlab(c.from).toLowerCase()}</small></span><button class="btn small solid" data-m93="use">Usar</button></div>`).join('');
-    if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
-    if(Q.perdidas){const wk=Object.keys({}).length;L+=`<div class="r93 lost"><span class="ic">×</span><span><b>${Q.perdidas} ${Q.perdidas===1?'aula não usada':'aulas não usadas'} em ${MESN(M)}</b><small>${M<NOWMO()?'O prazo do mês acabou.':`Não cabem mais no plano até ${new Date(2026,M,0).getDate()}/${String(M).padStart(2,'0')}: sua semana já está completa no plano (${AG.week} por semana). ${AG.creds.length?'Use seu crédito ou peça uma aula extra.':'Um horário a mais seria extra.'}`}</small></span></div>`}
+    if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${(d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'))(new Date(2026,M,(window.__CYA||1)-1))}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
+    if(Q.perdidas){const wk=Object.keys({}).length;L+=`<div class="r93 lost"><span class="ic">×</span><span><b>${Q.perdidas} ${Q.perdidas===1?'aula não usada':'aulas não usadas'} em ${MESN(M)}</b><small>${M<NOWMO()?'O prazo do mês acabou.':`Não cabem mais no plano até ${(d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'))(new Date(2026,M,(window.__CYA||1)-1))}: sua semana já está completa no plano (${AG.week} por semana). ${AG.creds.length?'Use seu crédito ou peça uma aula extra.':'Um horário a mais seria extra.'}`}</small></span></div>`}
     s.querySelector('#mx').innerHTML=`<span class="lbl">${MESC2(M)}</span><p class="d" style="font-size:40px;margin:4px 0 10px">Suas aulas</p><div class="chg93${full?' full':''}"><span class="dots">${Array.from({length:lim},(_,i)=>`<i class="${i<u?'on':''}"></i>`).join('')}</span><span>${full?`Você já usou as ${lim} mudanças de ${MESN(M)}. Se não for, a aula conta como feita.`:`Mudanças sem custo: <b>${u} de ${lim}</b> usadas`}</span></div><div class="l93">${L||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)});
     s.querySelectorAll('[data-m93]').forEach(b=>b.onclick=()=>{s.remove();go('agenda');setTimeout(()=>{const h=$('#ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)})};
@@ -6297,6 +6297,7 @@ body.rl-wait>*:not(#rl-ld){visibility:hidden}
 body.rl .sday,body.rl #crew,body.rl .disc-card,body.rl .prev,body.rl #week,body.rl .cycle,body.rl #h-mot{display:none!important}
 body.rl .tabs [data-go="treino"],body.rl .tabs [data-go="dieta"],body.rl .tabs [data-go="checkin"],body.rl .tabs [data-go="matilha"]{opacity:.38}
 body.rl #o-now{display:none!important}
+body::before{z-index:2147483000!important}
 body.rl #v-anamnese,body.rl #v-painel,body.rl #v-treino,body.rl #v-dieta,body.rl #v-checkin,body.rl #v-matilha{display:none!important}
 .rl-soon{margin:14px 0 0;border:1px dashed var(--line);border-radius:10px;padding:14px;font-size:13.5px;line-height:1.45;color:var(--muted)}
 .rl-soon b{color:var(--fg);display:block;margin-bottom:2px}
@@ -6316,7 +6317,8 @@ const {data:P,error:e1}=await sb.from('profiles').select('*').eq('id',uid).singl
 if(e1||!P)return fail('Não deu para abrir seu perfil.');
 if(P.role==='equipe'){location.replace('/app/personal/');return}
 if(!P.onboarded){location.replace('/app/');return}
-const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth(),1);
+window.__CYA=Math.min(28,Math.max(1,P.cycle_day||1));try{await sb.rpc('gen_my_classes')}catch(_){}
+const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth()-1,window.__CYA);
 const [{data:CL,error:e2},{data:FX}]=await Promise.all([
   sb.from('classes').select('*').eq('student_id',uid).gte('starts_at',m0.toISOString()).order('starts_at'),
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
@@ -6342,6 +6344,7 @@ const DB={};
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr)AG.dadas.push({d:k,h});return}
   AG.slots.push({d:k,h,conf:c.status==='confirmada',fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||undefined})});
 try{R1.syncCred&&R1.syncCred()}catch(_){}
+{const fc=(CL||[]).find(c=>c.status!=='cancelada');if(fc){const d=new Date(fc.starts_at),A=window.__CYA;window.__CYM0=d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}}
 /* semana e dia de hoje na agenda */
 {const tn=dayN(now),tk=keyOf(tn),V=R1.AGV;if(V){V.sel=tn;V.mo=now.getMonth()+1;try{V.w=R1.wkOf(tk)}catch(_){}}}
 /* horários fixos reais */
