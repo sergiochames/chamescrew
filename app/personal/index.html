@@ -3994,7 +3994,10 @@ const nameOf=id=>{const s=STUD.find(x=>x.id===id);return s&&s.name||'Aluno'};
 /* ---- limpa a demonstração e coloca os dados reais ---- */
 function apply(){
   S.ev={};S.sp={};S.av.length=0;try{PNOT.length=0}catch(_){}
-  STU.length=0;STUD.filter(s=>s.onboarded).forEach(s=>{const q=(s.freq||2)*4;STU.push({n:s.name||'Aluno',q:[0,q],ph:(s.phone||'').replace(/\D/g,''),_id:s.id,loc:1})});
+  if(!window.__STPL&&STU[0])window.__STPL=JSON.parse(JSON.stringify(STU[0]));const T=window.__STPL||{};
+  STU.length=0;STUD.filter(s=>s.onboarded).forEach(s=>{const q=(s.freq||2)*4,nm=s.name||'Aluno';STU.push({n:nm,q:[0,q],ph:(s.phone||'').replace(/\D/g,''),_id:s.id,loc:1,
+    gen:'',cpf:s.doc_num||'',prof:'',ap:nm.split(' ')[0],ig:'',em:'',nasc:s.birth_date?s.birth_date.split('-').reverse().join('/'):'',obj:s.goal||'',niv:s.level||'',rest:s.injury||'',emg:'',pvt:'',
+    wc:JSON.parse(JSON.stringify(T.wc||{})),pin:false,tags:[],desc:0,remu:0,cred:0,ind:{},msgs:[],mode:T.mode||'',mod:JSON.parse(JSON.stringify(T.mod||[])),due:T.due||0,sx:''})});
   try{const U=[...new Set(CLS.map(c=>c.location).filter(Boolean))];if(U.length){LOCS.length=0;U.forEach((n,i)=>LOCS.push({id:i+1,n,ad:''}))}}catch(_){}
   const locId=n=>{try{const l=LOCS.find(x=>x.n===n);return l?l.id:undefined}catch(_){return undefined}};
   DBC={};const now=new Date();
@@ -4093,7 +4096,10 @@ document.addEventListener('click',()=>setTimeout(sync,150),true);
 
 /* avisos de demonstração e itens de exemplo */
 const _draw=draw;
-draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{if(S.tab!=='agenda'&&!document.querySelector('.rl-ex')){const ap=document.getElementById('app')||document.querySelector('.scroller');const d=document.createElement('div');d.className='rl-ex';d.innerHTML='<b>Em teste:</b> esta aba ainda usa dados de exemplo (alunos fictícios). A agenda já é real.';const br=ap&&ap.querySelector('.brand');(br?br.nextSibling:null)?br.after(d):ap&&ap.prepend(d)}}catch(_){}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
+draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{if(S.tab==='fin'){const ap=document.getElementById('app')||document.querySelector('.scroller');if(ap&&!ap.querySelector('.rl-fin')){const br=ap.querySelector('.brand');[...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
+  const n=CLS.filter(c=>c.status!=='cancelada'&&new Date(c.starts_at)>=new Date(new Date().getFullYear(),new Date().getMonth(),1)).length;
+  ap.insertAdjacentHTML('beforeend',`<div class="rl-fin" style="padding:6px 0"><span class="lbl">Financeiro</span><h2 class="d" style="font-size:44px;margin:4px 0 12px">Em breve</h2><div class="rlp" style="display:block"><b>Ainda sem cobranças pelo app</b><small style="line-height:1.45">Os pagamentos dos alunos (plano, aula extra e renovação) entram aqui quando ligarmos o Asaas. Por enquanto, nada de valores de exemplo para não confundir.</small></div><div class="rlp" style="display:block"><b>${STU.length} ${STU.length===1?'aluno ativo':'alunos ativos'} • ${n} ${n===1?'aula':'aulas'} neste mês</b><small>Contado das aulas reais da agenda.</small></div></div>`)}}}catch(_){}
+try{if(S.tab!=='agenda'&&S.tab!=='fin'&&!document.querySelector('.rl-ex')){const ap=document.getElementById('app')||document.querySelector('.scroller');const d=document.createElement('div');d.className='rl-ex';d.innerHTML=S.tab==='alunos'?'<b>Em teste:</b> a lista de alunos é real. Ficha, check-ins e medalhas ainda são de exemplo.':'<b>Em teste:</b> treinos de exemplo. Montar e publicar o treino de verdade chega na próxima etapa.';const br=ap&&ap.querySelector('.brand');(br?br.nextSibling:null)?br.after(d):ap&&ap.prepend(d)}}catch(_){}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 try{SUB.card='cartão de teste (conta dev, nada é cobrado)'}catch(_){}
 S.tab='agenda';draw();
