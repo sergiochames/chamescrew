@@ -4081,6 +4081,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('.tabs [data-tab]
 const _draw=draw;
 draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
+try{SUB.card='cartão de teste (conta dev, nada é cobrado)'}catch(_){}
 S.tab='agenda';draw();
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');ld.remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
