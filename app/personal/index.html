@@ -3945,7 +3945,7 @@ draw();
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:#6d6d68;z-index:9999;background:var(--bg,#f3f3ef)}
 body.rl .proto{display:none!important}
-body.rl .tabs [data-tab="treinos"],body.rl .tabs [data-tab="alunos"],body.rl .tabs [data-tab="fin"]{opacity:.38}
+.rl-ex{border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px;font-weight:600;color:var(--muted)}.rl-ex b{color:var(--fg)}
 .rlp{border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);padding:12px 14px;margin:10px 0 4px;display:flex;align-items:center;gap:10px}
 .rlp b{display:block;font-size:15px}.rlp small{display:block;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:2px}
 .rlp .n{width:28px;height:28px;border-radius:50%;background:var(--fg,#16171a);color:var(--bg,#fff);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
@@ -4090,10 +4090,10 @@ function invList(){if(!IV.length)return inviteSheet();sheet(`<span class="lbl">A
 window.addEventListener('pointerdown',e=>{if(e.target.closest('.wb.can'))e.stopPropagation()},true);
 document.addEventListener('click',()=>setTimeout(sync,150),true);
 /* ---- abas ainda em demonstração ---- */
-document.addEventListener('click',e=>{const t=e.target.closest('.tabs [data-tab]');if(!t||t.dataset.tab==='agenda')return;e.stopImmediatePropagation();e.preventDefault();toast({treinos:'Treinos',alunos:'Alunos',fin:'Financeiro'}[t.dataset.tab]+': chega na próxima etapa do teste')},true);
+
 /* avisos de demonstração e itens de exemplo */
 const _draw=draw;
-draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
+draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{if(S.tab!=='agenda'&&!document.querySelector('.rl-ex')){const ap=document.getElementById('app')||document.querySelector('.scroller');const d=document.createElement('div');d.className='rl-ex';d.innerHTML='<b>Em teste:</b> esta aba ainda usa dados de exemplo (alunos fictícios). A agenda já é real.';const br=ap&&ap.querySelector('.brand');(br?br.nextSibling:null)?br.after(d):ap&&ap.prepend(d)}}catch(_){}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 try{SUB.card='cartão de teste (conta dev, nada é cobrado)'}catch(_){}
 S.tab='agenda';draw();
