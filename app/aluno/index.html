@@ -3803,7 +3803,7 @@ for(let n=4;n<=40;n++){const dt=dDate(n),wd=dt.getDay();if(wd===0)continue;const
   RECUR.forEach(([w,h])=>{if(wd===w)AG.slots.push({d:k,h,conf:false,fix:1})});
   [6.5,7,8,9,12,16,17.25,18,19,20.5].forEach((h,i)=>{if(RECUR.some(([w,hh])=>w===wd&&hh===h))return;const r=(n*7+i*5)%9;if(r<3)AG.free.push(n<=12&&r===0&&(n+i)%2===0?[k,h,'des']:[k,h])})}
 {const f=AG.free.find(f=>f[0]==='Amanhã'&&f[1]===18);if(f)f[2]='des'}
-window.__RL1={get AGV(){try{return AGV}catch(e){return null}},get wkOf(){try{return wkOf}catch(e){return null}},get AG(){try{return AG}catch(e){return null}},get RECUR(){try{return RECUR}catch(e){return null}},get keyOf(){try{return keyOf}catch(e){return null}},get PLN(){try{return PLN}catch(e){return null}},get HIST(){try{return HIST}catch(e){return null}},get OCC(){try{return OCC}catch(e){return null}},get syncCred(){try{return syncCred}catch(e){return null}},get sumRender(){try{return sumRender}catch(e){return null}},get agAll(){try{return agAll}catch(e){return null}},get NOWH(){try{return NOWH}catch(e){return null}},setNow(v){NOWH=v},setAA(f){agAll=f}};
+window.__RL1={get WAL(){try{return WAL}catch(e){return null}},get AGV(){try{return AGV}catch(e){return null}},get wkOf(){try{return wkOf}catch(e){return null}},get AG(){try{return AG}catch(e){return null}},get RECUR(){try{return RECUR}catch(e){return null}},get keyOf(){try{return keyOf}catch(e){return null}},get PLN(){try{return PLN}catch(e){return null}},get HIST(){try{return HIST}catch(e){return null}},get OCC(){try{return OCC}catch(e){return null}},get syncCred(){try{return syncCred}catch(e){return null}},get sumRender(){try{return sumRender}catch(e){return null}},get agAll(){try{return agAll}catch(e){return null}},get NOWH(){try{return NOWH}catch(e){return null}},setNow(v){NOWH=v},setAA(f){agAll=f}};
 AG.free.push(['Amanhã',17.25],['Sáb',8.25]);
 const DONE_PAST=[{n:-2,h:18}];
 const AGV={v:'sem',w:1,sel:5,mo:11};
@@ -4304,7 +4304,7 @@ const ICO=window.ICO=(()=>{const w=p=>`<svg class="lic" viewBox="0 0 24 24" fill
  gift:w('<rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S10 9 12 9c2 0 6 1 6-1.5S14 5 12 9"/>'),
  trophy:w('<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>')}})();
 /* ===== v21: renovação com vantagens, upgrade em destaque, downgrade discreto, vaga na agenda ===== */
-PLN.f=2;const FREQ={2:{p:450,a:8,ok:true},3:{p:620,a:12,ok:true},4:{p:780,a:16,ok:false,why:'Sem vaga nos seus horários (18h) para 4x agora'}};
+PLN.f=2;const FREQ={2:{p:450,a:8,ok:true},3:{p:620,a:12,ok:true},4:{p:780,a:16,ok:false,why:'Para 4x por semana, fale com o Sérgio sobre os horários'}};
 const _or21=openRenew;openRenew=function(){RN.f=PLN.f;PLN.base=FREQ[PLN.f].p;_or21();RN.f=PLN.f;PLN.base=FREQ[RN.f].p;rnDraw()};
 const _rd21=rnDraw;rnDraw=function(){if(RN.f===undefined)RN.f=PLN.f;PLN.base=FREQ[RN.f].p;_rd21();const el=$('#rnw');if(!el)return;
   const F=FREQ[RN.f],cur=FREQ[PLN.f],pa=v=>window.paX(v);
@@ -6350,7 +6350,7 @@ const ALU=R2.ALU;ALU.n=P.name||'';ALU.ini=ini;ALU.email=session.user.email;
 document.querySelectorAll('button,span,div').forEach(el=>{if(el.children.length===0&&el.textContent.trim()==='AS')el.textContent=ini});
 const WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],MS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const h2=document.querySelector('#v-hoje .hero h2'),sub=document.querySelector('#v-hoje .hero .sub');if(h2)h2.textContent='Bora, '+first;if(sub)sub.textContent=`${WD[now.getDay()]}, ${now.getDate()} de ${MS[now.getMonth()]}`;
-const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;const PLN=R1.PLN;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
+const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;const PLN=R1.PLN;PLN.f=Math.min(4,Math.max(2,freq));if(R1.WAL)R1.WAL.items.length=0;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
 const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Seu plano';const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
 document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês/.test(el.textContent))el.textContent=`${freq*4} aulas por mês`});
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
