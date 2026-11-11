@@ -3880,7 +3880,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-ag-move],[
   if(d.agBook!==undefined){e.stopImmediatePropagation();const i=+d.agBook,f=AG.free[i];if(!f)return;const [dd,h]=f,des=f[2]==='des';
     if(AG.moving){const m=AG.moving,mo=monOf(m.d),used=remOf(mo),over=false;
       const head=`<span class="lbl">Remarcar${des?' • vaga de desistência':''}</span><p class="d" style="font-size:32px;margin:6px 0">${dlab(m.d)} ${hh2(m.h)} → ${dlab(dd)} ${hh2(h)}</p>`;
-      if(!over)sheet(head+`<p class="meta" style="margin:0">Sem custo. O ${PERS_NOME()} precisa confirmar o novo horário; até lá, sua aula atual continua garantida. Conta como 1 mudança em ${MES[mo]}.</p>${whyHTML('remarcação')}<button class="btn solid wide" id="rm-ok">Pedir remarcação</button>`,sh=>{sh.querySelector('#rm-ok').onclick=()=>{const w=readWhy(sh);sh.remove();doMove(i,false,w)}});
+      if(!over)sheet(head+`<p class="meta" style="margin:0">Sem custo. O ${PERS_NOME()} precisa confirmar o novo horário; até lá, sua aula atual continua garantida. Conta como 1 mudança${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}.</p>${whyHTML('remarcação')}<button class="btn solid wide" id="rm-ok">Pedir remarcação</button>`,sh=>{sh.querySelector('#rm-ok').onclick=()=>{const w=readWhy(sh);sh.remove();doMove(i,false,w)}});
       else{AG.moving=null;agAll();limSheet(m)}
       return}
     const q=quotaFor(dd),useCredit=credFor(dd),extra=!useCredit&&(q.full||q.wfull);
@@ -4043,7 +4043,7 @@ function cancelX(x){const ok=inTime(x),mo=monOf(x.d),used=credOf(mo),cap=AG.cred
   const kind=!ok?'fora':x.extra?'avulsa':canCred?'credito':'teto';
   const T={fora:['Fora do prazo','O prazo para cancelar sem perder era '+agDl(x).txt+'. Se cancelar agora, a aula conta como dada.','Cancelar mesmo assim'],
     avulsa:['Avulsa cancelada','A aula avulsa é cancelada sem cobrança.','Cancelar aula avulsa'],
-    credito:['Vira crédito',`Você ganha 1 crédito (${used+1} de ${cap} em ${MES[mo]}). Ele vale até ${fmtDM(nOf(x.d)+AG.credVal)}. Para usar, peça um horário livre e o ${PN()} confirma.`,'Cancelar e guardar crédito'],
+    credito:['Vira crédito',`Você ganha 1 crédito (${used+1} de ${cap}${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}). Ele vale até ${fmtDM(nOf(x.d)+AG.credVal)}. Para usar, peça um horário livre e o ${PN()} confirma.`,'Cancelar e guardar crédito'],
     teto:['Sem crédito este mês',`Você já usou seus ${cap} créditos de ${MES[mo]}. Se cancelar, essa aula conta como dada.`,'Cancelar mesmo assim']}[kind];
   sheet(`<span class="lbl">Cancelar ${dlab(x.d)} • ${hh2(x.h)}</span><p class="d" style="font-size:38px;margin:6px 0">${T[0]}</p>${kind==='fora'||kind==='teto'?`<div class="avb red"><b>A aula conta como dada.</b><span>${T[1]}</span></div>`:`<p class="meta">${T[1]}</p>`}
     ${whyHTML('cancelamento')}<button class="btn solid wide" id="cx-ok">${T[2]}</button><button class="btn wide" style="margin-top:8px" id="cx-no">Manter minha aula</button>`,
@@ -4069,10 +4069,10 @@ function addCred(fromKey){AG.creds.push({from:fromKey,exp:nOf(fromKey)+AG.credVa
 function credFor(dd){return AG.creds.some(c=>c.exp>=nOf(dd))}
 function useCred(dd){const i=AG.creds.findIndex(c=>c.exp>=nOf(dd));const c=i>=0?AG.creds.splice(i,1)[0]:null;syncCred();return c}
 const nCred=n=>n===1?'1 crédito':n+' créditos';
-const MESC2=m=>MES[m]?MES[m][0].toUpperCase()+MES[m].slice(1):'';
+const MESC2=m=>(window.__CYA||1)>1?'Seu mês • '+MESN(m):MES[m]?MES[m][0].toUpperCase()+MES[m].slice(1):'';
 function limSheet(x){const mo=monOf(x.d),left=AG.credCap-credOf(mo);
   sheet(`<span class="lbl">Remarcar ${dlab(x.d)} • ${hh2(x.h)}</span><p class="d" style="font-size:36px;margin:6px 0">Limite de remarcações</p><p class="meta">Você já usou as ${AG.remLim} remarcações de ${MES[mo]}.</p>
-   ${left>0&&inTime(x)?`<div class="avb"><b>Dá para cancelar e guardar crédito.</b><span>Você ainda tem ${nCred(left)} em ${MES[mo]}. Depois é só pedir outro horário usando o crédito.</span></div><button class="btn solid wide" id="lr-c">Cancelar e guardar crédito</button>`:`<div class="avb red"><b>Os créditos de ${MES[mo]} também acabaram.</b><span>Se não puder ir, a aula conta como dada.</span></div>`}
+   ${left>0&&inTime(x)?`<div class="avb"><b>Dá para cancelar e guardar crédito.</b><span>Você ainda tem ${nCred(left)}${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}. Depois é só pedir outro horário usando o crédito.</span></div><button class="btn solid wide" id="lr-c">Cancelar e guardar crédito</button>`:`<div class="avb red"><b>Os créditos de ${MES[mo]} também acabaram.</b><span>Se não puder ir, a aula conta como dada.</span></div>`}
    <button class="btn wide" style="margin-top:8px" id="lr-k">Manter minha aula</button>`,s=>{s.querySelector('#lr-k').onclick=()=>s.remove();const c=s.querySelector('#lr-c');if(c)c.onclick=()=>{s.remove();cancelX(x)}})}
 function credSheet(){const L=AG.creds;sheet(`<span class="lbl">Seus créditos</span><p class="d" style="font-size:40px;margin:6px 0 8px">${nCred(L.length)}</p>
   <div class="crl">${L.map(c=>`<div><span>De ${dlab(c.from).toLowerCase()}</span><b>vale até ${fmtDM(c.exp)}</b></div>`).join('')||'<p class="meta">Nenhum crédito agora.</p>'}</div>
@@ -4100,7 +4100,7 @@ function outSheet(x){const ok=inTime(x),mo=monOf(x.d),u=chgOf(mo),lim=AG.chgLim,
   if(x.extra&&ok){sheet(head+`<p class="meta">É uma aula avulsa: dá para cancelar sem cobrança.</p><button class="btn solid wide" id="o-x">Cancelar aula avulsa</button><button class="btn wide" style="margin-top:8px" data-close3>Manter minha aula</button>`,s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-x').onclick=()=>{s.remove();freeX(x,'avulsa')}});return}
   if(!ok||!cap){sheet(head+`<div class="avb red"><b>A aula conta como dada.</b><span>${!ok?`O prazo para mudar sem perder era ${agDl(x).txt}.`:`Você já usou suas ${lim} mudanças de ${MES[mo]}.`} Se liberar o horário, ele fica para outra pessoa.</span></div>${whyHTML('falta')}<button class="btn solid wide" id="o-x">Liberar o horário mesmo assim</button><button class="btn wide" style="margin-top:8px" data-close3>Manter minha aula</button>`,
     s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-x').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'dada',w)}});return}
-  sheet(head+`<p class="meta" style="margin:0 0 12px">Mudança ${u+1} de ${lim} em ${MES[mo]}. Sem custo. Escolha:</p>
+  sheet(head+`<p class="meta" style="margin:0 0 12px">Mudança ${u+1} de ${lim}${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}. Sem custo. Escolha:</p>
     <button class="opt3" id="o-now"><b>Escolher outro horário agora</b><small>Sua aula fica garantida até o ${PN()} confirmar o novo.</small></button>
     <button class="opt3" id="o-later"><b>Guardar para depois</b><small>Vira 1 crédito, vale até ${fmtDM(Math.min(nOf(x.d)+AG.credVal,AG.planEnd))}. O horário fica livre para outra pessoa.</small></button>
     ${whyHTML('mudança')}<button class="btn wide" data-close3>Manter minha aula</button>`,
@@ -4308,13 +4308,13 @@ const ICO=window.ICO=(()=>{const w=p=>`<svg class="lic" viewBox="0 0 24 24" fill
  gift:w('<rect x="3.5" y="9" width="17" height="11" rx="1.5"/><path d="M3 9h18M12 9v11M12 9c-2-4-6-4-6-1.5S10 9 12 9c2 0 6 1 6-1.5S14 5 12 9"/>'),
  trophy:w('<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>')}})();
 /* ===== v21: renovação com vantagens, upgrade em destaque, downgrade discreto, vaga na agenda ===== */
-PLN.f=2;const FREQ={2:{p:450,a:8,ok:true},3:{p:620,a:12,ok:true},4:{p:780,a:16,ok:false,why:'Para 4x por semana, fale com o Sérgio sobre os horários'}};
+PLN.f=2;const FREQ={1:{p:260,a:4,ok:true},2:{p:450,a:8,ok:true},3:{p:620,a:12,ok:true},4:{p:780,a:16,ok:false,why:'Para 4x por semana, fale com o Sérgio sobre os horários'}};
 const _or21=openRenew;openRenew=function(){RN.f=PLN.f;PLN.base=FREQ[PLN.f].p;_or21();RN.f=PLN.f;PLN.base=FREQ[RN.f].p;rnDraw()};
 const _rd21=rnDraw;rnDraw=function(){if(RN.f===undefined)RN.f=PLN.f;PLN.base=FREQ[RN.f].p;_rd21();const el=$('#rnw');if(!el)return;
   const F=FREQ[RN.f],cur=FREQ[PLN.f],pa=v=>window.paX(v);
   const ben=`<div class="rnb"><span class="lbl">O que seu plano tem</span><ul>
     <li>${ICO.cal}<span><b>${F.a} aulas por mês</b> com o ${PN()} • ${RN.f}x por semana</span></li>
-    <li>${ICO.swap}<span><b>${AG.chgLim} mudanças por mês</b> sem custo, avisando no prazo</span></li>
+    <li>${ICO.swap}<span><b>${AG.chgLim} ${AG.chgLim===1?'mudança':'mudanças'} por mês</b> sem custo, avisando no prazo</span></li>
     <li>${ICO.card}<span><b>Crédito de 30 dias</b> quando não puder ir</span></li>
     <li>${ICO.dumb}<span><b>Treino e app completos</b>: ficha, check-in, evolução e conquistas</span></li></ul></div>`;
   const ups=[3,4].filter(f=>f>PLN.f).map(f=>{const v=FREQ[f];return `<button class="rnup${RN.f===f?' on':''}${v.ok?'':' lock'}" data-rnf="${f}" ${v.ok?'':'aria-disabled="true"'}>
@@ -4502,7 +4502,7 @@ AG.xcr=AG.xcr||0;window.CARD94=window.CARD94||{b:'VISA',n:'4821'};
 /* só aulas do mês atual no carrossel */
 {const _ns=nextSlot;nextSlot=function(){if(AG.moving&&agLeft(AG.moving)>0)return AG.moving;const up=AG.slots.filter(x=>agLeft(x)>0&&monOf(x.d)===NOWMO());if(!up.length){NX.n=0;return null}NX.n=up.length;NX.i=Math.max(0,Math.min(NX.i,up.length-1));return up[NX.i]}}
 renderNext=(prev=>function(){prev();const el=$('#ag-next');if(!el)return;if(!nextSlot()&&!AG.moving)el.innerHTML=`<div class="block frost"><span class="lbl">${MESC2(NOWMO())}</span><p class="d" style="font-size:32px;margin:6px 0">Suas aulas de ${MES[NOWMO()]} terminaram</p><p class="meta" style="margin:0">As aulas de ${MES[NOWMO()+1]} aparecem aqui a partir do dia 1º.</p></div>`;
-  const p=el.querySelector('.nxn span');if(p)p.textContent=p.textContent+` em ${MES[NOWMO()].slice(0,3)}`})(renderNext);
+  const p=el.querySelector('.nxn span');if(p)p.textContent=p.textContent+((window.__CYA||1)>1?' no mês':` em ${MES[NOWMO()].slice(0,3)}`)})(renderNext);
 /* mês seguinte travado (exceto próximos 7 dias) */
 window.addEventListener('click',e=>{const b=e.target.closest('[data-ag-book],[data-ag-move],[data-ag-cancel],[data-agact]');if(!b)return;let k=null;
   if(b.dataset.agBook!==undefined){const f=AG.free[+b.dataset.agBook];k=f&&f[0]}else{const x=AG.slots[+(b.dataset.agMove??b.dataset.agCancel??b.dataset.agact)];k=x&&x.d}
@@ -4557,8 +4557,8 @@ credSheet=function(M0){const months=[...new Set([9,10,11,12].filter(m=>m<=NOWMO(
     s.querySelector('#cx').innerHTML=`${months.length>1?`<div class="seg pvs" style="grid-template-columns:repeat(${months.length},1fr);margin-bottom:12px">${months.map(m=>`<button data-cm="${m}" aria-selected="${m===M}">${MESC2(m)}</button>`).join('')}</div>`:''}
      <p class="d" style="font-size:40px;margin:0 0 2px">${M===NOWMO()?AG.creds.length:Math.max(0,saldo)} ${M===NOWMO()?'para usar':'no fim do mês'}</p><p class="meta" style="margin:0 0 12px">${MESC2(M)}${carry?` • veio${carry>1?'ram':''} ${carry} de ${MES[M-1]}`:''} • ganhou ${Gm.length} • usou ${Um.length}</p>
      ${carry?`<div class="crl"><div class="carry"><span>Veio de ${MES[M-1]}</span><b>+${carry}</b></div></div>`:''}
-     <p class="lbl" style="margin:10px 0 6px">Ganhos em ${MES[M]}</p><div class="crl">${Gm.map(x=>`<div><span>${x.t}</span><b>+1</b></div>`).join('')||'<p class="meta" style="margin:0">Nenhum.</p>'}</div>
-     <p class="lbl" style="margin:12px 0 6px">Usados em ${MES[M]}</p><div class="crl">${Um.map(x=>`<div><span>${x.t}</span><b>−1</b></div>`).join('')||'<p class="meta" style="margin:0">Nenhum.</p>'}</div>
+     <p class="lbl" style="margin:10px 0 6px">Ganhos${(window.__CYA||1)>1?' no seu mês':' em '+MES[M]}</p><div class="crl">${Gm.map(x=>`<div><span>${x.t}</span><b>+1</b></div>`).join('')||'<p class="meta" style="margin:0">Nenhum.</p>'}</div>
+     <p class="lbl" style="margin:12px 0 6px">Usados${(window.__CYA||1)>1?' no seu mês':' em '+MES[M]}</p><div class="crl">${Um.map(x=>`<div><span>${x.t}</span><b>−1</b></div>`).join('')||'<p class="meta" style="margin:0">Nenhum.</p>'}</div>
      ${M===NOWMO()&&AG.creds.length?`<p class="lbl" style="margin:12px 0 6px">Para usar</p><div class="crl">${AG.creds.map(c=>`<div><span>1 crédito${monOf(c.from||keyOf(TDN()))<M?` • de ${MES[monOf(c.from)]}`:''}</span><b>vale até ${fmtDM(c.exp)}</b></div>`).join('')}</div><button class="btn solid wide" id="cr-use" style="margin-top:12px">Escolher horário</button>`:''}`;
     const u=s.querySelector('#cr-use');if(u)u.onclick=()=>{s.remove();go('agenda');setTimeout(()=>$('#ag-cal-h').scrollIntoView({behavior:'smooth',block:'start'}),60)}};
   sheet(`<span class="lbl">Extrato de créditos</span><div id="cx" style="margin-top:8px"></div>`,s=>{draw(s);s.addEventListener('click',e=>{const b=e.target.closest('[data-cm]');if(b){M=+b.dataset.cm;draw(s)}})})};
@@ -4586,14 +4586,14 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
 function hxFill(){const hx=document.getElementById('hx94');if(!hx)return;const M=NOWMO(),Q=monthData(M),N=AG.quota,u=chgOf(M),lim=AG.chgLim;
   const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.m).fill('m'),...Array(Q.c).fill('c'),...Array(Q.falta).fill('e'),...Array(Q.perdidas).fill('x')].slice(0,Math.max(N,Q.f+Q.d+Q.m+Q.c));
   const st=[[Q.f,Q.f===1?'feita':'feitas',1],[Q.m,Q.m===1?'marcada':'marcadas',1],[Q.c,Q.c===1?'crédito':'créditos'],[Q.falta,'para marcar'],[Q.perdidas,Q.perdidas===1?'não usada':'não usadas']].filter(z=>z[0]||z[2]);
-  hx.innerHTML=`<p class="d">Suas aulas de ${MESN(M)}</p><div class="mb93" style="grid-template-columns:repeat(${seg.length},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div><div class="st">${st.map(z=>`<span><b>${z[0]}</b> ${z[1]}</span>`).join('')}${Q.ex.length?`<span><b>+${Q.ex.length}</b> extra</span>`:''}<span><b>${u} de ${lim}</b> mudanças</span></div><div class="go"><span>Ver aulas, créditos e mudanças</span><span>›</span></div>`;
+  hx.innerHTML=`<p class="d">Suas aulas de ${MESN(M)}</p><div class="mb93" style="grid-template-columns:repeat(${seg.length},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div><div class="st">${st.map(z=>`<span><b>${z[0]}</b> ${z[1]}</span>`).join('')}${Q.ex.length?`<span><b>+${Q.ex.length}</b> extra</span>`:''}<span><b>${u} de ${lim}</b> ${lim===1?'mudança':'mudanças'}</span></div><div class="go"><span>Ver aulas, créditos e mudanças</span><span>›</span></div>`;
   hx.hidden=false;hx.onclick=()=>weekListSheet()}
 sumRender=(prev=>function(){prev();try{hxFill()}catch(_){}})(sumRender);setTimeout(()=>{try{hxFill()}catch(_){}},0);
 sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I=monthInfo(NOWMO()),n=I.tot+I.ex;const sp=bar.querySelector('span');if(sp)sp.innerHTML=`<b>${MESC2(NOWMO())}:</b> ${I.used} de ${AG.quota} aulas${I.ex?` + ${I.ex} extra`:''}`;bar.onclick=()=>weekListSheet()})(sumRender);
 agAll();
 
 /* ===== v93: tela do mês clara (barra, lista por data, mudanças, créditos) ===== */
-const MESN=m=>{const A=window.__CYA||1;if(A>1){const e=new Date(2026,m,A-1);return `${A}/${m} a ${e.getDate()}/${e.getMonth()+1}`}return MES[m]||''};
+const MESN=m=>{const A=window.__CYA||1;if(A>1){const e=new Date(2026,m,A-1);const z=n=>String(n).padStart(2,'0');return `${z(A)}/${z(m)} a ${z(e.getDate())}/${z(e.getMonth()+1)}`}return MES[m]||''};
 function monthData(M){const I=monthInfo(M),cur=M===NOWMO();
   let doneL=[];if(M===10){const H=Object.keys(HIST).map(Number).filter(n=>n<TDN()&&dDate(n).getMonth()+1===M).sort((a,b)=>a-b);H.forEach(n=>(HIST[n]||[]).forEach(e=>{if(e.st==='feita')doneL.push({n,h:e.h})}));doneL=doneL.slice(-(AG.done||0))}
   const pastS=I.L.filter(x=>!x.extra&&agLeft(x)<=0).map(x=>({n:nOf(x.d),h:x.h,x}));doneL=doneL.concat(pastS);
@@ -6359,7 +6359,7 @@ const ALU=R2.ALU;ALU.n=P.name||'';ALU.ini=ini;ALU.email=session.user.email;
 document.querySelectorAll('button,span,div').forEach(el=>{if(el.children.length===0&&el.textContent.trim()==='AS')el.textContent=ini});
 const WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],MS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const h2=document.querySelector('#v-hoje .hero h2'),sub=document.querySelector('#v-hoje .hero .sub');if(h2)h2.textContent='Bora, '+first;if(sub)sub.textContent=`${WD[now.getDay()]}, ${now.getDate()} de ${MS[now.getMonth()]}`;
-const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;const PLN=R1.PLN;PLN.f=Math.min(4,Math.max(2,freq));if(R1.WAL)R1.WAL.items.length=0;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
+const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;const PLN=R1.PLN;PLN.f=Math.min(4,Math.max(1,freq));if(R1.WAL)R1.WAL.items.length=0;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
 const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Seu plano';const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
 document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês/.test(el.textContent))el.textContent=`${freq*4} aulas por mês`});
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
