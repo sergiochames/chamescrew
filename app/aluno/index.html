@@ -6295,7 +6295,7 @@ p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:var(--muted,#888);z-index:9999;background:var(--bg,#1c1d20)}
 body.rl .prev,body.rl #h-mot,body.rl .sday,body.rl #crew,body.rl .disc-card,body.rl #week,body.rl .cycle,body.rl #ci-alert,body.rl #h-next,body.rl #h-macros{display:none!important}
-body.rl #v-treino>*:not(.rl-empty):not(#rl-tr),body.rl #v-dieta>*:not(.rl-empty),body.rl #v-checkin>*:not(.rl-empty),body.rl #v-matilha>*:not(.rl-empty){display:none!important}
+body.rl #v-treino>*:not(.rl-empty):not(#rl-tr),body.rl #v-dieta>*:not(.rl-empty),body.rl #v-checkin>*:not(.rl-empty):not(#rl-ci),body.rl #v-matilha>*:not(.rl-empty){display:none!important}
 .rl-empty{padding:8px 0}.rl-empty .d{font-size:44px;line-height:.95;margin:4px 0 12px}.rl-empty .box{border:1px dashed var(--line);border-radius:12px;padding:18px 16px;font-size:14px;line-height:1.5;color:var(--muted)}.rl-empty .box b{display:block;color:var(--fg);font-size:16px;margin-bottom:4px}
 body.rl #o-now{display:none!important}
 body::before{z-index:2147483000!important}
@@ -6307,6 +6307,9 @@ body.rl #v-painel{display:none!important}
 #rl-tr .rl-log{display:flex;justify-content:space-between;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);font-size:14px}#rl-tr .rl-log small{color:var(--muted);font-weight:700}
 #rl-tr .rl-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}#rl-tr .rl-sum div,.rl-sumx div{border:1.5px solid var(--line);border-radius:14px;padding:10px 12px}.rl-sumx{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.rl-sumx span{display:block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.rl-sumx b{font-family:var(--display);font-size:30px}
 #rl-trh{margin:0 0 14px}
+#rl-ci .rl-ok{border:1.5px solid var(--ok);background:var(--ok-bg);border-radius:16px;padding:14px 16px;margin:12px 0}#rl-ci .rl-ok .d{font-size:34px;margin:4px 0 2px}
+#rl-ci .rl-cnt{text-align:center;margin:8px 0 0}#rl-ci .rl-lock{border:1px dashed var(--line);border-radius:12px;padding:14px;font-size:13.5px;color:var(--muted);line-height:1.45;margin-top:12px}#rl-ci .rl-lock b{color:var(--fg);display:block}
+#rl-cih{margin:0 0 14px}#rl-cih .row{align-items:center}
 .rl-soon b{color:var(--fg);display:block;margin-bottom:2px}
 </style>
 <div id="rl-ld">Carregando…</div>
@@ -6377,7 +6380,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-
 const me=document.getElementById('h-me');if(me){me.innerHTML=ini;me.onclick=()=>sheet(`<span class="lbl">Minha conta</span><p class="d" style="font-size:36px;margin:6px 0 4px">${(P.name||'').replace(/</g,'')}</p><p class="meta" style="margin:0 0 14px">${session.user.email}</p>
   <button class="btn wide" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`,s=>{s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}
 const EMP={treino:['Treino','Seu treino aparece aqui','Quando o Sérgio publicar o seu treino, ele aparece nesta aba com as séries, as cargas e o vídeo de cada exercício.'],dieta:['Dieta','Sua dieta aparece aqui','Quando o Sérgio enviar a sua dieta, ela aparece nesta aba.'],checkin:['Check-in','Em breve','O check-in do dia e da semana entra aqui na próxima etapa do teste.'],matilha:['Matilha','Seu level começa agora','Levels e medalhas contam a partir dos seus primeiros treinos registrados no app. Isso entra na próxima etapa do teste.']};
-const ensureEmp=()=>Object.entries(EMP).forEach(([k,[l,t,x]])=>{if(k==='treino'&&window.__HASTR)return;const v=document.getElementById('v-'+k);if(v&&!v.querySelector('.rl-empty')){const d=document.createElement('div');d.className='rl-empty';d.innerHTML=`<span class="lbl">${l}</span><p class="d">${t}</p><div class="box"><b>${l==='Matilha'?'Recruta':'Nada por aqui ainda'}</b>${x}</div>`;v.prepend(d)}});
+const ensureEmp=()=>Object.entries(EMP).forEach(([k,[l,t,x]])=>{if(k==='treino'&&window.__HASTR||k==='checkin')return;const v=document.getElementById('v-'+k);if(v&&!v.querySelector('.rl-empty')){const d=document.createElement('div');d.className='rl-empty';d.innerHTML=`<span class="lbl">${l}</span><p class="d">${t}</p><div class="box"><b>${l==='Matilha'?'Recruta':'Nada por aqui ainda'}</b>${x}</div>`;v.prepend(d)}});
 
 /* ===== ETAPA B: treino real (fichas do personal em workouts, registro em workout_logs) ===== */
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -6474,6 +6477,79 @@ if(box){
   document.addEventListener('click',e=>{const b=e.target.closest('[data-rthoje]');if(!b)return;const dk=doneToday();if(dk){VIEW='home';draw();try{go('treino')}catch(_){}return}start(RUN?RUN.k:pickToday())});
   const tb=document.querySelector('.tabs button[data-go="treino"]');if(tb)tb.addEventListener('click',()=>setTimeout(draw,0));
   draw()}
+
+/* ===== ETAPA B: check-in real (daily_checkins + week_closes) ===== */
+{
+const wkStart=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()-((x.getDay()+6)%7));return x};
+const W0=wkStart(now),W0s=ymd(W0),PW0=new Date(W0.getTime()-7*864e5),PW0s=ymd(PW0);
+const [{data:DC},{data:WC}]=await Promise.all([sb.from('daily_checkins').select('*').eq('user_id',uid).gte('day',PW0s).order('day'),
+  sb.from('week_closes').select('*').eq('user_id',uid).gte('week_start',PW0s)]);
+const DCS=(DC||[]).slice(),WCS=(WC||[]).slice();
+const kg=+P.weight_kg||0,agua=kg?Math.min(4,Math.max(2,Math.round(kg*35/250)*.25)):0,LT=x=>x.toLocaleString('pt-BR')+' L';
+const Q=[['treinou','Treinou hoje?',['Sim','Não','Dia de descanso']],['intens','Como foi o treino?',['Leve','Moderado','Pesado','No limite']],['energia','Como está sua energia?',['Baixa','Ok','Alta']],
+ ['cardio','Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min']],['livre','Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food']],['doce','Comeu doce fora do plano?',['Não','Um pouco','Sim']],
+ ['agua',agua?`Bateu sua meta de água hoje (${LT(agua)})?`:'Bebeu água suficiente hoje?',['Não','Quase','Bati a meta']],['sono','Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais']]];
+const A={};let MODE='dia';
+const todayCI=()=>DCS.find(d=>d.day===TODAY);
+const qs=()=>Q.filter(q=>!(q[0]==='intens'&&A.treinou!==undefined&&A.treinou!==0));
+if(LOGS.find(l=>l.day===TODAY))A.treinou=0;
+/* qual semana dá para fechar: domingo 18h até terça 23h59 */
+function closable(){const dw=now.getDay(),h=now.getHours();if(dw===0&&h>=18)return W0s;if(dw===1||dw===2)return PW0s;return null}
+const fmt=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+function weekRows(ws){const w0=new Date(ws+'T12:00:00'),w1=new Date(w0.getTime()+6*864e5),inW=d=>d>=ws&&d<=ymd(w1);
+  const dc=DCS.filter(d=>inW(d.day)),lg=LOGS.filter(l=>inW(l.day));const el=ws===W0s?((now.getDay()+6)%7)+1:7;
+  const c=(k,ok)=>dc.filter(d=>d.answers&&ok.includes(d.answers[k])).length;
+  const tTarget=PL.length?Math.max(...[PL.reduce((a,p)=>a+p.days.length,0),0])||freq:freq;
+  return {w0,w1,el,R:[['Treinos','treino',Math.max(lg.length,c('treinou',[0])),tTarget],['Check-in do dia','checkin',dc.length,el],['Sono de 7h ou mais','sono',c('sono',[2]),el],['Meta de água','agua',c('agua',[2]),el],['Sem fast food','fastfood',c('livre',[0]),el],['Sem doce','doce',c('doce',[0]),el]]}}
+function liveHTML(ws){const {w0,w1,el,R}=weekRows(ws);const mt=window.mtile||(()=>'');
+  return `<div class="row"><span class="lbl">Semana ${fmt(w0)} a ${fmt(w1)}</span><span class="pill">${ws===W0s?'dia '+el+' de 7':'encerrada'}</span></div>
+   <div class="wl">${R.map(([n,ic,d,t])=>{const ok=t>0&&d>=t;return `<div class="wl-r${ok?' ok':''}"><span class="wl-ic">${mt(ic,38)}</span><span class="wl-n">${n}</span><span class="wl-v">${d} de ${t}${ok?' ✓':''}</span><div class="wl-b"><i style="width:${t?Math.min(100,d/t*100):0}%"></i></div></div>`}).join('')}</div>
+   <p class="meta" style="font-size:12.5px;margin:10px 0 0">Soma sozinho com o check-in do dia e os treinos registrados.</p>`}
+function diaHTML(){const t=todayCI();
+  if(t)return `<div class="rl-ok"><span class="lbl">Check-in do dia</span><p class="d">Enviado ✓</p><p class="meta" style="margin:0">O Sérgio já recebeu. Volte amanhã para o próximo.</p></div>`;
+  const L=qs(),n=L.filter(q=>A[q[0]]!==undefined).length;
+  return `<div>${L.map(q=>`<div class="q"><h4>${q[1]}</h4><div class="chips">${q[2].map((o,j)=>`<button class="chip" aria-pressed="${A[q[0]]===j}" data-rq="${q[0]}-${j}">${o}</button>`).join('')}</div></div>`).join('')}</div>
+   <button class="btn solid wide" style="margin-top:14px" data-rcisend>Enviar check-in do dia</button><p class="meta rl-cnt" id="rl-cicnt">${n} de ${L.length} respondidas</p>`}
+function semHTML(){const cw=closable(),done=cw&&WCS.find(w=>w.week_start===cw);let out=`<div class="block frost" style="margin-top:12px">${liveHTML(W0s)}</div>`;
+  if(!cw)return out+`<div class="rl-lock"><b>Fechar a semana libera domingo às 18h</b>O prazo vai até terça 23h59. Leva 30 segundos: peso (opcional), se tem alguma dor e um recado para o Sérgio.</div>`;
+  if(done)return out+`<div class="rl-ok"><span class="lbl">Semana ${fmt(new Date(cw+'T12:00:00'))}</span><p class="d">Semana fechada ✓</p><p class="meta" style="margin:0">A próxima libera domingo às 18h.</p></div>`;
+  return (cw!==W0s?`<div class="block frost" style="margin-top:12px">${liveHTML(cw)}</div>`:out)+`<div class="wk-close" style="margin-top:12px"><span class="lbl">Fechar a semana</span><p class="d" style="font-size:30px;margin:4px 0 6px">30 segundos</p>
+   <div class="q"><h4>Seu peso hoje <small style="font-weight:700;color:var(--muted)">(opcional)</small></h4><input class="inp" id="rl-wpeso" inputmode="decimal" placeholder="ex.: 69,4" style="max-width:160px">
+   <p class="meta" style="font-size:12.5px;margin:8px 0 0"><b>OBS:</b> pese em jejum, de manhã, depois de ir ao banheiro, sempre na mesma balança.</p></div>
+   <div class="q"><h4>Alguma dor ou desconforto que o Sérgio precisa saber?</h4><div class="chips">${['Nenhuma','Leve','Moderada','Forte'].map((o,j)=>`<button class="chip" aria-pressed="${A._pain===j}" data-rpain="${j}">${o}</button>`).join('')}</div></div>
+   <div class="q"><h4>Quer contar algo para o Sérgio? <small style="font-weight:700;color:var(--muted)">(opcional)</small></h4><textarea class="inp" id="rl-wmsg" rows="2" style="min-height:64px" placeholder="Como foi a semana, dúvidas, viagem…"></textarea></div>
+   <button class="btn solid wide" style="margin-top:14px" data-rwsend="${cw}">Fechar a semana</button></div>`}
+const hostC=document.getElementById('v-checkin');let cbox=null;
+if(hostC){cbox=document.createElement('div');cbox.id='rl-ci';hostC.prepend(cbox)}
+function drawCI(){if(!cbox)return;const pe=cbox.querySelector('#rl-wpeso'),ms=cbox.querySelector('#rl-wmsg');const keep=[pe&&pe.value,ms&&ms.value];
+  cbox.innerHTML=`<div class="hero"><span class="motto">Check-in</span><h2 class="d">Check-in</h2><p class="sub">${MODE==='dia'?'Rápido: alguns toques por dia.':'Sua semana se monta sozinha com o check-in do dia.'}</p></div>
+   <div class="seg" role="tablist"><button role="tab" aria-selected="${MODE==='dia'}" data-rcim="dia">Do dia</button><button role="tab" aria-selected="${MODE==='semana'}" data-rcim="semana">Da semana</button></div>
+   ${MODE==='dia'?diaHTML():semHTML()}`;
+  const pe2=cbox.querySelector('#rl-wpeso'),ms2=cbox.querySelector('#rl-wmsg');if(pe2&&keep[0])pe2.value=keep[0];if(ms2&&keep[1])ms2.value=keep[1];drawCIH()}
+function drawCIH(){const v=document.getElementById('v-hoje');if(!v)return;let c=document.getElementById('rl-cih');
+  if(!c){c=document.createElement('div');c.id='rl-cih';const t=document.getElementById('rl-trh'),h=v.querySelector('.hero');t?t.after(c):h?h.after(c):v.prepend(c)}
+  const t=todayCI();c.innerHTML=`<div class="block frost" style="margin:0"><div class="row"><span style="min-width:0"><span class="lbl">Check-in do dia</span><p style="margin:4px 0 0;font-weight:800">${t?'Enviado ✓':'Leva 30 segundos'}</p></span>${t?'':'<button class="btn small solid" data-rcigo>Responder</button>'}</div></div>`}
+if(cbox){
+  cbox.addEventListener('click',async e=>{const t=e.target;
+    const m=t.closest('[data-rcim]');if(m){MODE=m.dataset.rcim;drawCI();return}
+    const q=t.closest('[data-rq]');if(q){const [k,j]=q.dataset.rq.split('-');A[k]=+j;const y=window.scrollY;drawCI();window.scrollTo(0,y);return}
+    const pn=t.closest('[data-rpain]');if(pn){A._pain=+pn.dataset.rpain;const y=window.scrollY;drawCI();window.scrollTo(0,y);return}
+    if(t.closest('[data-rcisend]')){const L=qs(),miss=L.filter(q=>A[q[0]]===undefined).length;if(miss){cbox.querySelector('#rl-cicnt').textContent=`Responda todas para enviar (faltam ${miss}).`;return}
+      const ans={};L.forEach(q=>ans[q[0]]=A[q[0]]);ans.v=1;t.disabled=true;t.textContent='Enviando…';
+      const {data,error}=await sb.from('daily_checkins').insert({user_id:uid,day:TODAY,answers:ans}).select().single();
+      if(error){t.disabled=false;t.textContent='Enviar check-in do dia';toast(/duplicate|unique/.test(error.message)?'O check-in de hoje já foi enviado':'Não salvou: '+error.message);return}
+      DCS.push(data);window.scrollTo(0,0);drawCI();toast('Check-in enviado ✓');return}
+    const ws=t.closest('[data-rwsend]');if(ws){if(A._pain===undefined){toast('Responda se tem alguma dor');return}const pv=(cbox.querySelector('#rl-wpeso').value||'').replace(',','.'),w=parseFloat(pv);
+      if(pv&&!(w>30&&w<300)){toast('Confira o peso (em kg)');return}ws.disabled=true;ws.textContent='Enviando…';
+      const row={user_id:uid,week_start:ws.dataset.rwsend,weight_kg:pv?Math.round(w*10)/10:null,pain:A._pain,message:(cbox.querySelector('#rl-wmsg').value||'').trim().slice(0,1000)||null};
+      const {data,error}=await sb.from('week_closes').insert(row).select().single();
+      if(error){ws.disabled=false;ws.textContent='Fechar a semana';toast(/duplicate|unique/.test(error.message)?'Essa semana já foi fechada':'Não salvou: '+error.message);return}
+      WCS.push(data);window.scrollTo(0,0);drawCI();toast('Semana fechada ✓');return}});
+  document.addEventListener('click',e=>{if(e.target.closest('[data-rcigo]')){MODE='dia';drawCI();try{go('checkin')}catch(_){}window.scrollTo(0,0)}});
+  const tb=document.querySelector('.tabs button[data-go="checkin"]');if(tb)tb.addEventListener('click',()=>setTimeout(drawCI,0));
+  drawCI()}
+window.__rlCI={DCS,WCS};
+}
 ensureEmp();setInterval(ensureEmp,600);document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha conta'&&b.id!=='h-me')b.onclick=e=>{e.stopImmediatePropagation();document.getElementById('h-me').click()}});document.addEventListener('click',()=>setTimeout(ensureEmp,30),true);
 
 /* ---- grava no banco o que a pessoa faz na agenda ---- */
@@ -6491,7 +6567,7 @@ async function sync(){if(busy)return;busy=true;try{
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 
-R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{go('hoje')}catch(_){}
+R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');document.getElementById('rl-ld').remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 </script>
