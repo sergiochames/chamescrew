@@ -6294,7 +6294,9 @@ p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 /* modo real: esconde o que ainda é demonstração (treino, dieta, check-in, matilha) */
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:var(--muted,#888);z-index:9999;background:var(--bg,#1c1d20)}
-body.rl .prev,body.rl #h-mot{display:none!important}
+body.rl .prev,body.rl #h-mot,body.rl .sday,body.rl #crew,body.rl .disc-card,body.rl #week,body.rl .cycle,body.rl #ci-alert,body.rl #h-next,body.rl #h-macros{display:none!important}
+body.rl #v-treino>*:not(.rl-empty),body.rl #v-dieta>*:not(.rl-empty),body.rl #v-checkin>*:not(.rl-empty),body.rl #v-matilha>*:not(.rl-empty){display:none!important}
+.rl-empty{padding:8px 0}.rl-empty .d{font-size:44px;line-height:.95;margin:4px 0 12px}.rl-empty .box{border:1px dashed var(--line);border-radius:12px;padding:18px 16px;font-size:14px;line-height:1.5;color:var(--muted)}.rl-empty .box b{display:block;color:var(--fg);font-size:16px;margin-bottom:4px}
 body.rl #o-now{display:none!important}
 body::before{z-index:2147483000!important}
 header.top{top:0!important;padding-top:calc(env(safe-area-inset-top,0px) + 12px)!important;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
@@ -6364,13 +6366,14 @@ document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
 
 /* ---- abas que ainda são demonstração ---- */
-const OKGO=new Set(['hoje','agenda','treino','dieta','checkin','matilha','anamnese','pref']);
+const OKGO=new Set(['hoje','agenda','treino','dieta','checkin','matilha','pref']);
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-go2]');if(!t)return;const v=t.dataset.go||t.dataset.go2;if(OKGO.has(v)||v==='pref')return;
   if(t.closest('.tabs'))return;e.stopImmediatePropagation();e.preventDefault();toast('Essa parte chega na próxima etapa do teste')},true);
 const me=document.getElementById('h-me');if(me){me.innerHTML=ini;me.onclick=()=>sheet(`<span class="lbl">Minha conta</span><p class="d" style="font-size:36px;margin:6px 0 4px">${(P.name||'').replace(/</g,'')}</p><p class="meta" style="margin:0 0 14px">${session.user.email}</p>
   <button class="btn wide" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`,s=>{s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}
-const EXV={treino:'Treino de exemplo. Seu treino de verdade aparece aqui quando o Sérgio publicar.',dieta:'Dieta de exemplo. A sua aparece aqui quando o Sérgio enviar.',checkin:'Check-in em teste: o que você marca fica salvo só neste celular por enquanto.',matilha:'Levels e medalhas em teste: contam o que você faz neste celular por enquanto.'};
-Object.entries(EXV).forEach(([k,t])=>{const v=document.getElementById('v-'+k);if(v&&!v.querySelector('.rl-ex')){const d=document.createElement('div');d.className='rl-soon rl-ex';d.style.margin='6px 0 12px';d.innerHTML='<b>Em teste</b>'+t;v.prepend(d)}});
+const EMP={treino:['Treino','Seu treino aparece aqui','Quando o Sérgio publicar o seu treino, ele aparece nesta aba com as séries, as cargas e o vídeo de cada exercício.'],dieta:['Dieta','Sua dieta aparece aqui','Quando o Sérgio enviar a sua dieta, ela aparece nesta aba.'],checkin:['Check-in','Em breve','O check-in do dia e da semana entra aqui na próxima etapa do teste.'],matilha:['Matilha','Seu level começa agora','Levels e medalhas contam a partir dos seus primeiros treinos registrados no app. Isso entra na próxima etapa do teste.']};
+const ensureEmp=()=>Object.entries(EMP).forEach(([k,[l,t,x]])=>{const v=document.getElementById('v-'+k);if(v&&!v.querySelector('.rl-empty')){const d=document.createElement('div');d.className='rl-empty';d.innerHTML=`<span class="lbl">${l}</span><p class="d">${t}</p><div class="box"><b>${l==='Matilha'?'Recruta':'Nada por aqui ainda'}</b>${x}</div>`;v.prepend(d)}});
+ensureEmp();setInterval(ensureEmp,600);document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha conta'&&b.id!=='h-me')b.onclick=e=>{e.stopImmediatePropagation();document.getElementById('h-me').click()}});document.addEventListener('click',()=>setTimeout(ensureEmp,30),true);
 
 /* ---- grava no banco o que a pessoa faz na agenda ---- */
 let busy=false;

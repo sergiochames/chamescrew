@@ -3945,7 +3945,7 @@ draw();
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:#6d6d68;z-index:9999;background:var(--bg,#f3f3ef)}
 body.rl .proto{display:none!important}
-.rl-ex{border:1px dashed var(--line);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:13px;font-weight:600;color:var(--muted)}.rl-ex b{color:var(--fg)}
+body.rl [data-gear]{display:none!important}
 .rlp{border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);padding:12px 14px;margin:10px 0 4px;display:flex;align-items:center;gap:10px}
 .rlp b{display:block;font-size:15px}.rlp small{display:block;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:2px}
 .rlp .n{width:28px;height:28px;border-radius:50%;background:var(--fg,#16171a);color:var(--bg,#fff);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
@@ -3981,13 +3981,13 @@ if(!ME||ME.role!=='equipe'){location.replace('/app/');return}
 const pad=n=>String(n).padStart(2,'0'),DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],PER={manha:['Manhã',6,12],tarde:['Tarde',12,18],noite:['Noite',18,22]};
 const today=new Date();today.setHours(0,0,0,0);const wk0=new Date(today.getFullYear(),today.getMonth(),today.getDate()-((today.getDay()+6)%7));
 const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0)/864e5);
-let DBC={},STUD=[],RQ=[],IV=[],CLS=[];
+let DBC={},STUD=[],RQ=[],IV=[],CLS=[],FXS=[];
 async function fetchAll(){const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
-  const [st,cl,rq,iv]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
+  const [st,cl,rq,iv,fx]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).order('created_at',{ascending:false}),
-    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20)]);
-  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[]}
+    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20),sb.from('fixed_slots').select('*').eq('active',true)]);
+  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[];FXS=fx.data||[]}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
 const nameOf=id=>{const s=STUD.find(x=>x.id===id);return s&&s.name||'Aluno'};
 
@@ -4039,11 +4039,7 @@ function topCards(){if(S.tab!=='agenda')return;const sc=document.querySelector('
   const box=document.createElement('div');box.id='rl-top';
   box.innerHTML=`${RQ.length?`<button class="rlp" id="rl-req" style="width:100%;text-align:left"><span class="n">${open.length||sent.length}</span><span style="flex:1"><b>${open.length?`${open.length} ${open.length===1?'pedido de aluno novo':'pedidos de alunos novos'}`:'Proposta enviada'}</b><small>${open.length?'Toque para ver e propor o horário':`${sent.length} aguardando o aluno aceitar`}</small></span><span>›</span></button>`:''}
    <div class="rlrow"><button class="btn" id="rl-inv">+ Convidar aluno</button><button class="btn" id="rl-iv">${IV.length?`Convites (${IV.length})`:'Convites'}</button></div>`;
-  const SU=ME.setup||{},d3=STUD.some(x=>x.onboarded)||IV.length>0||RQ.length>0,done=[!!SU.disp,!!SU.neg,d3],k=done.filter(Boolean).length;
-  if(k<3){const nx=done.indexOf(false),G=[['disp','Seus locais e horários de trabalho','Onde e quando você atende. A agenda e os encaixes usam isso.','Configurar'],['neg','Seus planos e preços','1x, 2x, 3x por semana e o valor de cada um.','Definir'],['inv','Convide seu primeiro aluno','Ele recebe o link no WhatsApp e faz o cadastro sozinho.','Convidar']];
-    box.insertAdjacentHTML('afterbegin',`<div class="gd"><div class="hd"><b>Comece por aqui</b><small>${k} de 3</small></div><div class="gbar"><i style="width:${Math.round(k/3*100)}%"></i></div>${G.map((g,i)=>`<button class="gst ${done[i]?'gok':i===nx?'gnow':''}" data-gs="${g[0]}"><span class="gck">${done[i]?'✓':''}</span><span><b>${g[1]}</b><small>${g[2]}</small></span>${done[i]?'':`<span class="ggo">${g[3]}</span>`}</button>`).join('')}</div>`);
-    box.querySelectorAll('[data-gs]').forEach(bt=>bt.onclick=async()=>{const g=bt.dataset.gs;if(g==='inv')return inviteSheet();try{cfgPart(g)}catch(e){toast('Abra pela engrenagem')}
-      if(!(ME.setup||{})[g]){ME.setup=Object.assign({},ME.setup,{[g]:true});await sb.from('profiles').update({setup:ME.setup}).eq('id',ME.id)}})}
+  if(!STUD.some(x=>x.onboarded)&&!IV.length&&!RQ.length){box.insertAdjacentHTML('afterbegin',`<div class="gd"><div class="hd"><b>Comece por aqui</b></div><p style="font-size:14px;color:var(--muted);font-weight:600;line-height:1.45;margin:8px 0 12px">Convide seu primeiro aluno. Ele recebe o link no WhatsApp, faz o cadastro e o pedido aparece aqui para você propor o horário.</p><button class="btn solid wide" id="rl-first">+ Convidar meu primeiro aluno</button></div>`);box.querySelector('#rl-first').onclick=inviteSheet}
   const anchor=document.querySelector('.days')||document.querySelector('.wk')||sc.firstElementChild;if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(box,anchor);else sc.prepend(box);
   const rb=box.querySelector('#rl-req');if(rb)rb.onclick=reqList;box.querySelector('#rl-inv').onclick=inviteSheet;box.querySelector('#rl-iv').onclick=invList}
 function reqList(){if(RQ.length===1)return proposeSheet(RQ[0]);sheet(`<span class="lbl">Alunos novos</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">Pedidos</h3>${RQ.map(r=>{const s=STUD.find(x=>x.id===r.student_id)||{};return `<button class="rlp" style="width:100%;text-align:left" data-rq="${r.id}"><span style="flex:1"><b>${esc(s.name||'Aluno')}</b><small>${r.days.map(d=>DOW[d]).join(' e ')} • ${(PER[r.period]||[''])[0]} • ${r.status==='proposta'?'proposta enviada':r.status==='conversar'?'quer conversar':'aguardando você'}</small></span><span>›</span></button>`}).join('')}`,s=>s.querySelectorAll('[data-rq]').forEach(b=>b.onclick=()=>{s.remove();proposeSheet(RQ.find(r=>r.id===b.dataset.rq))}))}
@@ -4093,13 +4089,36 @@ function invList(){if(!IV.length)return inviteSheet();sheet(`<span class="lbl">A
 window.addEventListener('pointerdown',e=>{if(e.target.closest('.wb.can'))e.stopPropagation()},true);
 document.addEventListener('click',()=>setTimeout(sync,150),true);
 /* ---- abas ainda em demonstração ---- */
+const DOWL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+function realTab(t){const ap=document.getElementById('app')||document.querySelector('.scroller');if(!ap||ap.querySelector('.rl-tab'))return;const br=ap.querySelector('.brand');
+  [...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
+  let h='';if(t==='treinos')h=`<span class="lbl">Treinos</span><h2 class="d" style="font-size:44px;margin:4px 0 12px">Em breve</h2><div class="rlp" style="display:block"><b>Montar e publicar treinos</b><small style="line-height:1.45">Entra na próxima etapa do teste. Quando estiver pronto, o treino que você publicar aparece direto no app do aluno.</small></div>`;
+  else{const A=STUD.filter(x=>x.onboarded);const now=new Date();
+    h=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><span class="lbl">Alunos</span><h2 class="d" style="font-size:44px;margin:4px 0 6px">${A.length} ${A.length===1?'aluno':'alunos'}</h2></div><button class="btn solid" id="rl-inv2">+ Convidar</button></div>
+    ${RQ.length?`<button class="rlp" id="rl-req2" style="width:100%;text-align:left"><span class="n">${RQ.length}</span><span style="flex:1"><b>${RQ.length===1?'1 pedido de aluno novo':RQ.length+' pedidos de alunos novos'}</b><small>Toque para propor o horário</small></span><span>›</span></button>`:''}
+    ${A.map(x=>{const fx=FXS.filter(f=>f.student_id===x.id).sort((a,b)=>a.dow-b.dow),cd=x.cycle_day||1,cs=new Date(now.getFullYear(),now.getMonth()-(now.getDate()<cd?1:0),cd),ce=new Date(cs.getFullYear(),cs.getMonth()+1,cd);
+      const cy=CLS.filter(c=>c.student_id===x.id&&c.status!=='cancelada'&&new Date(c.starts_at)>=cs&&new Date(c.starts_at)<ce),done=cy.filter(c=>new Date(c.starts_at)<now).length,ini=(x.name||'?').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+      return `<button class="rlp" style="width:100%;text-align:left" data-rstu="${x.id}"><span class="n">${ini}</span><span style="flex:1"><b>${esc(x.name||'Aluno')}</b><small>${fx.length?fx.map(f=>DOW[f.dow]+' '+f.at_time.slice(0,5)).join(' • '):'sem horário fixo ainda'} • ${done}/${(x.freq||2)*4} aulas no ciclo</small></span><span>›</span></button>`}).join('')||'<p class="meta">Nenhum aluno ainda. Convide o primeiro.</p>'}`}
+  ap.insertAdjacentHTML('beforeend',`<div class="rl-tab" style="padding:6px 0">${h}</div>`);
+  const i2=ap.querySelector('#rl-inv2');if(i2)i2.onclick=inviteSheet;const r2=ap.querySelector('#rl-req2');if(r2)r2.onclick=reqList;
+  ap.querySelectorAll('[data-rstu]').forEach(b=>b.onclick=e=>{e.stopPropagation();ficha(STUD.find(x=>x.id===b.dataset.rstu))})}
+function ficha(x){if(!x)return;const fx=FXS.filter(f=>f.student_id===x.id).sort((a,b)=>a.dow-b.dow),now=new Date(),nx=CLS.filter(c=>c.student_id===x.id&&c.status!=='cancelada'&&new Date(c.starts_at)>now).slice(0,4);
+  const pq=Object.entries(x.parq||{}).filter(([,v])=>v).length,age=x.birth_date?Math.floor((now-new Date(x.birth_date+'T12:00:00'))/(365.25*864e5)):null;
+  const row=(k,v)=>v?`<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px"><span style="color:var(--muted);font-weight:600">${k}</span><b style="text-align:right">${v}</b></div>`:'';
+  sheet(`<span class="lbl">Aluno</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">${esc(x.name||'Aluno')}</h3>
+  ${row('Plano',`${x.freq||2}x por semana • ${(x.freq||2)*4} aulas`)}${row('Ciclo',x.cycle_day?`todo dia ${x.cycle_day}`:'')}${row('Vence',x.access_until?x.access_until.split('-').reverse().join('/'):'')}
+  ${row('Horários fixos',fx.map(f=>DOWL[f.dow]+' '+f.at_time.slice(0,5)).join('<br>')||'—')}${row('Próximas aulas',nx.map(c=>{const d=new Date(c.starts_at);return DOW[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(c.status==='confirmada'?' ✓':'')}).join('<br>')||'—')}
+  ${row('Objetivo',esc(x.goal||''))}${row('Nível',esc(x.level||''))}${row('Lesão ou dor',x.injury?esc(x.injury):'não')}${row('PAR-Q',pq?`<span style="color:#a8283f">${pq} resposta${pq>1?'s':''} sim</span>`:'tudo não')}
+  ${row('Idade',age?age+' anos':'')}${row('Altura e peso',x.height_cm?`${x.height_cm} cm • ${x.weight_kg||'?'} kg`:'')}${row('Documento',x.doc_num?esc((x.doc_type==='passaporte'?'Passaporte ':'CPF ')+x.doc_num+(x.country&&x.country!=='Brasil'?' • '+x.country:'')):'')}
+  ${x.phone?`<a class="btn solid wide" style="text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:14px" target="_blank" rel="noopener" href="https://wa.me/${waN(x.phone)}">WhatsApp</a>`:''}<button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`)}
+
 
 /* avisos de demonstração e itens de exemplo */
 const _draw=draw;
 draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{if(S.tab==='fin'){const ap=document.getElementById('app')||document.querySelector('.scroller');if(ap&&!ap.querySelector('.rl-fin')){const br=ap.querySelector('.brand');[...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
   const n=CLS.filter(c=>c.status!=='cancelada'&&new Date(c.starts_at)>=new Date(new Date().getFullYear(),new Date().getMonth(),1)).length;
   ap.insertAdjacentHTML('beforeend',`<div class="rl-fin" style="padding:6px 0"><span class="lbl">Financeiro</span><h2 class="d" style="font-size:44px;margin:4px 0 12px">Em breve</h2><div class="rlp" style="display:block"><b>Ainda sem cobranças pelo app</b><small style="line-height:1.45">Os pagamentos dos alunos (plano, aula extra e renovação) entram aqui quando ligarmos o Asaas. Por enquanto, nada de valores de exemplo para não confundir.</small></div><div class="rlp" style="display:block"><b>${STU.length} ${STU.length===1?'aluno ativo':'alunos ativos'} • ${n} ${n===1?'aula':'aulas'} neste mês</b><small>Contado das aulas reais da agenda.</small></div></div>`)}}}catch(_){}
-try{if(S.tab!=='agenda'&&S.tab!=='fin'&&!document.querySelector('.rl-ex')){const ap=document.getElementById('app')||document.querySelector('.scroller');const d=document.createElement('div');d.className='rl-ex';d.innerHTML=S.tab==='alunos'?'<b>Em teste:</b> a lista de alunos é real. Ficha, check-ins e medalhas ainda são de exemplo.':'<b>Em teste:</b> treinos de exemplo. Montar e publicar o treino de verdade chega na próxima etapa.';const br=ap&&ap.querySelector('.brand');(br?br.nextSibling:null)?br.after(d):ap&&ap.prepend(d)}}catch(_){}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
+try{if(S.tab==='alunos'||S.tab==='treinos')realTab(S.tab)}catch(e){console.error(e)}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 try{SUB.card='cartão de teste (conta dev, nada é cobrado)'}catch(_){}
 S.tab='agenda';draw();
