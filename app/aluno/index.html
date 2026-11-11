@@ -4619,7 +4619,7 @@ weekListSheet=function(M0){let M=NOWMO();const months=[10,11,12].filter(m=>m>=10
     let L='';
     if(false)L+=`<details class="g93"><summary class="r93 done"><span class="ic">✓</span><span><b>${Q.f} aulas feitas</b><small>ver as datas</small></span><span class="go">›</span></summary>${Q.doneL.map(rowF).join('')}</details>`;else L+=Q.doneL.map(rowF).join('');
     L+=Q.dadas.map(z=>`<div class="r93 dada"><span class="ic">–</span><span><b>${dts(nOf(z.d))} • ${hh2(z.h)}</b><small>não foi • contou como dada</small></span></div>`).join('');
-    const UQ=[...Q.up,...Q.ex].sort((a,b)=>nOf(a.d)-nOf(b.d)||a.h-b.h),UP=UQ.length>12?UQ.slice(0,3):UQ,MORE=UQ.length>12?UQ.slice(3):[];L+=UP.map(rowU).join('');
+    const UQ=[...Q.up,...Q.ex].sort((a,b)=>nOf(a.d)-nOf(b.d)||a.h-b.h),UP=UQ,MORE=[];L+=UP.map(rowU).join('');
     if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'marcada':'marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
     L+=Q.creds.map(c=>`<div class="r93 cr"><span class="ic">+1</span><span><b>1 crédito para usar</b><small>vale até ${fmtDM(c.exp)} • da aula de ${dlab(c.from).toLowerCase()}</small></span><button class="btn small solid" data-m93="use">Usar</button></div>`).join('');
     if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${(d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'))(new Date(2026,M,(window.__CYA||1)-1))}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
@@ -6298,6 +6298,7 @@ body.rl .sday,body.rl #crew,body.rl .disc-card,body.rl .prev,body.rl #week,body.
 body.rl .tabs [data-go="treino"],body.rl .tabs [data-go="dieta"],body.rl .tabs [data-go="checkin"],body.rl .tabs [data-go="matilha"]{opacity:.38}
 body.rl #o-now{display:none!important}
 body::before{z-index:2147483000!important}
+header.top{top:0!important;padding-top:calc(env(safe-area-inset-top,0px) + 12px)!important;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
 body.rl #v-anamnese,body.rl #v-painel,body.rl #v-treino,body.rl #v-dieta,body.rl #v-checkin,body.rl #v-matilha{display:none!important}
 .rl-soon{margin:14px 0 0;border:1px dashed var(--line);border-radius:10px;padding:14px;font-size:13.5px;line-height:1.45;color:var(--muted)}
 .rl-soon b{color:var(--fg);display:block;margin-bottom:2px}
