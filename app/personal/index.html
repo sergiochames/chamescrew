@@ -3958,6 +3958,13 @@ body.rl .tabs [data-tab="treinos"],body.rl .tabs [data-tab="alunos"],body.rl .ta
 .rq9 .dt input{width:120px}.rq9 label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 6px}
 .rq9 .mini{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:6px}
 .phw{display:grid;grid-template-columns:110px 1fr;gap:8px}
+.gd{border:1px solid var(--line);border-radius:12px;background:var(--card,#fff);padding:16px;margin:12px 0 6px}
+.gd .hd{display:flex;justify-content:space-between;align-items:baseline}.gd .hd b{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:28px;text-transform:uppercase}.gd .hd small{font-size:12.5px;font-weight:700;color:var(--muted)}
+.gd .gbar{height:5px;border-radius:3px;background:#e6e6e0;margin:10px 0 6px;overflow:hidden}.gd .gbar i{display:block;height:100%;background:#2e7d4f;border-radius:3px}
+.gd .gst{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:inherit}.gd .gst:last-child{border-bottom:0}
+.gd .gck{width:26px;height:26px;border-radius:50%;border:1.5px solid #c9c9c2;display:grid;place-items:center;font-weight:900;font-size:13px;flex:none;color:#fff}.gd .gst.gok .gck{background:#2e7d4f;border-color:#2e7d4f}
+.gd .gst b{display:block;font-size:15px}.gd .gst small{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}.gd .gst.gok b{color:var(--muted);text-decoration:line-through}
+.gd .gst .ggo{margin-left:auto;font-weight:800;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;white-space:nowrap}.gd .gst.gnow .ggo{background:#16171a;color:#fff;border-color:#16171a}
 </style>
 <div id="rl-ld">Carregando…</div>
 <script src="/config.js"></script>
@@ -4005,7 +4012,7 @@ evOn=function(dt){const s=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()),
 
 /* ---- grava no banco o que você faz na agenda ---- */
 let busy=false;
-async function sync(){if(busy)return;busy=true;try{
+async function sync(){if(busy)return;if(document.querySelector('.cbox')){setTimeout(sync,600);return}busy=true;try{
   const seen=new Set();
   for(const [wi,L] of Object.entries(S.ev))for(const e of L||[]){
     if(!e._id){if(e.n&&!e.gc&&!e._new){e._new=1;const s=STU.find(x=>x.n===e.n);if(!s){toast('Aluno não encontrado no banco');continue}
@@ -4029,6 +4036,11 @@ function topCards(){if(S.tab!=='agenda')return;const sc=document.querySelector('
   const box=document.createElement('div');box.id='rl-top';
   box.innerHTML=`${RQ.length?`<button class="rlp" id="rl-req" style="width:100%;text-align:left"><span class="n">${open.length||sent.length}</span><span style="flex:1"><b>${open.length?`${open.length} ${open.length===1?'pedido de aluno novo':'pedidos de alunos novos'}`:'Proposta enviada'}</b><small>${open.length?'Toque para ver e propor o horário':`${sent.length} aguardando o aluno aceitar`}</small></span><span>›</span></button>`:''}
    <div class="rlrow"><button class="btn" id="rl-inv">+ Convidar aluno</button><button class="btn" id="rl-iv">${IV.length?`Convites (${IV.length})`:'Convites'}</button></div>`;
+  const SU=ME.setup||{},d3=STUD.some(x=>x.onboarded)||IV.length>0||RQ.length>0,done=[!!SU.disp,!!SU.neg,d3],k=done.filter(Boolean).length;
+  if(k<3){const nx=done.indexOf(false),G=[['disp','Seus locais e horários de trabalho','Onde e quando você atende. A agenda e os encaixes usam isso.','Configurar'],['neg','Seus planos e preços','1x, 2x, 3x por semana e o valor de cada um.','Definir'],['inv','Convide seu primeiro aluno','Ele recebe o link no WhatsApp e faz o cadastro sozinho.','Convidar']];
+    box.insertAdjacentHTML('afterbegin',`<div class="gd"><div class="hd"><b>Comece por aqui</b><small>${k} de 3</small></div><div class="gbar"><i style="width:${Math.round(k/3*100)}%"></i></div>${G.map((g,i)=>`<button class="gst ${done[i]?'gok':i===nx?'gnow':''}" data-gs="${g[0]}"><span class="gck">${done[i]?'✓':''}</span><span><b>${g[1]}</b><small>${g[2]}</small></span>${done[i]?'':`<span class="ggo">${g[3]}</span>`}</button>`).join('')}</div>`);
+    box.querySelectorAll('[data-gs]').forEach(bt=>bt.onclick=async()=>{const g=bt.dataset.gs;if(g==='inv')return inviteSheet();try{cfgPart(g)}catch(e){toast('Abra pela engrenagem')}
+      if(!(ME.setup||{})[g]){ME.setup=Object.assign({},ME.setup,{[g]:true});await sb.from('profiles').update({setup:ME.setup}).eq('id',ME.id)}})}
   const anchor=document.querySelector('.days')||document.querySelector('.wk')||sc.firstElementChild;if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(box,anchor);else sc.prepend(box);
   const rb=box.querySelector('#rl-req');if(rb)rb.onclick=reqList;box.querySelector('#rl-inv').onclick=inviteSheet;box.querySelector('#rl-iv').onclick=invList}
 function reqList(){if(RQ.length===1)return proposeSheet(RQ[0]);sheet(`<span class="lbl">Alunos novos</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">Pedidos</h3>${RQ.map(r=>{const s=STUD.find(x=>x.id===r.student_id)||{};return `<button class="rlp" style="width:100%;text-align:left" data-rq="${r.id}"><span style="flex:1"><b>${esc(s.name||'Aluno')}</b><small>${r.days.map(d=>DOW[d]).join(' e ')} • ${(PER[r.period]||[''])[0]} • ${r.status==='proposta'?'proposta enviada':r.status==='conversar'?'quer conversar':'aguardando você'}</small></span><span>›</span></button>`}).join('')}`,s=>s.querySelectorAll('[data-rq]').forEach(b=>b.onclick=()=>{s.remove();proposeSheet(RQ.find(r=>r.id===b.dataset.rq))}))}
@@ -4075,6 +4087,8 @@ function shareInvite(v){const link=`${location.origin}/app/?c=${v.code}`,nm=(v.n
 function invList(){if(!IV.length)return inviteSheet();sheet(`<span class="lbl">Ainda não usados</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">Convites</h3>${IV.map(v=>`<button class="rlp" style="width:100%;text-align:left" data-iv="${v.code}"><span style="flex:1"><b>${esc(v.name||'Sem nome')}</b><small>código ${v.code}</small></span><span>enviar ›</span></button>`).join('')}<button class="btn solid wide" id="nw" style="margin-top:10px">+ Convidar aluno</button>`,s=>{
   s.querySelectorAll('[data-iv]').forEach(b=>b.onclick=()=>{s.remove();shareInvite(IV.find(v=>v.code===b.dataset.iv))});s.querySelector('#nw').onclick=()=>{s.remove();inviteSheet()}})}
 
+window.addEventListener('pointerdown',e=>{if(e.target.closest('.wb.can'))e.stopPropagation()},true);
+document.addEventListener('click',()=>setTimeout(sync,150),true);
 /* ---- abas ainda em demonstração ---- */
 document.addEventListener('click',e=>{const t=e.target.closest('.tabs [data-tab]');if(!t||t.dataset.tab==='agenda')return;e.stopImmediatePropagation();e.preventDefault();toast({treinos:'Treinos',alunos:'Alunos',fin:'Financeiro'}[t.dataset.tab]+': chega na próxima etapa do teste')},true);
 /* avisos de demonstração e itens de exemplo */
