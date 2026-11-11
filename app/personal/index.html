@@ -3982,12 +3982,13 @@ const pad=n=>String(n).padStart(2,'0'),DOW=['Dom','Seg','Ter','Qua','Qui','Sex',
 const today=new Date();today.setHours(0,0,0,0);const wk0=new Date(today.getFullYear(),today.getMonth(),today.getDate()-((today.getDay()+6)%7));
 const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0)/864e5);
 let DBC={},STUD=[],RQ=[],IV=[],CLS=[],FXS=[],WKS=[];
+let LGS=[];
 async function fetchAll(){const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
-  const [st,cl,rq,iv,fx,wo]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
+  const [st,cl,rq,iv,fx,wo,lg]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).order('created_at',{ascending:false}),
-    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20),sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position')]);
-  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[];FXS=fx.data||[];WKS=wo.data||[]}
+    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20),sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position'),sb.from('workout_logs').select('id,user_id,letter,day,volume_kg,duration_min,sets').gte('day',new Date(Date.now()-60*864e5).toISOString().slice(0,10)).order('day',{ascending:false})]);
+  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[];FXS=fx.data||[];WKS=wo.data||[];LGS=(lg&&lg.data)||[]}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
 const nameOf=id=>{const s=STUD.find(x=>x.id===id);return s&&s.name||'Aluno'};
 
@@ -4120,7 +4121,7 @@ function ficha(x){if(!x)return;const fx=FXS.filter(f=>f.student_id===x.id).sort(
   sheet(`<span class="lbl">Aluno</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">${esc(x.name||'Aluno')}</h3>
   ${row('Plano',`${x.freq||2}x por semana • ${(x.freq||2)*4} aulas`)}${row('Ciclo',x.cycle_day?`todo dia ${x.cycle_day}`:'')}${row('Vence',x.access_until?x.access_until.split('-').reverse().join('/'):'')}
   ${row('Horários fixos',fx.map(f=>DOWL[f.dow]+' '+f.at_time.slice(0,5)).join('<br>')||'—')}${row('Próximas aulas',nx.map(c=>{const d=new Date(c.starts_at);return DOW[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(c.status==='confirmada'?' ✓':'')}).join('<br>')||'—')}
-  ${row('Objetivo',esc(x.goal||''))}${row('Nível',esc(x.level||''))}${row('Lesão ou dor',x.injury?esc(x.injury):'não')}${row('PAR-Q',pq?`<span style="color:#a8283f">${pq} resposta${pq>1?'s':''} sim</span>`:'tudo não')}
+  ${row('Treinos feitos (60 dias)',(()=>{const L=LGS.filter(l=>l.user_id===x.id);if(!L.length)return 'nenhum ainda';const nm=k=>{const w=WKS.find(w=>w.user_id===x.id&&w.letter===k);return esc(w?w.title:'Treino '+k)};return L.length+' no total<br>'+L.slice(0,4).map(l=>{const d=new Date(l.day+'T12:00:00');return DOW[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+' • '+nm(l.letter)+' • '+Math.round(l.volume_kg||0).toLocaleString('pt-BR')+' kg'}).join('<br>')})())}${row('Objetivo',esc(x.goal||''))}${row('Nível',esc(x.level||''))}${row('Lesão ou dor',x.injury?esc(x.injury):'não')}${row('PAR-Q',pq?`<span style="color:#a8283f">${pq} resposta${pq>1?'s':''} sim</span>`:'tudo não')}
   ${row('Idade',age?age+' anos':'')}${row('Altura e peso',x.height_cm?`${x.height_cm} cm • ${x.weight_kg||'?'} kg`:'')}${row('Documento',x.doc_num?esc((x.doc_type==='passaporte'?'Passaporte ':'CPF ')+x.doc_num+(x.country&&x.country!=='Brasil'?' • '+x.country:'')):'')}
   ${x.phone?`<a class="btn solid wide" style="text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:14px" target="_blank" rel="noopener" href="https://wa.me/${waN(x.phone)}">WhatsApp</a>`:''}<button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`)}
 
