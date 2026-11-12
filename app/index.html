@@ -266,5 +266,5 @@ async function route(){const {data:{session}}=await sb.auth.getSession();if(!ses
   if(p&&p.role==='equipe'){location.replace('/app/personal/');return}
   if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}step(ST.d.step||0);return}
   home()}
-route();
+(async()=>{if(/[?&]sair\b/.test(location.search)){try{await sb.auth.signOut()}catch(_){}history.replaceState(null,'','/app/')}route()})();
 </script></body></html>
