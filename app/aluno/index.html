@@ -3232,7 +3232,7 @@ const PARTNERS=[
   ex:[{n:'Rodrigo',trial:5,eng:'marcou 92% das refeições'},{n:'Fernanda',trial:8,eng:'marcou 88% das refeições',done:'fez 5 de 5 treinos do teste'}]}];
 function pStats(p){const act=p.st.filter(x=>x.d>=0).length,paused=p.st.length-act,t=tierOf(act),next=PTIERS[PTIERS.indexOf(t)+1];
   return{act,paused,t,next,vagas:act*3,extraCap:act*2,free:act*2-p.ex.length,money:Math.round(act*PRICE*t.p)}}
-function qrSVG(text){const q=new QRLIB.QRCode(-1,QRLIB.EC.M);q.addData(text);q.make();const n=q.getModuleCount(),m=4;let d='';
+window.__qrReal=text=>qrSVGr(text);function qrSVG(text){return qrSVGr(text)}function qrSVGr(text){const q=new QRLIB.QRCode(-1,QRLIB.EC.M);q.addData(text);q.make();const n=q.getModuleCount(),m=4;let d='';
   for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(q.isDark(r,c))d+=`M${c+m} ${r+m}h1v1h-1z`;
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n+2*m} ${n+2*m}" shape-rendering="crispEdges" role="img" aria-label="QR Code de indicação"><rect width="100%" height="100%" fill="#fff"/><path d="${d}" fill="#0b0b0c"/></svg>`}
 const refLink=p=>`https://wa.me/${SEC}?text=${encodeURIComponent(`Oi! Quero conhecer ${SV[p.type].ac} ${SV[p.type].Chames}. Indicação: ${p.n} (código ${p.code}).`)}`;
@@ -4953,14 +4953,14 @@ function renderDay(){const nut=window.DIETA_ON?window.DIETA_ON():true;const t=fi
 window.renderDay=renderDay;
 setInterval(renderDay,400);
 document.addEventListener('click',e=>{if(!e.target.closest('[data-invite]'))return;
-  const link='https://chamescrew.chamescrew.workers.dev/?ref=ANA7';
+  const RCODE=window.__RD?(String(window.__RD.ME||'').normalize('NFD').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,6)+String(window.__RD.uid||'').replace(/\D/g,'').slice(0,2)):'ANA7',link=window.__RD?location.origin+'/app/?ref='+RCODE:'https://chamescrew.chamescrew.workers.dev/?ref=ANA7';
   sheet(`<div style="background:#000;color:#fff;border-radius:22px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
      <span class="d" style="font-size:22px">Chames Crew</span>
-     ${rdisc(MED.recrutador,1,120)}
-     <div><p class="d" style="font-size:38px;margin:0">Recrutador</p><p style="font-weight:800;margin:2px 0 0">Aço</p><p style="font-size:13px;opacity:.65;margin:4px 0 0">Ana, level Atleta</p></div>
+     ${rdisc(MED.recrutador,window.__RD?-1:1,120)}
+     <div><p class="d" style="font-size:38px;margin:0">Recrutador</p><p style="font-weight:800;margin:2px 0 0">${window.__RD?'Indique e ganhe':'Aço'}</p><p style="font-size:13px;opacity:.65;margin:4px 0 0">${window.__RD?(window.__RD.ME+', level '+['Recruta','Consistente','Atleta','Casca Grossa','Elite'][window.__RD.LV||0]):'Ana, level Atleta'}</p></div>
      <div style="display:flex;align-items:center;gap:12px;text-align:left;width:100%">
        <div style="background:#fff;border-radius:10px;padding:6px;width:104px;height:104px;flex:none">${qrSVG(link)}</div>
-       <span style="font-size:14px;line-height:1.35">Bora treinar comigo?<br>Escaneia e vem pra matilha.<br><b>Código ANA7</b></span></div></div>
+       <span style="font-size:14px;line-height:1.35">Bora treinar comigo?<br>Escaneia e vem pra matilha.<br><b>Código ${RCODE}</b></span></div></div>
    <p class="meta" style="font-size:13px;text-align:center">Tire um print desta tela e poste no Stories, ou mande o link.</p>
    <div class="grid2"><button class="btn small" id="inv-copy" style="padding:12px">Copiar link</button>
    <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
@@ -5606,7 +5606,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-na="agenda
   go('agenda');const dd=b.dataset.dd;if(dd)setTimeout(()=>{const pick=()=>[...document.querySelectorAll('.agds button')].find(x=>(x.querySelector('b')||x).textContent.trim().endsWith(String(dd))||new RegExp('(^|\\D)'+dd+'$').test(x.innerText.trim()));let d=pick();
     if(!d){const nx=document.querySelector('[data-agw="1"]');if(nx&&!nx.disabled){nx.click();d=pick()}}if(d){d.click();setTimeout(()=>{const h=document.getElementById('ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)}},80)},true);
 /* pagamento: QR do Pix e estrangeiro só cartão */
-function qrSVG(){let r='',s=7;const rnd=()=>(s=(s*9301+49297)%233280)/233280;const N=29,fp=(x,y)=>x<8&&y<8||x>N-9&&y<8||x<8&&y>N-9;
+function qrSVG(t){if(t&&window.__qrReal)return window.__qrReal(t);let r='',s=7;const rnd=()=>(s=(s*9301+49297)%233280)/233280;const N=29,fp=(x,y)=>x<8&&y<8||x>N-9&&y<8||x<8&&y>N-9;
   for(let y=0;y<N;y++)for(let x=0;x<N;x++){if(fp(x,y))continue;if(rnd()<.48)r+=`M${x} ${y}h1v1h-1z`}
   const f=(x,y)=>`M${x} ${y}h7v7h-7zM${x+1} ${y+1}v5h5v-5zM${x+2} ${y+2}h3v3h-3z`;
   return `<div class="qr" aria-label="QR code do Pix"><svg viewBox="-1 -1 31 31"><path fill="#000" fill-rule="evenodd" d="${f(0,0)}${f(22,0)}${f(0,22)}${r}"/></svg></div>`}
