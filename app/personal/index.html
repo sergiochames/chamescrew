@@ -4031,7 +4031,13 @@ function snapshot(){const D={v:2};for(const k in REF)D[k]=enc(REF[k]);try{D.T2fa
   Object.entries(S.ev||{}).forEach(([wi,L])=>(L||[]).forEach(e=>{if(e._id||(e.n&&names.has(e.n)))return;const d=new Date(wk0.getTime()+(+wi)*864e5);keep.push({date:iso(d),e:enc(e)})}));
   XEV=keep;D.XEV=XEV;return JSON.stringify(D)}
 async function saveNow(){clearTimeout(saveT);try{PERS.anmDef=ANMdef}catch(_){}if(saving){saveT=setTimeout(saveNow,500);return}let j;try{j=snapshot()}catch(e){console.error('snapshot',e);return}if(j===lastSaved)return;saving=true;
-  const {error}=await sb.from('pstate').upsert({owner:ME.id,data:JSON.parse(j),updated_at:new Date().toISOString()});saving=false;if(error){console.error(error);toast('Não salvou: '+error.message);return}lastSaved=j}
+  /* outra aba/aparelho salvou depois que esta abriu: recarrega em vez de sobrescrever */
+  try{const r=await sb.from('pstate').select('updated_at').eq('owner',ME.id).maybeSingle();const su=r.data&&r.data.updated_at;if(r.error){saving=false;return}
+    if(su&&PSAT&&new Date(su).getTime()>new Date(PSAT).getTime()+500){saving=false;stale();return}}catch(_){saving=false;return}
+  const now=new Date().toISOString();const {error}=await sb.from('pstate').upsert({owner:ME.id,data:JSON.parse(j),updated_at:now});saving=false;if(error){console.error(error);toast('Não salvou: '+error.message);return}lastSaved=j;PSAT=now}
+let PSAT=(PS&&PS.updated_at)||null,STALE=false;
+function stale(){if(STALE)return;STALE=true;toast('Você mexeu no app em outro aparelho. Atualizando…');setTimeout(()=>location.reload(),1200)}
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||STALE)return;try{const r=await sb.from('pstate').select('updated_at').eq('owner',ME.id).maybeSingle();const su=r.data&&r.data.updated_at;if(su&&PSAT&&new Date(su).getTime()>new Date(PSAT).getTime()+500)stale()}catch(_){}});
 const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(saveNow,900)};
 ['click','input','change'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(saveSoon,50),true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
