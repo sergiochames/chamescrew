@@ -84,7 +84,8 @@ a.b1,a.b2{display:grid;place-items:center;text-decoration:none}a.b1{color:#1c1d2
 const CFG=window.CC_CONFIG,sb=supabase.createClient(CFG.supabaseUrl,CFG.supabaseKey);
 const PN='Sérgio',WA_DUV=CFG.whatsappDuvidas||'5521971275039';
 let LOCS=[];
-const PRICES={1:260,2:450,3:620};
+let PRICE={};const brl=v=>'R$ '+Math.round(v).toLocaleString('pt-BR');
+const mens=n=>{const a=+((PRICE.aula||{})[n]||0),wk=+PRICE.wk||4;return a>0?{a,m:a*n*wk,q:Math.round(n*wk)}:null};
 const DOWS=['D','S','T','Q','Q','S','S'],DOWN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],DOWL=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 const PERIODS=[['manha','Manhã','6h às 12h'],['tarde','Tarde','12h às 18h'],['noite','Noite','18h às 22h']];
 const GOALS=['Ganhar massa muscular','Perder gordura','Ganhar força','Melhorar condicionamento','Saúde e qualidade de vida'];
@@ -226,7 +227,7 @@ function step(i){if(i<0){return}const D=ST.d;ST.d.step=i;saveDraft();const k=STE
   <span class="lb">Período</span><div class="seg" style="grid-template-columns:repeat(3,1fr)">${PERIODS.map(([k2,l,s])=>`<button data-pr="${k2}" class="${D.period===k2?'on':''}">${l}<small>${s}</small></button>`).join('')}</div>
   <span class="lb">Horário ideal (opcional)</span><input class="in" id="ih" value="${esc(D.ideal||'')}" placeholder="Ex.: por volta das 11h">
   <div id="pl"></div>`);
-  const pl=()=>{const n=D.days.length;$('#pl').innerHTML=n?`<div class="plan"><span><small>${n}x por semana</small><b>${n*4} aulas por mês</b></span><span style="font-weight:800">${PRICES[n]?'R$ '+PRICES[n]+'/mês':'valor a combinar'}</span></div>`:''};pl();
+  const pl=()=>{const n=D.days.length,v=mens(n);$('#pl').innerHTML=n?`<div class="plan"><span><small>${n}x por semana${v?' • '+brl(v.a)+' por aula':''}</small><b>${v?v.q:n*4} aulas por mês</b></span><span style="font-weight:800">${v?brl(v.m)+'/mês':'valor a combinar'}</span></div>`:''};pl();
   R.querySelectorAll('[data-dw]').forEach(b=>b.onclick=()=>{const j=+b.dataset.dw;D.days=D.days.includes(j)?D.days.filter(x=>x!==j):[...D.days,j].sort();b.classList.toggle('on');pl()});
   R.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{D.period=b.dataset.pr;R.querySelectorAll('[data-pr]').forEach(x=>x.classList.toggle('on',x===b))});
   $('#go').onclick=()=>{D.ideal=$('#ih').value.trim();if(!D.days.length)return err('Escolha pelo menos um dia.');if(!D.period)return err('Escolha o período.');step(i+1)}}
@@ -275,7 +276,7 @@ async function route(){const {data:{session}}=await sb.auth.getSession();if(!ses
   ST.user=session.user;const {data:p}=await sb.from('profiles').select('*').eq('id',ST.user.id).single();ST.prof=p||{};
   if(p&&p.role==='equipe'){location.replace('/app/personal/');return}
   if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}
-    const [{data:fx},{data:lc}]=await Promise.all([sb.from('fixed_slots').select('id').eq('student_id',ST.user.id).limit(1),sb.rpc('public_locs')]);
+    const [{data:fx},{data:lc},{data:pz}]=await Promise.all([sb.from('fixed_slots').select('id').eq('student_id',ST.user.id).limit(1),sb.rpc('public_locs'),sb.rpc('public_prices')]);PRICE=pz||{};
     LOCS=(lc||[]).filter(Boolean);ST.hasFx=!!(fx&&fx.length);STEPS=ST.hasFx?STEPS0.filter(k=>k!=='local'&&k!=='dias'):STEPS0.slice();step(Math.min(ST.d.step||0,STEPS.length-1));return}
   home()}
 (async()=>{if(/[?&]sair\b/.test(location.search)){try{await sb.auth.signOut()}catch(_){}history.replaceState(null,'','/app/')}route()})();
