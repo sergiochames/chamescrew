@@ -3989,7 +3989,7 @@ async function fetchAll(){const from=new Date(wk0.getTime()-35*864e5).toISOStrin
     sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
     sb.from('daily_checkins').select('user_id,day,answers').gte('day',iso(new Date(Date.now()-42*864e5))),
     sb.from('week_closes').select('*').gte('week_start',iso(new Date(Date.now()-70*864e5))).order('week_start',{ascending:false})]);
-  const e=st.error||cl.error||rq.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[]}
+  const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[]}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
 
 /* ---------- 1) estado do protótipo salvo no banco ---------- */
