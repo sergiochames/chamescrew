@@ -4868,7 +4868,7 @@ renderCase();
 /* animação do check-in: medalhas evoluindo */
 window.RUN={kick:'Check-in do dia',ttl:'Suas medalhas hoje',done:null};
 function medalRun(A,custom){const M=id=>RMEDS().find(x=>x.id===id);const items=[];
-  const push=(id,why,wk,gain,ok)=>{const m=M(id),before=RMED_V[id]||0;let t0=rtier(m);if(gain)RMED_V[id]=before+1;const t1=rtier(m);items.push({m,why,wk,gain,ok,before,after:RMED_V[id],t0,t1})};
+  const push=(id,why,wk,gain,ok)=>{const m=M(id);if(!m)return;const before=RMED_V[id]||0;let t0=rtier(m);if(gain)RMED_V[id]=before+1;const t1=rtier(m);items.push({m,why,wk,gain,ok,before,after:RMED_V[id],t0,t1})};
   if(custom){custom.forEach(c=>push(...c))}else{
   const W=window.WEEK,el=W.el,P=(id,...a)=>{if(!isLocked(M(id)))push(id,...a)};
   const step=(k,ok)=>{const w=W[k];let f=el-w.d;if(ok)w.d=Math.min(7,w.d+1);else f++;w.f=f;w.tod=ok?'on':'x';return {d:w.d,t:w.t,need:Math.max(0,w.t-w.d),closed:ok&&w.d===w.t,dead:f>7-w.t}};
@@ -6530,8 +6530,9 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
    if(mode==='semana'&&(!R.WCW||R.SENT.semana)){e.stopImmediatePropagation();e.preventDefault();toast(R.SENT.semana?'Essa semana já foi fechada':'Fechar a semana libera domingo às 18h');return}
    if(CI.sent[mode]||A.some(a=>a===null))return;/* o protótipo mostra o aviso */
    const peso=(document.getElementById('w-peso')||{value:''}).value,msg=((document.getElementById('w-msg')||{value:''}).value||'').trim();
+   const K0=R.QK||['treinou','intens','energia','cardio','livre','doce','agua','sono'],ANS={v:2};if(mode==='dia')A.forEach((v,i)=>{if(v!==null)ANS[K0[i]]=v;const oi=document.querySelector(`[data-qo="dia-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())ANS[K0[i]+'_outro']=oi.value.trim()});
    setTimeout(async()=>{if(!CI.sent[mode])return;
-     if(mode==='dia'){const K=R.QK||['treinou','intens','energia','cardio','livre','doce','agua','sono'],ans={v:2};A.forEach((v,i)=>{if(v!==null)ans[K[i]]=v;const oi=document.querySelector(`[data-qo="dia-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())ans[K[i]+'_outro']=oi.value.trim()});
+     if(mode==='dia'){const ans=ANS;
        const {error}=await sb.from('daily_checkins').insert({user_id:uid,day:TODAY,answers:ans});if(error){toast(/duplicate|unique/.test(error.message)?'O check-in de hoje já foi enviado':'Não salvou: '+error.message);return}R.SENT.dia=true}
      else{const w=parseFloat(String(peso).replace(',','.'));const {error}=await sb.from('week_closes').insert({user_id:uid,week_start:R.WCW,weight_kg:w>30&&w<300?Math.round(w*10)/10:null,pain:A[0],message:msg.slice(0,1000)||null});
        if(error){toast(/duplicate|unique/.test(error.message)?'Essa semana já foi fechada':'Não salvou: '+error.message);return}R.SENT.semana=true}
