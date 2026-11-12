@@ -6511,6 +6511,8 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
     else if(cs&&R.SENT.semana&&!cs.dataset.rl){cs.dataset.rl=1;cs.innerHTML=`<div class="row"><div><span class="lbl">${esc2(R.WCLBL)}</span><p class="d" style="font-size:34px;margin:6px 0 2px">Semana fechada ✓</p><p class="meta" style="margin:0">A próxima libera domingo às 18h.</p></div></div>`;cs.classList.add('meal','ok')}}
  }catch(e){console.error('paint',e)}};
  paint();setTimeout(paint,300);document.addEventListener('click',()=>setTimeout(paint,80),true);
+ /* dieta em PDF ainda não é guardada: não libera um cardápio de exemplo */
+ document.addEventListener('click',e=>{if(e.target.closest('#dsend')){e.stopImmediatePropagation();e.preventDefault();toast('A dieta em PDF entra na próxima etapa do app. Por enquanto, fale com o Sérgio.')}},true);
  /* check-in -> banco */
  document.addEventListener('click',e=>{const b=e.target.closest('#send');if(!b||!window.__CI)return;const CI=window.__CI,mode=CI.mode,A=CI.ans[mode];
    if(mode==='semana'&&(!R.WCW||R.SENT.semana)){e.stopImmediatePropagation();e.preventDefault();toast(R.SENT.semana?'Essa semana já foi fechada':'Fechar a semana libera domingo às 18h');return}
