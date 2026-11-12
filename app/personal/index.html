@@ -3334,9 +3334,9 @@ const _dag3=drawAgenda;drawAgenda=function(){_dag3();if(S.view!=='dia'||S.day!==
 /* repetir treino num dia livre */
 const _sd=swapDays;swapDays=function(a,b){const w=CUR(),pa=w.plans.find(p=>p.days.includes(a)),free=!w.plans.some(p=>p.days.includes(b))&&!w.cardio.includes(b);if(!pa||!free){_sd(a,b);return}const L=LT(w,w.plans.indexOf(pa));
   sheet(`<span class="lbl">Treino ${L} • ${esc(pa.name)}</span><h3 class="d">${DLL[b]} está livre</h3>
-   <button class="opt2" data-dm="rep"><b>Duplicar para ${DLL[b].toLowerCase()}</b><small>Cria uma cópia de ${esc(pa.name)} ${naD(b)}. Ela ganha a letra certa pela ordem dos dias e você pode mudar uma sem mexer na outra.</small></button>
+   <button class="opt2" data-dm="rep"><b>Repetir o treino ${L} ${naD(b)}</b><small>Continua sendo o mesmo treino ${L}: o que você mudar nele vale para os dois dias.</small></button>
    <button class="opt2" data-dm="mov"><b>Mover para ${DLL[b].toLowerCase()}</b><small>${DLL[a]} fica livre.</small></button><button class="btn" data-close>Cancelar</button>`,s=>s.addEventListener('click',e=>{const k=e.target.closest('[data-dm]');if(!k)return;s.remove();
-     if(k.dataset.dm==='rep'){const cp={name:pa.name,days:[b],ex:JSON.parse(JSON.stringify(pa.ex))};w.plans.push(cp)}else pa.days=pa.days.map(x=>x===a?b:x).sort();orgL(w);T2.vd=b;drawBuilder();const P=w.plans.find(p=>p.days.includes(b));toast(k.dataset.dm==='rep'?`Cópia criada ${naD(b)}: treino ${P.l}. As letras seguem a ordem dos dias.`:`${esc(pa.name)} foi para ${DLL[b].toLowerCase()}. As letras seguem a ordem dos dias.`)}))};
+     if(k.dataset.dm==='rep'){pa.days=[...pa.days,b].sort((x,y)=>x-y)}else pa.days=pa.days.map(x=>x===a?b:x).sort();orgL(w);T2.vd=b;drawBuilder();const P=w.plans.find(p=>p.days.includes(b));toast(k.dataset.dm==='rep'?`Treino ${P.l} repetido ${naD(b)}.`:`${esc(pa.name)} foi para ${DLL[b].toLowerCase()}. As letras seguem a ordem dos dias.`)}))};
 /* alunos novos */
 const NOVOS=[{n:'Felipe Costa',ph:'21996665544',pl:'Presencial 2x • mensal',st:'anam',w:'pagou hoje'},{n:'Marina Oliveira',ph:'21995554433',pl:'Consultoria online',st:'conv',w:'pagou ontem'}];
 PNOT.unshift({k:'novo',new:1,ic:'🆕',t:'Novo aluno: Felipe Costa',s:'Pagou e respondeu a anamnese. Falta o treino.',w:'há 5 min',go:'alunos'});
