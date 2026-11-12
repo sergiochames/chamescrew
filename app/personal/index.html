@@ -1217,7 +1217,7 @@ function drawAgenda(){
        :sp&&free?`<div class="freed"><span><b>Liberado</b><small>${esc(sp.freed.split(' ')[0])} cancelou${cw} • aberto para os alunos</small></span><div class="rb"><button class="mini" data-lock="${h}">Travar</button><button class="mini" data-free="${h}">+ marcar</button></div></div><button class="sim" data-sim="${h}">simular: um aluno pede esse horário</button>`
        :free?`<button class="free" data-free="${h}"><span>Livre</span><span>+ marcar</span></button>`:''}</div></div>`});
   app.innerHTML=`
-  <div class="row top"><div><span class="lbl">Agenda${S.view==='semana'?' • semana':S.day===TODAY?' • hoje':''}</span><h1 class="d">${S.view==='semana'?'26/out a 1/nov':['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'][S.day]+', '+DATES[S.day]}</h1></div><button class="add" data-add>+ Marcar</button></div>
+  <div class="row top"><div><span class="lbl">Agenda${S.view==='semana'?' • semana':S.day===TODAY?' • hoje':''}</span><h1 class="d">${S.view==='semana'?(DATES[0]+' a '+DATES[6]):['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo'][S.day]+', '+DATES[S.day]}</h1></div><button class="add" data-add>+ Marcar</button></div>
   <div class="vseg" role="group" aria-label="Visualização"><button data-view="dia" aria-pressed="${S.view==='dia'}">Dia</button><button data-view="semana" aria-pressed="${S.view==='semana'}">Semana</button></div>
   ${S.view==='semana'?weekView(nb,R,pend):`<div class="days" role="group" aria-label="Dias da semana">${WD.map((d,i)=>`<button class="dy" data-day="${i}" aria-pressed="${i===S.day}"><small>${i===TODAY?'Hoje':d}</small><b>${DATES[i]}</b><i class="${(S.ev[i]||[]).some(e=>!e.gc&&e.st!=='can')?'':'no'}"></i></button>`).join('')}</div>
   ${nx?(()=>{const UL=upList(),x0=stu(nx.n),dt=nx.h-NOW;return `<section class="card next${nx.st==='can'?' nxcan'+((spOf(S.day,Math.floor(nx.h))||{}).req?' nxrq':''):nx.st==='ok'?' nxok':''}"><div class="row"><span class="lbl">${S.nxi?'Depois':'Próximo aluno'} • ${S.nxi+1} de ${UL.length}</span><span class="nxnav"><button data-nx="-1" aria-label="Aluno anterior" ${S.nxi?'':'disabled'}>‹</button><button data-nx="1" aria-label="Próximo aluno" ${S.nxi<UL.length-1?'':'disabled'}>›</button></span></div>
@@ -1310,7 +1310,7 @@ function bookSheet(h0,opt){opt=opt||{};let who=opt.who||null,kind='plano',loc=wh
       if(fd){(S.far=S.far||[]).push({dt:fd,h,n:who,loc,extra:kind==='avulsa'});if(kind==='plano'&&fd.getMonth()===TD.getMonth())stu(who).q[0]++;s.remove();draw();toast(`${who.split(' ')[0]} ${oa(who,'marcado','marcada')} ${dLbl()} ${hh(h)}${rep?' • toda semana':''}. ${EL(who)} recebe o aviso no app.`);return}
       (S.ev[d]=S.ev[d]||[]).push({h,n:who,st:'conf',extra:kind==='avulsa',loc:loc!==(stu(who).loc||1)?loc:undefined});if(spOf(d,Math.floor(h)))delete S.sp[d][Math.floor(h)];if(kind==='plano')stu(who).q[0]++;
       s.remove();S.day=d;S.tab='agenda';draw();toast(`${who.split(' ')[0]} ${oa(who,'marcado','marcada')} ${dayLbl(d).toLowerCase()} ${hh(h)}${rep?' • toda semana':''}. ${EL(who)} recebe o aviso no app.`)}})}
-const PER={Mensal:[1,4,'fim de novembro'],Trimestral:[3,13,'fim de janeiro'],Semestral:[6,26,'fim de abril']};
+const PER=(()=>{const t=new Date(),f=m=>{const d=new Date(t.getFullYear(),t.getMonth()+m,t.getDate());return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')};return {Mensal:[1,4,f(1)],Trimestral:[3,13,f(3)],Semestral:[6,26,f(6)]}})();
 const DLONG=['segunda','terça','quarta','quinta','sexta','sábado','domingo'];
 const andL=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' e '+a[a.length-1];
 const fxTxt=f=>{const s=[...f].sort((a,b)=>a.d-b.d);return s.every(z=>z.h===s[0].h)?andL(s.map(z=>DLONG[z.d]))+' às '+hh(s[0].h):andL(s.map(z=>DLONG[z.d]+' '+hh(z.h)))};
@@ -1361,14 +1361,14 @@ function newStudent(d,h,pre){pre=pre||{};if(d===undefined)d=S.day;let typ=pre.ty
       const isFx=typ==='pres';let skip=[];plan=typ==='pres'?`Presencial ${freq}x por semana`:typ==='online'?OPL().n:'Aula avulsa';
       if(isFx){X.fixo=fx.map(z=>({...z}));X.per=per;X.until=PER[per][2];skip=bookFixed(n,X.fixo);book=false}
       else if(book){(S.ev[d]=S.ev[d]||[]).push({h,n,st:'conf',extra:true});if(spOf(d,h))delete S.sp[d][h]}
-      const link=typ!=='avulsa'?` Pagamento do plano ${per.toLowerCase()}: asaas.com/c/xyz`:` Pagamento da aula: asaas.com/c/xyz`;
-      const code='CC'+Math.random().toString(36).slice(2,6).toUpperCase(),first=n.split(' ')[0];
-      const msg=`Oi, ${first}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu cadastro tá pronto${isFx?`. Seus horários: toda ${fxTxt(fx)}, até o ${PER[per][2]}`:book?` e sua aula ${dayLbl(d).toLowerCase()} às ${hh(h)} tá marcada`:''}. Toca no link, cria sua senha e instala o app no celular: ${PERS.slug}.app/convite/${code}.${link}`;
+      const link=PAY.mode==='asaas'?(typ!=='avulsa'?` Pagamento do plano ${per.toLowerCase()}: asaas.com/c/xyz`:` Pagamento da aula: asaas.com/c/xyz`):'';
+      const code=window.__rlCode?window.__rlCode(X):'CC'+Math.random().toString(36).slice(2,6).toUpperCase(),first=n.split(' ')[0];
+      const msg=`Oi, ${first}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu cadastro tá pronto${isFx?`. Seus horários: toda ${fxTxt(fx)}, até o ${PER[per][2]}`:book?` e sua aula ${dayLbl(d).toLowerCase()} às ${hh(h)} tá marcada`:''}. Toca no link, cria sua senha e instala o app no celular: ${window.__rlLink?window.__rlLink(code):PERS.slug+'.app/convite/'+code}${link}`;
       s.remove();draw();
       sheet(`<span class="lbl">Cadastro feito</span><h3 class="d">${esc(first)} já está no app</h3>
         <div class="info ok">${esc(plan)}${isFx?` • ${per.toLowerCase()} • toda ${fxTxt(fx)} até o ${PER[per][2]}`:book?` • aula ${dayLbl(d).toLowerCase()} ${hh(h)} marcada`:''}</div>${skip.length?`<div class="info warn">Nesta semana ${skip.map(z=>DLONG[z.d]+' '+hh(z.h)).join(' e ')} já estava ocupado. A partir da próxima entra normal.</div>`:''}
         <span class="lbl">Como chega no WhatsApp</span><div class="msg">${esc(msg)}${linkCard()}</div>
-        <a class="btn solid" style="text-decoration:none" href="https://wa.me/55${ph}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Abrir no WhatsApp</a>
+        <a class="btn solid" style="text-decoration:none" href="https://wa.me/${window.__rlWa?window.__rlWa(ph,X):'55'+ph}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">Abrir no WhatsApp</a>
         <div class="fair"><b>No primeiro acesso, ${esc(first)} completa:</b><br>• data de nascimento (se for menor de 18, o nome e o WhatsApp do responsável)<br>• e-mail, para recuperar a senha e receber recibos<br>• CPF${PAY.mode==='asaas'?' (obrigatório: o Asaas exige para gerar Pix)':' (opcional, para nota fiscal)'}<br>• contato de emergência (recomendado)<br>• gênero (opcional)</div>
         <p class="note">O link é de uso único e vale 7 dias. Ele cria a própria senha no primeiro acesso, e você não precisa saber.</p>
         <button class="btn" data-close>Fechar</button>`)}})}
@@ -1965,17 +1965,17 @@ function drawAlunos(){if(A2.open){drawFicha();foldFicha();return}const nm=ACT().
     <p class="proto">Protótipo com dados de exemplo.</p>`}
 function aluList(L){const q=(A2.q||'').trim().toLowerCase();L=L.filter(x=>!q||(x.n+' '+(x.ap||'')+' '+(x.ig||'')).toLowerCase().includes(q));
   return L.map(x=>{const m=x.arq?[]:newMsgs(x);if(x.arq)return `<button class="who arqd" data-stu="${esc(x.n)}"><span class="av0">${ini(x.n)}</span><span style="min-width:0"><b>${esc(x.n)}</b><small>Arquivado em ${fmtD(x.arq.since)}${x.arq.back?' • volta em '+MESL[x.arq.back.getMonth()]:''}</small></span><span class="quota">reativar ›</span></button>`;return `<button class="who${m.length?' hasmsg':''}" data-stu="${esc(x.n)}"><span class="av0">${ini(x.n)}${m.length?`<i class="badge">${m.length}</i>`:''}</span><span style="min-width:0"><b>${x.pin?'<i class="pi">📌</i>':''}${x.fav?'<i class="pi pfv">★</i>':''}${esc(x.n)}${x.par?' <i class="pi">🤝</i>':''}</b>${(x.tags||[]).length?`<span class="tg">${x.tags.map(t=>`<em class="${t==='Atenção'||t==='Lesão'?'tw':''}">${esc(t)}</em>`).join('')}</span>`:''}${m.length?`<small class="mtx ${MK[m[0].t][1]}">${MK[m[0].t][0]}: ${esc(m[0].txt)}</small>`:`<small>${x.mode} • ${modTxt(x)}</small>`}</span><span class="quota ${pNow(x)?'':x.due<=7?'full':''}">${pNow(x)&&pNow(x).from<=TD?PZ[pNow(x).t].toLowerCase():x.due<0?'venceu':x.due<=15?'vence em '+x.due+'d':isOn(x)?'online':x.q[0]+'/'+x.q[1]+' aulas'}</span></button>`}).join('')||'<p class="note">Ninguém encontrado.</p>'}
-const prog=x=>{const w=weekOf(x),E=w.plans.flatMap(p=>p.ex).filter(e=>!e.cd&&+e.s[0][0]>0).slice(0,3),k=(STU.indexOf(x)%4)+1;return E.map((e,j)=>{const now=+e.s[0][0],st=Math.round(now/(1+(k*4+j*3)/100)*2)/2;return {n:e.n,st,now,p:Math.round((now/st-1)*100)}})};
-const freq4=x=>{const g=weekOf(x).plans.reduce((a,p)=>a+p.days.length,0)||3,i=STU.indexOf(x),d=[g*4-1,g*4-3,g*4,g*4-2,g*4-5,g*4-1,g*4-4,g*4-6][i]??g*4-2;return [Math.max(0,d),g*4]};
+var prog=x=>{const w=weekOf(x),E=w.plans.flatMap(p=>p.ex).filter(e=>!e.cd&&+e.s[0][0]>0).slice(0,3),k=(STU.indexOf(x)%4)+1;return E.map((e,j)=>{const now=+e.s[0][0],st=Math.round(now/(1+(k*4+j*3)/100)*2)/2;return {n:e.n,st,now,p:Math.round((now/st-1)*100)}})};
+var freq4=x=>{const g=weekOf(x).plans.reduce((a,p)=>a+p.days.length,0)||3,i=STU.indexOf(x),d=[g*4-1,g*4-3,g*4,g*4-2,g*4-5,g*4-1,g*4-4,g*4-6][i]??g*4-2;return [Math.max(0,d),g*4]};
 const CQ=[['sono','Sono','h'],['ene','Energia','/5'],['hum','Humor','/5'],['est','Estresse','/5'],['fome','Fome','/5'],['agua','Água','L'],['dieta','Seguiu a dieta','']];
-const ckData=(x,i)=>{const ix=STU.indexOf(x),r=(ix*5+i*3)%7,lowS=x.n==='Lia Torres';return {sono:lowS&&i>=1?[5,4.5,5.5][i%3]:[7,7.5,6.5,8,6,7,7.5][r],ene:lowS&&i>=1?2:[4,3,4,5,3,4,4][r],hum:[4,4,3,5,4,3,4][r],est:lowS?4:[2,3,2,1,3,2,2][r],fome:[3,3,4,2,3,3,3][r],agua:[2,2.5,1.5,3,2,2.5,2][r],dieta:r%4?'Sim':'Mais ou menos',obs:i===TODAY&&ix===0?'Joelho incomodou um pouco':''}};
+var ckData=(x,i)=>{const ix=STU.indexOf(x),r=(ix*5+i*3)%7,lowS=x.n==='Lia Torres';return {sono:lowS&&i>=1?[5,4.5,5.5][i%3]:[7,7.5,6.5,8,6,7,7.5][r],ene:lowS&&i>=1?2:[4,3,4,5,3,4,4][r],hum:[4,4,3,5,4,3,4][r],est:lowS?4:[2,3,2,1,3,2,2][r],fome:[3,3,4,2,3,3,3][r],agua:[2,2.5,1.5,3,2,2.5,2][r],dieta:r%4?'Sim':'Mais ou menos',obs:i===TODAY&&ix===0?'Joelho incomodou um pouco':''}};
 function dayCk(x,i){const c=CKW(x,i),d=ckData(x,i),dt=addD(TD,i-TODAY);if(!c||c.pz){toast(c&&c.pz?'Em pausa nesse dia':'Sem check-in nesse dia');return}
   const fmt=(k,u)=>{const v=d[k];return typeof v==='number'?String(v).replace('.',',')+(u==='/5'?'<small>/5</small>':u):esc(v)};
   sheet(`<span class="lbl">${esc(x.n)} • check-in</span><h3 class="d">${DLONG[i]}, ${fmtD(dt)}</h3>
     <div class="ckg">${CQ.map(([k,l,u])=>`<div class="${(k==='sono'&&d.sono<6)||(k==='ene'&&d.ene<=2)||(k==='est'&&d.est>=4)?'lo':''}"><small>${l}</small><b>${fmt(k,u)}</b></div>`).join('')}</div>
     ${c.treino?`<div class="info ok">Treinou: Treino ${(()=>{const W=weekOf(x),j=W.plans.findIndex(p=>p.days.includes(i));return j>=0?LT(W,j):''})()}</div>`:''}${d.obs?`<p class="note">“${esc(d.obs)}”</p>`:''}
     <button class="btn" data-close>Fechar</button>`)}
-const CKW=(x,i)=>{const dt=addD(TD,i-TODAY);if((x.pz||[]).some(z=>z.from<=dt&&dt<=z.to))return dt<=TD?{e:'Ⅱ',sono:7,treino:false,pz:true}:null;if(i>=TODAY)return null;const k=weekOf(x).plans.findIndex(p=>p.days.includes(i)),ix=STU.indexOf(x);return {e:'',sono:7,treino:k>=0&&!(ix%3===1&&i===2),dor:x.msgs&&x.msgs.some(m=>m.t==='dor'&&!m.seen)&&i===4}};
+var CKW=(x,i)=>{const dt=addD(TD,i-TODAY);if((x.pz||[]).some(z=>z.from<=dt&&dt<=z.to))return dt<=TD?{e:'Ⅱ',sono:7,treino:false,pz:true}:null;if(i>=TODAY)return null;const k=weekOf(x).plans.findIndex(p=>p.days.includes(i)),ix=STU.indexOf(x);return {e:'',sono:7,treino:k>=0&&!(ix%3===1&&i===2),dor:x.msgs&&x.msgs.some(m=>m.t==='dor'&&!m.seen)&&i===4}};
 function resumoMes(x){const ix=STU.indexOf(x),k=n=>((ix*7+n*13)%20),W=[0,1,2,3].map(n=>({tr:Math.min(100,62+k(n)*2),ck:Math.min(100,55+k(n+1)*2.2),sono:6+((ix+n)%4)*.5}));
   const ck=Math.round(W.reduce((a,w)=>a+w.ck,0)/4),tr=Math.round(W.reduce((a,w)=>a+w.tr,0)/4),sono=(W.reduce((a,w)=>a+w.sono,0)/4).toFixed(1).replace('.',','),cg=2+ix%4,meds=3+ix%5;
   const ring=(v,c,l,sub)=>`<div class="rmr"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="var(--frost)" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(v/100*106.8).toFixed(1)} 106.8" transform="rotate(-90 21 21)"/></svg><b>${v}%</b><small>${l}</small>${sub?`<em>${sub}</em>`:''}</div>`;
@@ -1986,17 +1986,17 @@ function resumoMes(x){const ix=STU.indexOf(x),k=n=>((ix*7+n*13)%20),W=[0,1,2,3].
 function quickActs(x){return `<div class="qacts"><button data-fedit>✎<span>Editar</span></button><button data-fwa>💬<span>WhatsApp</span></button>${isOn(x)?'':`<button data-fbook>📅<span>Marcar aula</span></button>`}<button data-fmont>🏋️<span>Treino</span></button></div>`}
 function drawFicha(){const x=stu(A2.open),w=weekOf(x),days=DL.map((d,i)=>CKW(x,i)),tr=days.filter(d=>d&&d.treino).length,goal=w.plans.reduce((a,p)=>a+p.days.length,0)||3;
   const pl=i=>w.plans.findIndex(p=>p.days.includes(i)),F=freq4(x),PR=prog(x),avgP=PR.length?Math.round(PR.reduce((a,z)=>a+z.p,0)/PR.length):0;
-  const LOGS=w.plans.slice(0,3).map((p,i)=>({p,d:['seg','qua','sex'][i],n:[`Subiu a carga no ${p.ex[0]?p.ex[0].n:'primeiro exercício'}`,'Fez tudo','Trocou o primeiro exercício (aparelho ocupado) • fez o resto'][i]}));
+  const LOGS=window.__rlLogs?window.__rlLogs(x):w.plans.slice(0,3).map((p,i)=>({p,d:['seg','qua','sex'][i],n:[`Subiu a carga no ${p.ex[0]?p.ex[0].n:'primeiro exercício'}`,'Fez tudo','Trocou o primeiro exercício (aparelho ocupado) • fez o resto'][i]}));
   app.innerHTML=`<div class="bhead"><button class="bback" data-fback aria-label="Voltar"><span>‹</span>Alunos</button><div style="flex:1;min-width:0"><span class="lbl">${x.mode}${isOn(x)?'':' • '+x.q[0]+'/'+x.q[1]+' aulas'}</span><b class="bhn">${esc(x.n)}</b>${x.ap||x.ig?`<small class="bhs">${x.ap?'“'+esc(x.ap)+'”':''}${x.ap&&x.ig?' • ':''}${x.ig?`<a class="iglk" href="https://instagram.com/${encodeURIComponent(x.ig)}" target="_blank" rel="noopener">@${esc(x.ig)}</a>`:''}</small>`:''}</div><button class="mini" data-fmenu aria-label="Fixar, favoritar ou etiquetar">${x.pin?'📌':x.fav?'★':'🏷'}</button><button class="mini" data-fedit>✎ Editar</button></div>
     ${x.arq?`<div class="pzb arqb"><span class="pzi">Ⅱ</span><span style="flex:1"><b>Arquivado desde ${fmtD(x.arq.since)}${x.arq.back?' • volta em '+MESL[x.arq.back.getMonth()]:''}</b><small>Sem acesso ao app. Tudo guardado.</small></span><button class="mini solid" data-rea>Reativar</button></div>`:''}
     ${(z=>z?`<div class="pzb"><span class="pzi">${z.t==='viagem'?'✈':z.t==='lesao'?'✚':'Ⅱ'}</span><span><b>${PZ[z.t]} ${z.from<=TD?'até '+fmtD(z.to):'de '+fmtD(z.from)+' a '+fmtD(z.to)}</b><small>${z.why?'“'+esc(z.why)+'” • ':''}aulas desse período liberadas na agenda • treino empurrado ${Math.round((z.to-z.from)/864e5)+1} dias</small></span></div>`:'')(pNow(x))}
     ${msgCard(x)||'<section class="card"><span class="lbl">Pontos de atenção</span><p class="note" style="margin:0">Nada novo. Tudo tranquilo com '+esc(x.n.split(' ')[0])+'.</p></section>'}
     <section class="card"><span class="lbl">Esta semana</span>
-      <div class="ckw">${DL.map((d,i)=>{const c=days[i];return `${(()=>{const k=pl(i),past=i<=TODAY,miss=past&&k>=0&&!(c&&(c.treino||c.pz));const cls=c&&c.pz?'pzd':c&&c.treino?'ok':miss?'miss':'';return `<button class="ckd ${cls}${c&&c.dor?' dor':''}${c&&!c.pz?' tap':''}" data-ckd="${i}"><small>${d}</small><span>${c&&c.pz?'Ⅱ':c&&c.treino?(k>=0?L8[k]:'✓'):miss?'✕':k>=0?`<i class="pl8">${L8[k]}</i>`:'·'}</span>${c&&!c.pz?`<i class="slp${ckData(x,i).sono<6?' lo':''}">${String(ckData(x,i).sono).replace('.',',')}h</i>`:''}</button>`})()}`}).join('')}</div>
+      <div class="ckw">${DL.map((d,i)=>{const c=days[i];return `${(()=>{const k=pl(i),past=i<=TODAY,miss=past&&k>=0&&!(c&&(c.treino||c.pz));const cls=c&&c.pz?'pzd':c&&c.treino?'ok':miss?'miss':'';return `<button class="ckd ${cls}${c&&c.dor?' dor':''}${c&&!c.pz?' tap':''}" data-ckd="${i}"><small>${d}</small><span>${c&&c.pz?'Ⅱ':c&&c.treino?(k>=0?L8[k]:'✓'):miss?'✕':k>=0?`<i class="pl8">${L8[k]}</i>`:'·'}</span>${c&&!c.pz&&typeof ckData(x,i).sono==='number'?`<i class="slp${ckData(x,i).sono<6?' lo':''}">${String(ckData(x,i).sono).replace('.',',')}h</i>`:''}</button>`})()}`}).join('')}</div>
       <div class="kpi3"><div><b>${tr}/${goal}</b><small>treinos na semana</small></div><div><b>${Math.round(F[0]/F[1]*100)}%</b><small>frequência 4 sem.</small></div><div><b class="${avgP>0?'up':''}">${avgP>0?'+'+avgP+'%':'–'}</b><small>carga no ciclo</small></div></div>
       <p class="note" style="margin:0">Verde: treinou. ✕: faltou treino previsto. Ⅱ: pausa. Embaixo, horas de sono. Toque num dia para ver o check-in completo.</p></section>
-    ${(()=>{const wc=x.wc;if(!x.mod.includes('semana')&&!wc)return '';return wc?`<section class="card"><div class="row"><span class="lbl">Fechamento da semana</span><span class="note" style="margin:0">dom, 26/out</span></div>
-      <div class="kpi3"><div><b>${wc.peso}</b><small>peso (${wc.dif})</small></div><div><b>${wc.nota}/10</b><small>nota da semana</small></div><div><b>${wc.dieta}</b><small>dieta</small></div></div>
+    ${(()=>{const wc=x.wc;if(!x.mod.includes('semana')&&!wc)return '';return wc?`<section class="card"><div class="row"><span class="lbl">Fechamento da semana</span><span class="note" style="margin:0">${wc.dt||''}</span></div>
+      <div class="kpi3"><div><b>${wc.peso}</b><small>peso${wc.dif?' ('+wc.dif+')':''}</small></div><div><b class="${wc.bad?'bad':''}">${wc.nota}</b><small>dor</small></div><div><b>${wc.dieta}</b><small>check-ins</small></div></div>
       ${wc.txt?`<p class="wct">“${esc(wc.txt)}”</p>`:''}</section>`:`<section class="card"><span class="lbl">Fechamento da semana</span><p class="note" style="margin:0">${esc(x.n.split(' ')[0])} ainda não fechou a semana.</p></section>`})()}
     ${resumoMes(x)}
     <section class="card"><div class="row"><span class="lbl">Últimos treinos</span><button class="mini" data-fmont>Abrir treino ›</button></div>
@@ -2549,10 +2549,10 @@ function reportSheet(){const rec0=CHG.filter(c=>c.st==='pago'),C=COST(),lr=LANC.
   const by={};rec0.forEach(c=>{const k=/online/i.test(c.pl)?'Online':/avulsa/i.test(c.pl)?'Aula avulsa':'Presencial';by[k]=(by[k]||0)+c.v});lr.forEach(l=>{by[l.cat]=(by[l.cat]||0)+l.v});
   const cb={};C.inf.forEach(c=>cb['Parceiros']=(cb['Parceiros']||0)+c.v);if(C.tax)cb['Taxas Asaas']=C.tax;lc.forEach(l=>cb[l.cat]=(cb[l.cat]||0)+l.v);
   const R=Object.values(by).reduce((a,b)=>a+b,0),K=Object.values(cb).reduce((a,b)=>a+b,0),res=R-K,mx=Math.max(R,K,1);
-  const hist=[['Jun',9800,820],['Jul',10900,900],['Ago',11200,1010],['Set',12400,1180],['Out',R,K]],hm=Math.max(...hist.map(h=>h[1]));
+  const hist=(()=>{const n=new Date().getMonth(),M=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],H=(window.__rlHist&&window.__rlHist())||{};return [4,3,2,1].map(k=>{const mm=(n-k+12)%12;return [M[mm],(H[mm]||[0,0])[0],(H[mm]||[0,0])[1]]}).concat([[M[n],R,K]])})(),hm=Math.max(1,...hist.map(h=>h[1]));
   const bars=(o,col)=>{const m=Math.max(...Object.values(o),1);return Object.entries(o).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="rbar"><span>${esc(k)}</span><i><em style="width:${v/m*100}%;background:${col}"></em></i><b>${brl(v)}</b></div>`).join('')};
-  sheet(`<span class="lbl">Relatório • ${esc(PERS.brand||PERS.name)}</span><h3 class="d">Outubro 2026</h3>
-    <div class="rhero"><small>Resultado do mês</small><b>${brl(res)}</b><span>${Math.round(res/R*100)}% do que entrou ficou com você</span></div>
+  sheet(`<span class="lbl">Relatório • ${esc(PERS.brand||PERS.name)}</span><h3 class="d">${(()=>{const m=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][new Date().getMonth()];return m})()} ${new Date().getFullYear()}</h3>
+    <div class="rhero"><small>Resultado do mês</small><b>${brl(res)}</b><span>${R?Math.round(res/R*100)+'% do que entrou ficou com você':'Nada lançado neste mês ainda'}</span></div>
     <div class="kpis"><div><small>Entrou</small><b>${brl(R)}</b></div><div><small>Saiu</small><b>${brl(K)}</b></div><div class="${CHG.some(c=>c.st==='atrasado')?'bad':''}"><small>Atrasado</small><b>${brl(CHG.filter(c=>c.st==='atrasado').reduce((a,c)=>a+c.v,0))}</b></div></div>
     <section class="card"><span class="lbl">Últimos 5 meses</span><div class="rcol">${hist.map(([m,r,k])=>`<div><div class="rcb"><i class="rr" style="height:${r/hm*100}%" title="Entrou ${brl(r)}"></i><i class="rk" style="height:${k/hm*100}%" title="Saiu ${brl(k)}"></i></div><small>${m}</small><b>${brl(r-k).replace('R$ ','')}</b></div>`).join('')}</div>
       <div class="legend"><span><i style="background:var(--ok)"></i>entrou</span><span><i style="background:var(--bad)"></i>saiu</span><span>número embaixo: resultado</span></div></section>
@@ -2614,7 +2614,7 @@ function drawFin(){drawFin0();const pr=app.querySelector('.proto');['fin-cob','f
 function drawFin0(){
   const rec=CHG.filter(c=>c.st==='pago').reduce((a,c)=>a+c.v,0)+LSUM('receita'),ab=CHG.filter(c=>c.st==='aberto').reduce((a,c)=>a+c.v,0),at=CHG.filter(c=>c.st==='atrasado').reduce((a,c)=>a+c.v,0);
   const L=CHG.filter(c=>F2.f==='todos'||c.st===F2.f).sort((a,b)=>({atrasado:0,aberto:1,pago:2}[a.st])-({atrasado:0,aberto:1,pago:2}[b.st]));
-  app.innerHTML=`<div class="row top"><div><span class="lbl">Financeiro</span><h1 class="d">Outubro</h1></div></div>
+  app.innerHTML=`<div class="row top"><div><span class="lbl">Financeiro</span><h1 class="d">${(()=>{const m=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'][new Date().getMonth()];return m})()}</h1></div></div>
     ${(()=>{const C=COST();return `<div class="kpis k4" id="fin-res"><div><small>Recebido</small><b>${brl(rec)}</b></div><div class="${at?'w82':''}"><small>Cobranças em aberto</small><b>${brl(ab+at)}</b>${at?`<small class="kb">inclui ${brl(at)} vencido</small>`:''}</div><div><small>Custos</small><b>${brl(C.tot)}</b></div><div class="${rec-C.tot>=0?'ok':'n82'}"><small>Resultado</small><b>${rec-C.tot<0?'− '+brl(C.tot-rec):brl(rec-C.tot)}</b></div></div>
     <div class="row2"><button class="btn" data-lanc="new">+ Lançamento manual</button><button class="btn solid" data-report>📊 Relatório do mês</button></div>
     <p class="note" style="margin:-4px 0 0">Descontos dados no mês: <b>${brl(DESC())}</b> • é o que deixou de entrar, não entra nos custos.</p>
@@ -2732,7 +2732,7 @@ function gearSheet(){
 
     <div class="gh" id="g-foto"><b>Foto de evolução</b><small>Lembrete mensal para o aluno mandar a foto</small></div>
     <div class="opt2"><label class="sw" for="gft" style="padding:0;background:none"><span><b>Lembrete mensal</b><br><small class="note">Todo dia ${PERS.fday||1} o aluno recebe um aviso no app</small></span><input type="checkbox" id="gft" ${PERS.foto!==false?'checked':''}></label>
-      <div class="msg" style="font-size:13px">📸 Oi, Ana! Dia da foto de evolução. Tira de frente, de lado e de costas, mesma luz de sempre, e me manda no WhatsApp.<span class="wab">Mandar no WhatsApp</span></div>
+      <div class="msg" style="font-size:13px">📸 Oi, Fulano! Dia da foto de evolução. Tira de frente, de lado e de costas, mesma luz de sempre, e me manda no WhatsApp.<span class="wab">Mandar no WhatsApp</span></div>
       <p class="note" style="margin:0">O botão abre a conversa com você no WhatsApp. As fotos ficam lá, não no app.</p></div>
     <div class="gh" id="g-game"><b>Gamificação</b><small>Insígnias, medalhas, prêmios e ranking dos alunos</small></div>
     <button class="opt2 gopen" data-game><span class="gmini">${badge(GAME.tema,4)}</span><span><b>${GAME.aceito?(GAME.on?'Ligada':'Desligada'):'Ativar gamificação'}</b><small>${GAME.aceito?`${GTEMA[GAME.tema].n} • ${GAME.pre==='custom'?'Personalizado':GPRE[GAME.pre].n} • ${MEDC.filter(m=>GAME.med[m.id]).length} medalhas • ranking ${GAME.rank?'ligado':'desligado'}`:'Escolha o tema, o modo e os prêmios'}</small></span></button>
@@ -2752,7 +2752,7 @@ function gearSheet(){
     <label class="sw" for="gsc"><span>Deixar os alunos escolherem a cor<br><small class="note">Desligado, todos veem a sua cor</small></span><input type="checkbox" id="gsc" ${PERS.stuColor?'checked':''}></label>
     <button class="btn solid" id="gok">Salvar</button>`,s=>{
     const prev=()=>{const nm=s.querySelector('#gn').value.trim()||'Seu nome',br=s.querySelector('#gb').value.trim();const keep={...PERS};PERS.name=nm;PERS.brand=br;
-      s.querySelector('#gprev').innerHTML=`Oi, Marina! Aqui é ${esc(nm)}${br?', da '+esc(br):''}. Seu cadastro tá pronto. Toca no link, cria sua senha e instala o app.${linkCard()}`;s.querySelector('#lgp').innerHTML=logoHTML(64);Object.assign(PERS,keep)};
+      s.querySelector('#gprev').innerHTML=`Oi, Fulano! Aqui é ${esc(nm)}${br?', da '+esc(br):''}. Seu cadastro tá pronto. Toca no link, cria sua senha e instala o app.${linkCard()}`;s.querySelector('#lgp').innerHTML=logoHTML(64);Object.assign(PERS,keep)};
     prev();s.querySelector('#gn').oninput=prev;s.querySelector('#gb').oninput=prev;
     s.querySelector('#lgf').onchange=e=>{const f=e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>cropper(r.result,url=>{PERS.logo=url;prev();draw()});r.readAsDataURL(f)};
     s.querySelector('#gok').onclick=()=>{PERS.ia=s.querySelector('#giak').checked;if(s.querySelector('#giakey').value&&!/^•+$/.test(s.querySelector('#giakey').value))PERS.iakey=true;PERS.foto=s.querySelector('#gft').checked;PERS.name=s.querySelector('#gn').value.trim()||PERS.name;PERS.brand=s.querySelector('#gb').value.trim();PERS.slug=(PERS.brand||PERS.name).toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g,'');s.remove();draw();toast('Perfil salvo. Já vale no app dos alunos e no WhatsApp.')};
@@ -2940,15 +2940,15 @@ function privPSheet(){const n=ACT().length,ok=n-1;
   <button class="lnk" data-pdel style="align-self:flex-start;color:var(--bad)">Excluir minha conta</button>
   <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{if(e.target.closest('[data-pexp]')){s.remove();toast('O arquivo chega no seu e-mail em alguns minutos')}if(e.target.closest('[data-pstu]'))toast('Nenhum pedido aberto');if(e.target.closest('[data-pdel]')){s.remove();confirmBox('Excluir sua conta?','Tem certeza? Seus alunos perdem o acesso e todos os dados são apagados em 7 dias. Baixe seus dados antes.','Sim, excluir',()=>toast('Conta marcada para exclusão em 7 dias'))}}))}
 /* ===== convite do aluno ===== */
-function inviteSheet(nm){const link='crew.app/c/'+(PERS.slug||'sergio')+'/'+Math.random().toString(36).slice(2,7),msg=`Oi${nm?', '+nm.split(' ')[0]:''}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Te mandei o convite do app: lá ficam seu treino, suas aulas e sua evolução. Toca no link e entra com Google, Apple ou seu e-mail: https://${link}`;
+function inviteSheet(nm){const code=window.__rlInvite?window.__rlInvite(nm):Math.random().toString(36).slice(2,7),link=window.__rlLink?window.__rlLink(code).replace(/^https:\/\//,''):'crew.app/c/'+(PERS.slug||'sergio')+'/'+code,msg=`Oi${nm?', '+nm.split(' ')[0]:''}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Te mandei o convite do app: lá ficam seu treino, suas aulas e sua evolução. Toca no link, coloca seu e-mail e cria sua senha: https://${link}`;
   sheet(`<span class="lbl">Alunos</span><h3 class="d">Convidar aluno</h3>
-  <div class="qrw">${qrSvg()}<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>Mostre o QR na aula</b><small class="note">O aluno aponta a câmera e entra. Vale 7 dias e só para uma pessoa.</small><span class="lnkbox">${link}</span></div></div>
+  <div class="qrw">${window.__rlQR?window.__rlQR('https://'+link):qrSvg()}<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>Mostre o QR na aula</b><small class="note">O aluno aponta a câmera e entra. Vale 7 dias e só para uma pessoa.</small><span class="lnkbox">${link}</span></div></div>
   <span class="lbl">Ou mande no WhatsApp</span><div class="msg" id="ivm">${esc(msg)}</div>
   <div class="row2"><button class="btn" data-ivcp>Copiar mensagem</button><button class="btn solid" data-ivwa>Abrir WhatsApp</button></div>
   <button class="opt2" data-ivmany><b>Convidar vários de uma vez</b><small>Importe uma planilha com nome e celular. Cada um recebe o próprio link.</small></button>
   <p class="note">Você não precisa cadastrar tudo: o aluno completa nascimento, CPF e anamnese no primeiro acesso.</p><button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{
     if(e.target.closest('[data-ivcp]')){(navigator.clipboard?navigator.clipboard.writeText(msg):Promise.reject()).then(()=>toast('Mensagem copiada. Cole no WhatsApp do aluno.'),()=>toast('Selecione e copie a mensagem'));NEWP.done.aluno=1}
-    if(e.target.closest('[data-ivwa]')){toast('Abre o seu WhatsApp com a mensagem pronta');NEWP.done.aluno=1}
+    if(e.target.closest('[data-ivwa]')){window.open('https://wa.me/'+(nm&&window.__rlWaName?window.__rlWaName(nm):'')+'?text='+encodeURIComponent(msg),'_blank');NEWP.done.aluno=1}
     if(e.target.closest('[data-ivmany]'))toast('Escolha a planilha (.xlsx ou .csv) com nome e celular');}))}
 function qrSvg(){let r='',x0=11;for(let y=0;y<21;y++)for(let x=0;x<21;x++){const f=(x<7&&y<7)||(x>13&&y<7)||(x<7&&y>13);let on;if(f){const a=x>13?x-14:x,b=y>13?y-14:y;on=a===0||a===6||b===0||b===6||(a>1&&a<5&&b>1&&b<5)}else{x0=(x0*9301+49297)%233280;on=x0/233280>.5}if(on)r+=`<rect x="${x}" y="${y}" width="1" height="1"/>`}return `<svg class="qrs" viewBox="-1 -1 23 23" fill="#000" role="img" aria-label="QR code do convite">${r}</svg>`}
 /* ===== personal novo: app vazio e primeiros passos ===== */
@@ -2959,10 +2959,10 @@ function stepsCard(){const n=STEPS.filter(([k])=>NEWP.done[k]).length;return `<s
 function emptyView(tab){const E=(ic,t,s,btn)=>`<section class="card empty"><span class="eic">${ic}</span><b class="d">${t}</b><p class="note">${s}</p>${btn||''}</section>`;
   const head=(l,t)=>`<div class="row top"><div><span class="lbl">${l}</span><h1 class="d">${t}</h1></div></div>`;
   if(tab==='agenda')return head('Agenda','Bem-vindo')+stepsCard()+E('📅','Sua agenda está livre','Quando um aluno marcar, a aula aparece aqui. Você também pode marcar por ele.','<button class="btn solid" data-fs="aluno">Convidar aluno</button>');
-  if(tab==='alunos')return head('Alunos','0 alunos')+E('👋','Convide seu primeiro aluno','Mande o link no WhatsApp ou mostre o QR na aula. Ele entra com Google, Apple ou e-mail e já responde a anamnese.','<button class="btn solid" data-fs="aluno">Convidar aluno</button><button class="btn" data-newstu>Cadastrar eu mesmo</button>');
+  if(tab==='alunos')return head('Alunos','0 alunos')+E('👋','Convide seu primeiro aluno','Mande o link no WhatsApp ou mostre o QR na aula. Ele coloca o e-mail, cria a senha e já responde a anamnese.','<button class="btn solid" data-fs="aluno">Convidar aluno</button><button class="btn" data-newstu>Cadastrar eu mesmo</button>');
   if(tab==='treinos')return head('Treinos','Montar treino')+E('🏋️','Comece de um modelo','Escolha um modelo pronto e ajuste do seu jeito. Ele vira um treino seu, para usar em qualquer aluno.',`<div class="tplg">${[['ABC hipertrofia','3 treinos • intermediário'],['Full body iniciante','2 treinos • iniciante'],['Glúteo e posterior','1 treino • todos os níveis'],['Do zero','Treino vazio']].map(([n,s])=>`<button class="opt2" data-fs="treino"><b>${n}</b><small>${s}</small></button>`).join('')}</div>`);
   return head('Financeiro','R$ 0 no mês')+E('💳','Ligue os recebimentos','Com a conta Asaas, a cobrança sai sozinha e a baixa é automática. Sem ela, você controla à mão.','<button class="btn solid" data-fs="receber">Configurar recebimentos</button>')}
-const _draw=draw;draw=function(){if(!NEWP.on){_draw();return}document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.dataset.tab===S.tab?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));app.innerHTML=brandbar()+emptyView(S.tab)+`<button class="lnk" data-newoff style="align-self:center">Sair da prévia de personal novo</button>`};
+const _draw=draw;draw=function(){if(!NEWP.on){_draw();return}document.querySelectorAll('.tabs [data-tab]').forEach(b=>b.dataset.tab===S.tab?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));app.innerHTML=brandbar()+emptyView(S.tab)};
 function fsGo(k){const mark=()=>{NEWP.done[k]=1;setTimeout(draw,300)};
   if(k==='perfil'){gearSheet();mark()}else if(k==='horarios'){whSheet();mark()}else if(k==='precos'){priceSheet();mark()}else if(k==='locais'){locSheet();mark()}else if(k==='regras'){rulesSheet();mark()}
   else if(k==='receber'){sheet(`<span class="lbl">Financeiro</span><h3 class="d">Como você recebe</h3><button class="opt2 gopen" data-rcv="asaas"><b>Conta Asaas <span class="rec">Recomendado</span></b><small>Cobrança e baixa automáticas, Pix e cartão. Abre em 5 minutos com seu CPF ou CNPJ.</small></button><button class="opt2" data-rcv="man"><b>Manual</b><small>Você recebe do seu jeito e marca como pago no app.</small></button><button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{const b=e.target.closest('[data-rcv]');if(!b)return;s.remove();PAY.mode=b.dataset.rcv==='asaas'?'asaas':'manual';toast(b.dataset.rcv==='asaas'?'Abre o cadastro da conta Asaas':'Modo manual ligado');NEWP.done.receber=1;draw()}))}
@@ -3038,7 +3038,7 @@ const FGRP=[['Agora',['falou com você','Pontos de atenção','Prêmio do','Esta
 const _ff=foldFicha;foldFicha=function(){_ff();const x=stu(A2.open);if(!x)return;const head=app.querySelector('.bhead');if(!head)return;
   head.classList.add('fhead');head.querySelectorAll('.lbl,.bhn,.bhs').forEach(el=>el.remove());const ed=head.querySelector('[data-fedit]');if(ed)ed.remove();
   const w=weekOf(x),goal=w.plans.reduce((a,p)=>a+p.days.length,0)||3,done=DL.map((d,i)=>CKW(x,i)).filter(d=>d&&d.treino).length;
-  const lv=(typeof GAME!=='undefined'&&GAME.on)?(['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'][(STU.indexOf(x)*2+1)%5]):'';
+  const lv=(typeof GAME!=='undefined'&&GAME.on)?(window.__rlLvName?window.__rlLvName(x):(['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'][(STU.indexOf(x)*2+1)%5])):'';
   const chips=[x.mode,isOn(x)?'':`${x.q[0]}/${x.q[1]} aulas no mês`,x.due<0?'pagamento atrasado':x.due<=15?`vence em ${x.due}d`:'em dia',lv?'🏅 '+lv:'',...(x.tags||[])].filter(Boolean);
   const hero=document.createElement('section');hero.className='fhero';
   hero.innerHTML=`<span class="fav0">${ini(x.n)}</span><div style="min-width:0"><b class="d">${esc(x.n)}</b>${x.ap||x.ig?`<small>${x.ap?'“'+esc(x.ap)+'”':''}${x.ap&&x.ig?' • ':''}${x.ig?`<a class="iglk" href="https://instagram.com/${encodeURIComponent(x.ig)}" target="_blank" rel="noopener">@${esc(x.ig)}</a>`:''}</small>`:''}<div class="fchips">${chips.map((c,i)=>`<span class="${i===2&&x.due<=7?'w':''}">${esc(c)}</span>`).join('')}</div></div>
@@ -3358,7 +3358,7 @@ document.addEventListener('selectstart',e=>{if(e.target.closest&&e.target.closes
 /* ===== mensagem do topo no app do aluno ===== */
 const CHAM=['Bora','Vamos','Partiu','Foco','Bom dia'];
 function chamTxt(){if(PERS.chamada==='hora'){const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite'}return PERS.chamada||'Bora'}
-function hprevHTML(){return `<div class="hpv"><small>Como o aluno vê</small><span class="hpm">${esc(PERS.frase||'Resultados constroem liberdade')}</span><b class="d">${esc(chamTxt())}, Ana</b></div>`}
+function hprevHTML(){return `<div class="hpv"><small>Como o aluno vê</small><span class="hpm">${esc(PERS.frase||'Resultados constroem liberdade')}</span><b class="d">${esc(chamTxt())}, Fulano</b></div>`}
 const hpUpd=()=>{const e=document.getElementById('hprev');if(e)e.innerHTML=hprevHTML()};
 document.addEventListener('input',e=>{const t=e.target;if(t.id==='gfr'){PERS.frase=t.value.replace(/[<>]/g,'').slice(0,40);hpUpd()}
   if(t.id==='gchx'){const v=t.value.replace(/[<>,]/g,'').trim().slice(0,12);PERS.chamada=v||'Bora';document.querySelectorAll('[data-gch]').forEach(b=>b.setAttribute('aria-pressed',!v&&b.dataset.gch==='Bora'));hpUpd()}});
@@ -3943,155 +3943,208 @@ draw();
 </script>
 <style>
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
-#rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:#6d6d68;z-index:9999;background:var(--bg,#f3f3ef)}
 body.rl .proto{display:none!important}
-body.rl [data-gear]{display:none!important}
+#rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:#6d6d68;z-index:9999;background:var(--bg,#f3f3ef)}
 .rlp{border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);padding:12px 14px;margin:10px 0 4px;display:flex;align-items:center;gap:10px}
 .rlp b{display:block;font-size:15px}.rlp small{display:block;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:2px}
 .rlp .n{width:28px;height:28px;border-radius:50%;background:var(--fg,#16171a);color:var(--bg,#fff);display:grid;place-items:center;font-weight:800;font-size:13px;flex:none}
-.rlp .n.z{background:transparent;color:var(--muted);border:1.5px dashed var(--line)}
-.rlrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 2px}
 .rq9 .tg{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.rq9 .tg span{font-size:12px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:3px 7px}.rq9 .tg span.w{color:#a8283f;border-color:#e9b9c1;background:#fbe7ea}
 .rq9 .dayb{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:8px}.rq9 .dayb .dt{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .rq9 .sug{border:1.5px dashed #2e7d4f;background:rgba(46,125,79,.08);color:#1f5c39;border-radius:8px;padding:8px 10px;font-size:13px;font-weight:650;margin-top:8px}
 .rq9 input,.rq9 select,.rq9 textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;font:inherit;font-weight:600;background:var(--card,#fff);color:var(--fg)}
 .rq9 .dt input{width:120px}.rq9 label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:12px 0 6px}
 .rq9 .mini{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:6px}
-.phw{display:grid;grid-template-columns:110px 1fr;gap:8px}
-.gd{border:1px solid var(--line);border-radius:12px;background:var(--card,#fff);padding:16px;margin:12px 0 6px}
-.gd .hd{display:flex;justify-content:space-between;align-items:baseline}.gd .hd b{font-family:"Big Shoulders Display",Impact,sans-serif;font-weight:900;font-size:28px;text-transform:uppercase}.gd .hd small{font-size:12.5px;font-weight:700;color:var(--muted)}
-.gd .gbar{height:5px;border-radius:3px;background:#e6e6e0;margin:10px 0 6px;overflow:hidden}.gd .gbar i{display:block;height:100%;background:#2e7d4f;border-radius:3px}
-.gd .gst{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;font:inherit;color:inherit}.gd .gst:last-child{border-bottom:0}
-.gd .gck{width:26px;height:26px;border-radius:50%;border:1.5px solid #c9c9c2;display:grid;place-items:center;font-weight:900;font-size:13px;flex:none;color:#fff}.gd .gst.gok .gck{background:#2e7d4f;border-color:#2e7d4f}
-.gd .gst b{display:block;font-size:15px}.gd .gst small{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px}.gd .gst.gok b{color:var(--muted);text-decoration:line-through}
-.gd .gst .ggo{margin-left:auto;font-weight:800;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:7px 10px;white-space:nowrap}.gd .gst.gnow .ggo{background:#16171a;color:#fff;border-color:#16171a}
+.rl-qr{width:132px;height:132px;flex:none;background:#fff;border-radius:10px;padding:6px;display:grid;place-items:center}.rl-qr svg{width:100%;height:100%}
+.rl-sync{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 96px);background:#16171a;color:#fff;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px;z-index:9998;opacity:0;transition:opacity .2s;pointer-events:none}.rl-sync.on{opacity:.92}
 </style>
 <div id="rl-ld">Carregando…</div>
 <script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 <script>
-/* ===== app real do personal: agenda do protótipo com as aulas do banco ===== */
+/* ===== Chames Crew • app real do personal =====
+   O protótipo aprovado roda inteiro. Este adaptador:
+   1) guarda o estado do protótipo (alunos, locais, preços, financeiro manual, regras...) na tabela pstate;
+   2) cria a conta real de cada aluno cadastrado (edge function "alunos") e o link de acesso;
+   3) liga agenda (classes), horários fixos (fixed_slots) e treinos (workouts) ao banco. */
 document.body.classList.add('rl-wait');
 (async()=>{
 const CF=window.CC_CONFIG,sb=supabase.createClient(CF.supabaseUrl,CF.supabaseKey);
-const ld=document.getElementById('rl-ld'),fail=t=>{ld.innerHTML=`<div style="text-align:center;padding:24px">${t}<br><br><a href="/app/?p=1" style="color:inherit">Voltar</a></div>`};
+const ld=document.getElementById('rl-ld'),fail=t=>{ld.innerHTML=`<div style="text-align:center;padding:24px">${t}<br><br><a href="/app/?sair" style="color:inherit">Sair e entrar de novo</a></div>`};
 const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('/app/?p=1');return}
 const {data:ME}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
 if(!ME||ME.role!=='equipe'){location.replace('/app/');return}
-const pad=n=>String(n).padStart(2,'0'),DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],PER={manha:['Manhã',6,12],tarde:['Tarde',12,18],noite:['Noite',18,22]};
+const pad=n=>String(n).padStart(2,'0'),DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],PERI={manha:['Manhã',6,12],tarde:['Tarde',12,18],noite:['Noite',18,22]};
 const today=new Date();today.setHours(0,0,0,0);const wk0=new Date(today.getFullYear(),today.getMonth(),today.getDate()-((today.getDay()+6)%7));
 const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0)/864e5);
-let DBC={},STUD=[],RQ=[],IV=[],CLS=[],FXS=[],WKS=[];
-let LGS=[],DCI=[],WCL=[];
+const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const APP=location.origin+'/app/';
+let STUD=[],RQ=[],CLS=[],FXS=[],WKS=[],PS=null,INV=[],LGA=[],DCA=[],WCA=[];
 async function fetchAll(){const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
-  const [st,cl,rq,iv,fx,wo,lg,dci,wcl]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
+  const [st,cl,rq,fx,wo,ps,iv,lg,dc,wc]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).order('created_at',{ascending:false}),
-    sb.from('invites').select('*').is('used_by',null).order('created_at',{ascending:false}).limit(20),sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position'),sb.from('workout_logs').select('id,user_id,letter,day,volume_kg,duration_min,sets').gte('day',new Date(Date.now()-60*864e5).toISOString().slice(0,10)).order('day',{ascending:false}),sb.from('daily_checkins').select('user_id,day,answers').gte('day',new Date(Date.now()-14*864e5).toISOString().slice(0,10)).order('day',{ascending:false}),sb.from('week_closes').select('*').gte('week_start',new Date(Date.now()-40*864e5).toISOString().slice(0,10)).order('week_start',{ascending:false})]);
-  const e=st.error||cl.error||rq.error||iv.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];IV=iv.data||[];FXS=fx.data||[];WKS=wo.data||[];LGS=(lg&&lg.data)||[];DCI=(dci&&dci.data)||[];WCL=(wcl&&wcl.data)||[]}
+    sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position'),
+    sb.from('pstate').select('*').eq('owner',ME.id).maybeSingle(),sb.from('invites').select('code,profile_id,used_by,created_at').not('profile_id','is',null),
+    sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
+    sb.from('daily_checkins').select('user_id,day,answers').gte('day',iso(new Date(Date.now()-42*864e5))),
+    sb.from('week_closes').select('*').gte('week_start',iso(new Date(Date.now()-70*864e5))).order('week_start',{ascending:false})]);
+  const e=st.error||cl.error||rq.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[]}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
-const nameOf=id=>{const s=STUD.find(x=>x.id===id);return s&&s.name||'Aluno'};
 
-/* ---- limpa a demonstração e coloca os dados reais ---- */
+/* ---------- 1) estado do protótipo salvo no banco ---------- */
+const REF={};[['STU',()=>STU],['LOG',()=>LOG],['LOCS',()=>LOCS],['WH',()=>WH],['BOOK',()=>BOOK],['RULES',()=>RULES],['IND',()=>IND],['INF',()=>INF],['ANM',()=>ANM],['ANSW',()=>ANSW],
+ ['GAME',()=>GAME],['PROMO',()=>PROMO],['ENTR',()=>ENTR],['PRZ',()=>PRZ],['BDAY',()=>BDAY],['LANC',()=>LANC],['PLANS',()=>PLANS],['PRICE',()=>PRICE],['CHG',()=>CHG],['PAY',()=>PAY],
+ ['PERS',()=>PERS],['SUB',()=>SUB],['RCV',()=>RCV],['ICAL',()=>ICAL],['TEAM',()=>TEAM],['EXP',()=>EXP],['NOVOS',()=>NOVOS],['DSL',()=>DSL],['SUMD',()=>SUMD],['BLK',()=>BLK],
+ ['FAVW',()=>FAVW],['PROG',()=>PROG],['NEWP',()=>NEWP],['TRV3',()=>TRV3],['PNOT',()=>PNOT]].forEach(([k,f])=>{try{const v=f();if(v&&typeof v==='object')REF[k]=v}catch(_){}});
+const enc=v=>{if(v instanceof Date)return {__d:v.getTime()};if(v instanceof Set)return {__s:[...v].map(enc)};if(Array.isArray(v))return v.map(enc);
+  if(v&&typeof v==='object'){const o={};for(const k in v){if(typeof v[k]==='function'||k==='_creating')continue;o[k]=enc(v[k])}return o}return typeof v==='function'?undefined:v};
+const dec=v=>{if(Array.isArray(v))return v.map(dec);if(v&&typeof v==='object'){if('__d' in v)return new Date(v.__d);if('__s' in v)return new Set(v.__s.map(dec));const o={};for(const k in v)o[k]=dec(v[k]);return o}return v};
+const fill=(t,v)=>{if(Array.isArray(t)){t.length=0;(v||[]).forEach(x=>t.push(x));return}if(t instanceof Set){t.clear();(v instanceof Set?[...v]:v||[]).forEach(x=>t.add(x));return}
+  for(const k of Object.keys(t))if(typeof t[k]!=='function')delete t[k];Object.assign(t,v||{})};
+function zeroState(){const Z={STU:[],LOG:[],LOCS:[],INF:[],ANSW:[],PROMO:[],ENTR:[],LANC:[],PLANS:[],CHG:[],TEAM:[],EXP:[],NOVOS:[],BLK:[],FAVW:[],PNOT:[],DSL:{},SUMD:{},TRV3:{}};
+  for(const k in Z)if(REF[k])fill(REF[k],Z[k]);
+  if(REF.ANM)fill(ANM,ANM.filter(a=>a.pronta));
+  if(REF.WH)fill(WH,{0:[],1:[],2:[],3:[],4:[],5:[],6:[]});
+  if(REF.PRICE)Object.assign(PRICE,{aula:{1:0,2:0,3:0,4:0,5:0,6:0,7:0},wk:4,d3:0,d6:0,avulsa:0});
+  if(REF.PERS)Object.assign(PERS,{name:ME.name||'',brand:'',slug:'',logo:null});
+  if(REF.SUB)Object.assign(SUB,{st:'trial',left:30,card:'',fail:false});
+  if(REF.RCV)Object.assign(RCV,{con:false,saldo:0,receber:0,banco:'',saques:[],pend:null});
+  if(REF.PAY)PAY.mode='manual';if(REF.ICAL)Object.assign(ICAL,{on:false,tok:''});
+  if(REF.NEWP)fill(NEWP,{on:true,done:{}});
+  try{T2.fav.clear();T2.mine.length=0}catch(_){}
+  S.av.length=0;S.ev={};S.sp={}}
+let XEV=[];
+if(PS&&PS.data&&PS.data.v===2){const D=PS.data;zeroState();for(const k in REF)if(D[k]!==undefined)fill(REF[k],dec(D[k]));try{if(D.T2fav){T2.fav.clear();D.T2fav.forEach(x=>T2.fav.add(x))}if(D.T2mine){T2.mine.length=0;D.T2mine.forEach(x=>T2.mine.push(dec(x)))}}catch(_){}XEV=D.XEV||[]}
+else zeroState();
+if(PAY.mode==='asaas')PAY.mode='manual';
+/* Asaas aparece, mas fica desligado até a Etapa C */
+const ASW='O Asaas entra em breve. Por enquanto o financeiro fica no manual.';
+try{Object.defineProperty(PAY,'mode',{configurable:true,enumerable:false,get:()=>'manual',set:v=>{if(v==='asaas')setTimeout(()=>toast(ASW),60)}});
+  Object.defineProperty(RCV,'con',{configurable:true,enumerable:false,get:()=>false,set:()=>{}});
+  const _t=toast;toast=function(m){if(/Asaas ligado|Conta Asaas conec/i.test(String(m)))return;return _t.apply(this,arguments)}}catch(e){console.error(e)}
+let lastSaved='',saveT=null,saving=false;
+function snapshot(){const D={v:2};for(const k in REF)D[k]=enc(REF[k]);try{D.T2fav=[...T2.fav];D.T2mine=enc(T2.mine)}catch(_){}
+  /* compromissos sem aluno (Google, bloqueios, experimentais) da semana atual */
+  const names=new Set(STU.map(x=>x.n)),keep=XEV.filter(x=>{const d=new Date(x.date+'T12:00:00');return wiOf(d)<0||wiOf(d)>6});
+  Object.entries(S.ev||{}).forEach(([wi,L])=>(L||[]).forEach(e=>{if(e._id||(e.n&&names.has(e.n)))return;const d=new Date(wk0.getTime()+(+wi)*864e5);keep.push({date:iso(d),e:enc(e)})}));
+  XEV=keep;D.XEV=XEV;return JSON.stringify(D)}
+async function saveNow(){clearTimeout(saveT);if(saving){saveT=setTimeout(saveNow,500);return}let j;try{j=snapshot()}catch(e){console.error('snapshot',e);return}if(j===lastSaved)return;saving=true;
+  const {error}=await sb.from('pstate').upsert({owner:ME.id,data:JSON.parse(j),updated_at:new Date().toISOString()});saving=false;if(error){console.error(error);toast('Não salvou: '+error.message);return}lastSaved=j}
+const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(saveNow,900)};
+['click','input','change'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(saveSoon,50),true));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
+window.addEventListener('pagehide',()=>saveNow());
+
+/* ---------- 2) alunos: conta real + link de acesso ---------- */
+const CODE=()=>{const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let c='';for(let i=0;i<6;i++)c+=A[Math.floor(Math.random()*A.length)];return c};
+window.__rlLink=c=>APP+'?c='+c;
+window.__rlCode=X=>{const c=CODE();if(X)X._code=c;return c};
+const ccOf=X=>{try{return ddiOf(X.country||'Brasil')[2]}catch(_){return '55'}};
+window.__rlWa=(ph,X)=>ccOf(X||{})+String(ph||'').replace(/\D/g,'');
+window.__rlWaName=nm=>{const x=STU.find(s=>s.n===nm);return x&&x.ph?ccOf(x)+x.ph:''};
+window.__rlInvite=nm=>{const c=CODE();sb.from('invites').insert({code:c,name:nm||null,plan:'treino',created_by:ME.id}).then(({error})=>{if(error)toast('O convite não salvou: '+error.message)});return c};
+window.__rlQR=txt=>{try{const q=qrcode(0,'M');q.addData(txt);q.make();return `<span class="rl-qr">${q.createSvgTag({cellSize:4,margin:0,scalable:true})}</span>`}catch(_){return ''}};
+const fn=async(body)=>{const {data:{session:s}}=await sb.auth.getSession();const r=await fetch(CF.supabaseUrl+'/functions/v1/alunos',{method:'POST',headers:{'Content-Type':'application/json',apikey:CF.supabaseKey,Authorization:'Bearer '+(s&&s.access_token)},body:JSON.stringify(body)});const j=await r.json().catch(()=>({error:'Resposta inválida'}));if(!r.ok||j.error)throw new Error(j.error||('Erro '+r.status));return j};
+const pill=document.createElement('div');pill.className='rl-sync';document.body.appendChild(pill);const busyMsg=t=>{pill.textContent=t||'';pill.classList.toggle('on',!!t)};
+const nextOf=(d,h)=>{/* d: 0=seg … 6=dom (índice do protótipo) */const now=new Date();for(let k=0;k<15;k++){const x=new Date(today.getTime()+k*864e5);if((x.getDay()+6)%7!==d)continue;const t=new Date(x);t.setHours(Math.floor(h),Math.round((h%1)*60),0,0);if(t>now)return t}return null};
+const locName=id=>{const l=(LOCS||[]).find(z=>z.id==id);return l?l.n:null};
+async function createStu(X){if(X._id||X._creating)return;X._creating=1;busyMsg('Criando a conta de '+X.n.split(' ')[0]+'…');
+  try{/* tira as aulas que o protótipo pôs na semana: o banco gera todas */
+    Object.values(S.ev).forEach(L=>{for(let i=L.length-1;i>=0;i--)if(L[i].n===X.n&&!L[i]._id&&L[i].fx)L.splice(i,1)});
+    const pres=!!X.fixo&&X.fixo.length>0,freq=pres?X.fixo.length:null,months=X.per==='Trimestral'?3:X.per==='Semestral'?6:1;
+    const au=new Date(today.getFullYear(),today.getMonth()+months,today.getDate());
+    const firsts=pres?X.fixo.map(z=>nextOf(z.d,z.h)).filter(Boolean).sort((a,b)=>a-b):[];const cd=firsts[0]?Math.min(28,firsts[0].getDate()):null;
+    const r=await fn({action:'create',name:X.n,phone:X.ph?('+'+ccOf(X)+' '+X.ph):null,freq,plan:'treino',access_until:iso(au),cycle_day:cd,presencial:X.mode!=='Online',code:X._code});
+    X._id=r.id;X._code=r.code;
+    if(pres){const rows=X.fixo.map(z=>({student_id:r.id,dow:(z.d+1)%7,at_time:pad(Math.floor(z.h))+':'+pad(Math.round((z.h%1)*60))+':00',location:locName(z.l||X.loc)||locName((LOCS[0]||{}).id),active:true,start_date:iso(today)}));
+      const a=await sb.from('fixed_slots').insert(rows);if(a.error)throw a.error;const g=await sb.rpc('gen_classes',{p_student:r.id,p_weeks:9});if(g.error)throw g.error}
+    await saveNow();await fetchAll();apply();draw();toast('Conta de '+X.n.split(' ')[0]+' criada'+(pres?' e aulas na agenda':''))}
+  catch(e){console.error(e);toast('Não criou a conta: '+e.message)}finally{delete X._creating;busyMsg('')}}
+let KNOWN=new Set();
+function linkCheck(){STU.forEach(X=>{if(!X._id&&!X._creating&&X.n)createStu(X)});
+  const now=new Set(STU.filter(x=>x._id).map(x=>x._id));KNOWN.forEach(id=>{if(!now.has(id)){KNOWN.delete(id);fn({action:'delete',id}).then(()=>{CLS=CLS.filter(c=>c.student_id!==id)}).catch(e=>toast('Não apagou a conta: '+e.message))}});now.forEach(id=>KNOWN.add(id))}
+
+/* ---------- 3) agenda e alunos com os dados do banco ---------- */
+const stuById=id=>STU.find(x=>x._id===id);
+const nameOf=id=>{const x=stuById(id);if(x)return x.n;const s=STUD.find(p=>p.id===id);return s&&s.name||'Aluno'};
 function apply(){
-  S.ev={};S.sp={};S.av.length=0;try{PNOT.length=0}catch(_){}
-  if(!window.__STPL&&STU[0])window.__STPL=JSON.parse(JSON.stringify(STU[0]));const T=window.__STPL||{};
-  try{FAVW.length=0;T2.fav.clear();T2.mine.length=0}catch(_){}
-  STU.length=0;STUD.filter(s=>s.onboarded).forEach(s=>{const q=(s.freq||2)*4,nm=s.name||'Aluno';STU.push({n:nm,q:[0,q],ph:(s.phone||'').replace(/\D/g,''),_id:s.id,loc:1,
-    gen:'',cpf:s.doc_num||'',prof:'',ap:nm.split(' ')[0],ig:'',em:'',nasc:s.birth_date?s.birth_date.split('-').reverse().join('/'):'',obj:s.goal||'',niv:s.level||'',rest:s.injury||'',emg:'',pvt:'',
-    wc:JSON.parse(JSON.stringify(T.wc||{})),pin:false,tags:[],desc:0,remu:0,cred:0,ind:{},msgs:[],mode:T.mode||'',mod:JSON.parse(JSON.stringify(T.mod||[])),sx:'',
-    due:s.access_until?Math.ceil((new Date(s.access_until+'T12:00:00')-new Date())/864e5):999,wk:wkFromDB(s.id)})});
-  try{const U=[...new Set(CLS.map(c=>c.location).filter(Boolean))];if(U.length){LOCS.length=0;U.forEach((n,i)=>LOCS.push({id:i+1,n,ad:''}))}}catch(_){}
-  const locId=n=>{try{const l=LOCS.find(x=>x.n===n);return l?l.id:undefined}catch(_){return undefined}};
-  DBC={};const now=new Date();
-  CLS.forEach(c=>{const d=new Date(c.starts_at),wi=wiOf(d),h=d.getHours()+d.getMinutes()/60,past=d<now;
-    DBC[c.id]={st:c.status,t:c.starts_at};if(wi<0||wi>6)return;
+  /* alunos que entraram sozinhos (convite aberto) e já têm horário: entram na lista do personal */
+  STUD.forEach(p=>{if(stuById(p.id))return;const has=FXS.some(f=>f.student_id===p.id)||CLS.some(c=>c.student_id===p.id);if(!p.onboarded||!has)return;
+    STU.push({n:p.name||'Aluno',q:[0,(p.freq||2)*(PRICE.wk||4)],ph:String(p.phone||'').replace(/^\+\d+\s*/,'').replace(/\D/g,''),mode:p.presencial===false?'Online':'Presencial',mod:[...PRE.tudo],due:30,_id:p.id,via:'Convite'})});
+  STU.forEach(X=>{const p=STUD.find(s=>s.id===X._id);if(!p)return;
+    if(p.access_until)X.due=Math.ceil((new Date(p.access_until+'T12:00:00')-new Date())/864e5);
+    if(!X.nasc&&p.birth_date)X.nasc=p.birth_date.split('-').reverse().join('/');if(!X.cpf&&p.doc_num)X.cpf=p.doc_num;if(!X.obj&&p.goal)X.obj=p.goal;if(!X.niv&&p.level)X.niv=p.level;if(!X.rest&&p.injury)X.rest=p.injury;
+    if(WKS.some(w=>w.user_id===X._id))X.wk=wkFromDB(X._id);
+    X._on=!!p.onboarded;X._email=INV.some(i=>i.profile_id===X._id&&i.used_by)||!INV.some(i=>i.profile_id===X._id);const ui=INV.find(i=>i.profile_id===X._id&&!i.used_by);if(ui)X._code=ui.code});
+  STU.forEach(X=>{if(X._id)KNOWN.add(X._id)});try{realWC()}catch(_){}
+  S.ev={};S.sp={};const now=new Date();
+  CLS.forEach(c=>{const d=new Date(c.starts_at),wi=wiOf(d),h=d.getHours()+d.getMinutes()/60,past=d<now;if(wi<0||wi>6)return;
     const st=c.status==='cancelada'?'can':c.status==='feita'||past?'ok':c.status==='confirmada'?'conf':(d-now<36*36e5?'wait':'conf');
-    (S.ev[wi]=S.ev[wi]||[]).push({h,n:nameOf(c.student_id),st,loc:locId(c.location),_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined})});
-  /* uso do ciclo por aluno (feitas + marcadas) */
-  STU.forEach(x=>{x.q[0]=CLS.filter(c=>c.student_id===x._id&&c.status!=='cancelada'&&new Date(c.starts_at)<=now).length});
-}
+    const lid=(()=>{const l=(LOCS||[]).find(z=>z.n===c.location);return l?l.id:undefined})();
+    (S.ev[wi]=S.ev[wi]||[]).push(Object.assign({h,n:nameOf(c.student_id),st,_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined},lid?{loc:lid}:{}))});
+  XEV.forEach(x=>{const d=new Date(x.date+'T12:00:00'),wi=wiOf(d);if(wi<0||wi>6)return;(S.ev[wi]=S.ev[wi]||[]).push(dec(x.e))});
+  /* aulas usadas no ciclo */
+  STU.forEach(X=>{if(!X._id)return;X.q[0]=CLS.filter(c=>c.student_id===X._id&&c.status!=='cancelada'&&new Date(c.starts_at)<=now).length})}
 apply();
-/* semanas fora da atual: aulas reais */
-evOn=function(dt){const s=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()),e=new Date(s.getTime()+864e5),now=new Date();
-  return CLS.filter(c=>{const d=new Date(c.starts_at);return d>=s&&d<e}).map(c=>{const d=new Date(c.starts_at);return {n:nameOf(c.student_id),h:d.getHours()+d.getMinutes()/60,st:c.status==='cancelada'?'can':d<now||c.status==='feita'?'ok':'conf'}})};
+try{evOn=function(dt){const s=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()),e=new Date(s.getTime()+864e5),now=new Date();
+  return CLS.filter(c=>{const d=new Date(c.starts_at);return d>=s&&d<e}).map(c=>{const d=new Date(c.starts_at);return {n:nameOf(c.student_id),h:d.getHours()+d.getMinutes()/60,st:c.status==='cancelada'?'can':d<now||c.status==='feita'?'ok':'conf'}})}}catch(_){}
 
-/* ---- grava no banco o que você faz na agenda ---- */
+
+/* ---------- ficha do aluno com dados reais (no lugar dos geradores de exemplo) ---------- */
+const SONO=[5.5,6.5,7.5];
+const ckOf=(x,day)=>DCA.find(c=>c.user_id===x._id&&c.day===day);
+const trainedOn=(x,day)=>LGA.some(l=>l.user_id===x._id&&l.day===day)||CLS.some(c=>c.student_id===x._id&&(c.status==='feita'||c.status==='confirmada')&&iso(new Date(c.starts_at))===day&&new Date(c.starts_at)<new Date());
+const daysBack=n=>[...Array(n).keys()].map(k=>iso(new Date(today.getTime()-k*864e5)));
+try{CKW=(x,i)=>{const dt=addD(TD,i-TODAY);if((x.pz||[]).some(z=>z.from<=dt&&dt<=z.to))return dt<=TD?{e:'Ⅱ',sono:7,treino:false,pz:true}:null;if(i>TODAY||!x._id)return null;
+  const day=iso(dt),ck=ckOf(x,day),tr=trainedOn(x,day);if(!ck&&!tr)return null;return {e:'',sono:ck&&ck.answers&&ck.answers.sono!=null?SONO[ck.answers.sono]:null,treino:tr,dor:false}}}catch(e){console.error(e)}
+try{ckData=(x,i)=>{const ck=x._id&&ckOf(x,iso(addD(TD,i-TODAY))),a=(ck&&ck.answers)||{},L=(v,arr)=>v==null?'–':arr[v];
+  return {sono:a.sono!=null?SONO[a.sono]:'–',ene:a.energia!=null?[2,3,5][a.energia]:'–',hum:'–',est:'–',fome:'–',agua:L(a.agua,['Não','Quase','Meta ✓']),dieta:a.livre==null?'–':['Sim','Refeição livre','Fast food'][a.livre],obs:''}}}catch(e){}
+try{freq4=x=>{const g=(weekOf(x).plans.reduce((a,p)=>a+p.days.length,0)||(x.fixo||[]).length||3)*4;if(!x._id)return [0,g];return [daysBack(28).filter(d=>trainedOn(x,d)).length,g]}}catch(e){}
+try{prog=x=>{if(!x._id)return [];const L=LGA.filter(l=>l.user_id===x._id).slice().reverse(),first={},last={};L.forEach(l=>(l.sets||[]).forEach(z=>{if(!z.n||z.cardio||!(+z.kg>0))return;if(first[z.n]==null)first[z.n]=+z.kg;last[z.n]=Math.max(+z.kg,z.n in last&&l.day===L[L.length-1].day?last[z.n]:0)||+z.kg}));
+  return Object.keys(first).slice(0,3).map(n=>({n,st:first[n],now:last[n],p:Math.round((last[n]/first[n]-1)*100)}))}}catch(e){}
+window.__rlLogs=x=>{if(!x._id)return [];const W=weekOf(x),L8x=typeof L8!=='undefined'?L8:'ABCDEFGH';return LGA.filter(l=>l.user_id===x._id).slice(0,3).map(l=>{const d=new Date(l.day+'T12:00:00'),j='ABCDEFGHIJ'.indexOf(l.letter),p=W.plans[j]||{name:'Treino '+(l.letter||'')};
+  const n=(l.sets||[]).filter(z=>z.done&&!z.cardio).length;return {p,d:['dom','seg','ter','qua','qui','sex','sáb'][d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1),n:`${n} ${n===1?'série':'séries'}${l.volume_kg?' • '+Math.round(l.volume_kg).toLocaleString('pt-BR')+' kg':''}${l.duration_min?' • '+l.duration_min+' min':''}`}})};
+const LVN=['Recruta','Consistente','Atleta','Casca Grossa','Elite'],LVT=[[0,0],[36,13],[72,26],[150,52],[300,104]];
+window.__rlLvName=x=>{const p=STUD.find(s=>s.id===x._id)||{};const t=new Set([...LGA.filter(l=>l.user_id===x._id).map(l=>l.day),...CLS.filter(c=>c.student_id===x._id&&(c.status==='feita'||c.status==='confirmada')&&new Date(c.starts_at)<new Date()).map(c=>iso(new Date(c.starts_at)))]).size,
+  w=WCA.filter(z=>z.user_id===x._id).length;let lv=0;LVT.forEach(([a,b],i)=>{if(t>=a&&w>=b)lv=i});return LVN[Math.min(4,lv+(+p.level_bonus||0))]};
+try{resumoMes=function(x){const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth(),1),MN=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const goalW=(weekOf(x).plans.reduce((a,p)=>a+p.days.length,0)||(x.fixo||[]).length||3);const W=[];
+  for(let s=new Date(m0.getFullYear(),m0.getMonth(),m0.getDate()-((m0.getDay()+6)%7));s<=now&&W.length<5;s=new Date(s.getTime()+7*864e5)){const ds=[...Array(7).keys()].map(k=>new Date(s.getTime()+k*864e5)).filter(d=>d<=now&&d.getMonth()===now.getMonth()).map(iso);
+    if(!ds.length)continue;const tr=ds.filter(d=>x._id&&trainedOn(x,d)).length,ck=ds.filter(d=>x._id&&ckOf(x,d)).length;W.push({tr:Math.min(100,Math.round(tr/goalW*100)),ck:Math.round(ck/ds.length*100)})}
+  const avg=k=>W.length?Math.round(W.reduce((a,w)=>a+w[k],0)/W.length):0;const sl=DCA.filter(c=>c.user_id===x._id&&c.answers&&c.answers.sono!=null&&new Date(c.day+'T12:00:00')>=m0).map(c=>SONO[c.answers.sono]);
+  const sono=sl.length?(sl.reduce((a,b)=>a+b,0)/sl.length).toFixed(1).replace('.',','):'–',cg=prog(x).filter(z=>z.p>0).length;
+  const ring=(v,c,l)=>`<div class="rmr"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="var(--frost)" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="${c}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${(v/100*106.8).toFixed(1)} 106.8" transform="rotate(-90 21 21)"/></svg><b>${v}%</b><small>${l}</small></div>`;
+  return `<section class="card"><div class="row"><span class="lbl">Resumo do mês</span><span class="note" style="margin:0">${MN[now.getMonth()]}</span></div>
+    <div class="rmg">${ring(avg('tr'),'var(--ok)','treinos feitos')}${ring(avg('ck'),'#8b5cf6','check-ins')}</div>
+    <div class="rmw"><span class="lbl">Por semana</span>${W.map((w,n)=>`<div class="rmb"><small>S${n+1}</small><i><em style="width:${w.tr}%"></em></i><i class="c"><em style="width:${w.ck}%"></em></i></div>`).join('')}<div class="legend"><span><i style="background:var(--ok)"></i>treinos</span><span><i style="background:#8b5cf6"></i>check-ins</span></div></div>
+    <div class="rmk"><div><b>${sono}${sono==='–'?'':'h'}</b><small>sono médio</small></div><div><b class="${cg?'up':''}">${cg?'↑ '+cg:'–'}</b><small>exercícios com carga maior</small></div><div><b>🏅 ${window.__rlLvName(x)}</b><small>level</small></div></div></section>`}}catch(e){console.error(e)}
+function realWC(){const P=['nenhuma','leve','moderada','forte'];STU.forEach(X=>{if(!X._id)return;const L=WCA.filter(z=>z.user_id===X._id);const w=L[0];if(!w){delete X.wc;return}
+  const prev=L.find(z=>z!==w&&z.weight_kg),d=new Date(w.week_start+'T12:00:00'),end=new Date(d.getTime()+6*864e5),ds=[...Array(7).keys()].map(k=>iso(new Date(d.getTime()+k*864e5)));
+  X.wc={peso:w.weight_kg?String(w.weight_kg).replace('.',',')+' kg':'–',dif:w.weight_kg&&prev?((w.weight_kg-prev.weight_kg>0?'+':'')+String(Math.round((w.weight_kg-prev.weight_kg)*10)/10).replace('.',',')):'',nota:P[w.pain]||'–',bad:w.pain>=2,dieta:ds.filter(z=>ckOf(X,z)).length+'/7',txt:w.message||'',dt:'semana de '+d.getDate()+'/'+(d.getMonth()+1)}})}
 let busy=false;
 async function sync(){if(busy)return;if(document.querySelector('.cbox')){setTimeout(sync,600);return}busy=true;try{
   const seen=new Set();
   for(const [wi,L] of Object.entries(S.ev))for(const e of L||[]){
-    if(!e._id){if(e.n&&!e.gc&&!e._new){e._new=1;const s=STU.find(x=>x.n===e.n);if(!s){toast('Aluno não encontrado no banco');continue}
+    if(!e._id){const x=e.n&&!e.gc&&STU.find(s=>s.n===e.n);if(!x||!x._id||e._new)continue;e._new=1;
         const d=new Date(wk0.getFullYear(),wk0.getMonth(),wk0.getDate()+(+wi),Math.floor(e.h),Math.round((e.h%1)*60));
-        const {data,error}=await sb.from('classes').insert({student_id:s._id,starts_at:d.toISOString(),location:((FXS||[]).find(f=>f.student_id===s._id)||{}).location||null,status:'marcada',kind:e.extra?'extra':'plano'}).select().single();
-        if(error){toast('Não salvou a aula nova: '+error.message);continue}e._id=data.id;e._wi=+wi;e._h=e.h;e._st=e.st;DBC[data.id]={st:'marcada'};CLS.push(data);seen.add(data.id)}else if(e._id)seen.add(e._id);continue}
+        const loc=locName(e.loc)||((FXS.find(f=>f.student_id===x._id)||{}).location)||locName((LOCS[0]||{}).id);
+        const {data,error}=await sb.from('classes').insert({student_id:x._id,starts_at:d.toISOString(),location:loc,status:'marcada',kind:e.extra?'extra':'plano'}).select().single();
+        if(error){delete e._new;toast('Não salvou a aula: '+error.message);continue}e._id=data.id;e._wi=+wi;e._h=e.h;e._st=e.st;CLS.push(data);seen.add(data.id);continue}
     seen.add(e._id);const up={};
     if(+wi!==e._wi||Math.abs(e.h-e._h)>.001){const d=new Date(wk0.getFullYear(),wk0.getMonth(),wk0.getDate()+(+wi),Math.floor(e.h),Math.round((e.h%1)*60));up.starts_at=d.toISOString()}
     if(e.st!==e._st){up.status=e.st==='can'?'cancelada':e.st==='ok'?'feita':e.st==='conf'?'confirmada':'marcada'}
     if(!Object.keys(up).length)continue;
     const {error}=await sb.from('classes').update(up).eq('id',e._id);if(error){toast('Não salvou: '+error.message);continue}
     e._wi=+wi;e._h=e.h;e._st=e.st;const c=CLS.find(x=>x.id===e._id);if(c)Object.assign(c,up)}
-  /* aulas da semana atual que sumiram da agenda = canceladas */
+  /* aula da semana atual que sumiu da agenda = cancelada */
   for(const c of CLS){const d=new Date(c.starts_at),wi=wiOf(d);if(wi<0||wi>6||seen.has(c.id)||c.status==='cancelada')continue;
     const {error}=await sb.from('classes').update({status:'cancelada'}).eq('id',c.id);if(!error)c.status='cancelada'}
 }finally{busy=false}}
-
-/* ---- pedidos e convites reais, no topo da agenda ---- */
-function topCards(){if(S.tab!=='agenda')return;const sc=document.querySelector('.scroller')||document.getElementById('app')||document.body;if(document.getElementById('rl-top'))return;
-  const open=RQ.filter(r=>r.status!=='proposta'),sent=RQ.filter(r=>r.status==='proposta');
-  const box=document.createElement('div');box.id='rl-top';
-  box.innerHTML=`${RQ.length?`<button class="rlp" id="rl-req" style="width:100%;text-align:left"><span class="n">${open.length||sent.length}</span><span style="flex:1"><b>${open.length?`${open.length} ${open.length===1?'pedido de aluno novo':'pedidos de alunos novos'}`:'Proposta enviada'}</b><small>${open.length?'Toque para ver e propor o horário':`${sent.length} aguardando o aluno aceitar`}</small></span><span>›</span></button>`:''}
-   <div class="rlrow"><button class="btn" id="rl-inv">+ Convidar aluno</button><button class="btn" id="rl-iv">${IV.length?`Convites (${IV.length})`:'Convites'}</button></div>`;
-  if(!STUD.some(x=>x.onboarded)&&!IV.length&&!RQ.length){box.insertAdjacentHTML('afterbegin',`<div class="gd"><div class="hd"><b>Comece por aqui</b></div><p style="font-size:14px;color:var(--muted);font-weight:600;line-height:1.45;margin:8px 0 12px">Convide seu primeiro aluno. Ele recebe o link no WhatsApp, faz o cadastro e o pedido aparece aqui para você propor o horário.</p><button class="btn solid wide" id="rl-first">+ Convidar meu primeiro aluno</button></div>`);box.querySelector('#rl-first').onclick=inviteSheet}
-  const anchor=document.querySelector('.days')||document.querySelector('.wk')||sc.firstElementChild;if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(box,anchor);else sc.prepend(box);
-  const rb=box.querySelector('#rl-req');if(rb)rb.onclick=reqList;box.querySelector('#rl-inv').onclick=inviteSheet;box.querySelector('#rl-iv').onclick=invList}
-function reqList(){if(RQ.length===1)return proposeSheet(RQ[0]);sheet(`<span class="lbl">Alunos novos</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">Pedidos</h3>${RQ.map(r=>{const s=STUD.find(x=>x.id===r.student_id)||{};return `<button class="rlp" style="width:100%;text-align:left" data-rq="${r.id}"><span style="flex:1"><b>${esc(s.name||'Aluno')}</b><small>${r.days.map(d=>DOW[d]).join(' e ')} • ${(PER[r.period]||[''])[0]} • ${r.status==='proposta'?'proposta enviada':r.status==='conversar'?'quer conversar':'aguardando você'}</small></span><span>›</span></button>`}).join('')}`,s=>s.querySelectorAll('[data-rq]').forEach(b=>b.onclick=()=>{s.remove();proposeSheet(RQ.find(r=>r.id===b.dataset.rq))}))}
-function nextDate(dow){for(let k=1;k<=7;k++){const x=new Date(today.getTime()+k*864e5);if(x.getDay()===dow)return x}return today}
-function suggest(dow,period,ideal){const day=nextDate(dow),per=PER[period]||['',6,22];
-  const mins=CLS.filter(c=>{const d=new Date(c.starts_at);return d.getDay()===dow&&c.status!=='cancelada'&&d>today}).map(c=>{const d=new Date(c.starts_at);return d.getHours()*60+d.getMinutes()});
-  const U=[...new Set(mins)].sort((a,b)=>a-b),busy=m=>U.some(x=>Math.abs(x-m)<60),inP=m=>m>=per[1]*60&&m+60<=per[2]*60;
-  const w=(()=>{const m=String(ideal||'').match(/(\d{1,2})(?:[:h](\d{2}))?/);return m?(+m[1])*60+(+(m[2]||0)):null})();
-  let best=U.flatMap(x=>[x+60,x-60]).filter(m=>inP(m)&&!busy(m)).sort((a,b)=>w!=null?Math.abs(a-w)-Math.abs(b-w):a-b)[0],why;
-  if(best!=null)why=U.includes(best-60)?'logo depois de outra aula, sem buraco':'logo antes de outra aula, sem buraco';else{best=w!=null&&inP(w)&&!busy(w)?w:per[1]*60;why=w!=null&&best===w?'o horário ideal do aluno':'início do período'}
-  const show=CLS.filter(c=>new Date(c.starts_at).toDateString()===day.toDateString()&&c.status!=='cancelada');
-  return {t:pad(Math.floor(best/60))+':'+pad(best%60),why,day,show}}
-function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Object.values(p.parq||{}).filter(Boolean).length;const SG=r.days.map(dw=>({dow:dw,...suggest(dw,r.period,r.ideal_time)}));
-  const first=SG.map(x=>x.day).sort((a,b)=>a-b)[0],iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,LOCS=[...new Set(['Bodytech Barra','Condomínio Península',...CLS.map(c=>c.location).filter(Boolean),...(r.location_other?[r.location_other]:[])])];
-  sheet(`<div class="rq9"><span class="lbl">${r.status==='proposta'?'Proposta enviada • mudar':'Novo aluno • pedido'}</span><h3 class="d" style="font-size:34px;margin:4px 0 4px">${esc(p.name||'Aluno')}</h3>
-  <div class="tg"><span>${r.freq||r.days.length}x por semana</span><span>${r.days.map(d=>DOW[d]).join(' e ')}</span><span>${(PER[r.period]||[''])[0]}${r.ideal_time?' • ideal '+esc(r.ideal_time):''}</span><span>${esc(r.location||('Outro: '+(r.location_other||'')))}</span>${r.monthly_price?`<span>R$ ${r.monthly_price}/mês</span>`:''}${p.injury?'<span class="w">lesão/dor</span>':''}${yes?`<span class="w">PAR-Q: ${yes} sim</span>`:''}</div>
-  <p class="mini">${esc([p.goal,p.level].filter(Boolean).join(' • '))}${p.injury?'<br>Lesão/dor: '+esc(p.injury):''}</p>
-  ${SG.map((x,k)=>`<div class="dayb"><div class="dt"><b>${DOW[x.dow]}</b><input type="time" step="900" value="${x.t}" data-k="${k}"></div><div class="sug">Encaixe sugerido: ${x.t} • ${x.why}</div><p class="mini">${DOW[x.dow]} ${pad(x.day.getDate())}/${pad(x.day.getMonth()+1)}: ${x.show.length?x.show.map(c=>{const d=new Date(c.starts_at);return pad(d.getHours())+':'+pad(d.getMinutes())+' '+esc(nameOf(c.student_id).split(' ')[0])}).join(' • '):'nenhuma aula ainda'}</p></div>`).join('')}
-  <label>Local</label><select id="lc">${LOCS.map(l=>`<option ${l===(r.location||r.location_other)?'selected':''}>${esc(l)}</option>`).join('')}</select>
-  <label>Começa em</label><input id="sd" type="date" value="${iso(first)}"><label>Mensagem (opcional)</label><textarea id="ms" rows="2" placeholder="Ex.: Esses horários encaixam certinho na minha agenda. Fica bom pra você?"></textarea>
-  <button class="btn solid wide" id="sn" style="margin-top:14px">Enviar proposta</button>${p.phone?`<a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}">WhatsApp</a>`:''}
-  <button class="btn wide" id="rc" style="margin-top:8px;border:0">Recusar pedido</button></div>`,s=>{
-   s.querySelector('#sn').onclick=async()=>{const slots=[...s.querySelectorAll('[data-k]')].map(i=>({dow:SG[+i.dataset.k].dow,time:i.value,location:s.querySelector('#lc').value}));if(slots.some(x=>!x.time))return toast('Preencha os horários');
-    s.querySelector('#sn').disabled=true;await sb.from('proposals').update({status:'recusada'}).eq('request_id',r.id).eq('status','enviada');
-    const {error}=await sb.from('proposals').insert({request_id:r.id,slots,message:s.querySelector('#ms').value.trim()||null,start_date:s.querySelector('#sd').value||null,created_by:ME.id});
-    if(error){s.querySelector('#sn').disabled=false;return toast('Não enviou: '+error.message)}await sb.from('requests').update({status:'proposta',updated_at:new Date().toISOString()}).eq('id',r.id);
-    s.remove();toast('Proposta enviada');r.status='proposta';const nm=(p.name||'').split(' ')[0];
-    if(p.phone)sheet(`<span class="lbl">Proposta enviada</span><h3 class="d" style="font-size:32px;margin:4px 0 8px">Avisar ${esc(nm)}?</h3><p class="meta">A proposta já está no app. Se quiser, mande um aviso no WhatsApp.</p><a class="btn solid wide" style="text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:10px" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Mandei sua proposta de horário no app: ${location.origin}/app/`)}">Avisar no WhatsApp</a>`);
-    redraw()};
-   s.querySelector('#rc').onclick=async()=>{if(!confirm('Recusar este pedido?'))return;const {error}=await sb.from('requests').update({status:'recusado',updated_at:new Date().toISOString()}).eq('id',r.id);if(error)return toast(error.message);RQ=RQ.filter(x=>x!==r);s.remove();toast('Pedido recusado');redraw()}})}
-const waN=p=>{const t=String(p||'');let d=t.replace(/\D/g,'');if(!t.trim().startsWith('+')&&d.length<=11)d='55'+d;return d};
-const DDIS=[['55','🇧🇷 +55'],['54','🇦🇷 +54'],['598','🇺🇾 +598'],['56','🇨🇱 +56'],['351','🇵🇹 +351'],['1','🇺🇸 +1'],['34','🇪🇸 +34'],['39','🇮🇹 +39'],['44','🇬🇧 +44']];
-function inviteSheet(){sheet(`<div class="rq9"><span class="lbl">Novo aluno</span><h3 class="d" style="font-size:34px;margin:4px 0 4px">Convidar</h3><p class="meta" style="margin:0">O aluno recebe um link no WhatsApp, cria a senha e faz o cadastro.</p>
-  <label>Nome</label><input id="nm" placeholder="Nome e sobrenome"><label>WhatsApp</label><div class="phw"><select id="dd">${DDIS.map(d=>`<option value="${d[0]}">${d[1]}</option>`).join('')}</select><input id="ph" inputmode="tel" placeholder="(21) 99999-9999"></div>
-  <button class="btn solid wide" id="go" style="margin-top:14px">Criar convite</button></div>`,s=>{const i=s.querySelector('#ph'),dd=s.querySelector('#dd');
-   i.oninput=()=>{if(dd.value!=='55')return;let v=i.value.replace(/\D/g,'').slice(0,11);i.value=v.length>6?`(${v.slice(0,2)}) ${v.slice(2,v.length-4)}-${v.slice(-4)}`:v.length>2?`(${v.slice(0,2)}) ${v.slice(2)}`:v};
-   s.querySelector('#go').onclick=async()=>{const name=s.querySelector('#nm').value.trim(),dig=i.value.replace(/\D/g,''),phone=dig?`+${dd.value} ${i.value.trim()}`:'';
-    if(!name)return toast('Coloque o nome');if(dig&&dd.value==='55'&&(dig.length<10||dig.length>11))return toast('Confira o WhatsApp com DDD');s.querySelector('#go').disabled=true;
-    const {data,error}=await sb.from('invites').insert({name,phone,plan:'treino',created_by:ME.id}).select().single();if(error){s.querySelector('#go').disabled=false;return toast('Não criou: '+error.message)}
-    IV.unshift(data);s.remove();shareInvite(data);redraw()}})}
-function shareInvite(v){const link=`${location.origin}/app/?c=${v.code}`,nm=(v.name||'').split(' ')[0],txt=`Oi${nm?', '+nm:''}! Seu acesso ao app de treino com o ${(ME.name||'Sérgio').split(' ')[0]||'Sérgio'}: ${link}`;
-  sheet(`<span class="lbl">Convite • ${esc(v.name||'')}</span><h3 class="d" style="font-size:40px;margin:4px 0 6px">${v.code}</h3><p class="meta" style="word-break:break-all">${esc(link)}</p>
-  ${v.phone?`<a class="btn solid wide" style="text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:10px" target="_blank" rel="noopener" href="https://wa.me/${waN(v.phone)}?text=${encodeURIComponent(txt)}">Enviar no WhatsApp</a>`:''}<button class="btn wide" id="cp" style="margin-top:8px">Copiar link</button>`,s=>{s.querySelector('#cp').onclick=async()=>{try{await navigator.clipboard.writeText(txt);toast('Copiado')}catch(_){toast('Segure o link para copiar')}}})}
-function invList(){if(!IV.length)return inviteSheet();sheet(`<span class="lbl">Ainda não usados</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">Convites</h3>${IV.map(v=>`<button class="rlp" style="width:100%;text-align:left" data-iv="${v.code}"><span style="flex:1"><b>${esc(v.name||'Sem nome')}</b><small>código ${v.code}</small></span><span>enviar ›</span></button>`).join('')}<button class="btn solid wide" id="nw" style="margin-top:10px">+ Convidar aluno</button>`,s=>{
-  s.querySelectorAll('[data-iv]').forEach(b=>b.onclick=()=>{s.remove();shareInvite(IV.find(v=>v.code===b.dataset.iv))});s.querySelector('#nw').onclick=()=>{s.remove();inviteSheet()}})}
-
 window.addEventListener('pointerdown',e=>{if(e.target.closest('.wb.can'))e.stopPropagation()},true);
 document.addEventListener('click',()=>setTimeout(sync,150),true);
-/* ---- abas ainda em demonstração ---- */
+
+/* ---------- treinos ---------- */
 function wkFromDB(id){const R=WKS.filter(w=>w.user_id===id),cf=R.find(w=>w.letter==='_cfg'),P=R.filter(w=>w.letter!=='_cfg').sort((a,b)=>(a.position||0)-(b.position||0));
   const c=(cf&&cf.exercises)||{};return {plans:P.map(w=>({name:w.title||('Treino '+w.letter),days:(w.exercises&&w.exercises.days)||[],ex:(w.exercises&&w.exercises.ex)||[]})),cardio:c.cardio||[],cd:c.cd||{},mode:c.mode||'livre',single:c.single,start:c.start?new Date(c.start):undefined,end:c.end?new Date(c.end):undefined}}
 async function saveWk(x){const w=x.wk;if(!w||!x._id)return;if(w.plans.length&&!w.end){w.start=new Date(TD);w.end=addD(TD,42)}const L='ABCDEFGHIJ';
@@ -4100,41 +4153,91 @@ async function saveWk(x){const w=x.wk;if(!w||!x._id)return;if(w.plans.length&&!w
   const d=await sb.from('workouts').delete().eq('user_id',x._id);if(d.error){toast('Não salvou o treino: '+d.error.message);return}
   const {error}=await sb.from('workouts').insert(rows);if(error){toast('Não salvou o treino: '+error.message);return}
   WKS=WKS.filter(r=>r.user_id!==x._id).concat(rows)}
+try{const _wo=weekOf;weekOf=function(x){if(x&&!x.wk)x.wk={plans:[],cardio:[],cd:{},mode:'livre'};return _wo(x)}}catch(_){}
 try{const _td=tDates;tDates=function(x){const w=weekOf(x);if(x&&x._id&&!w.end&&w.plans.length){w.start=new Date(TD);w.end=addD(TD,42)}return _td(x)}}catch(_){}
-window.addEventListener('click',e=>{const b=e.target.closest('[data-bdone]');if(!b||T2.tpl||!T2.stu)return;const x=stu(T2.stu);if(x&&x._id)saveWk(x)},true);
-const DOWL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-function realTab(t){const ap=document.getElementById('app')||document.querySelector('.scroller');if(!ap||ap.querySelector('.rl-tab'))return;const br=ap.querySelector('.brand');
-  [...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
-  let h='';if(t==='treinos')h=`<span class="lbl">Treinos</span><h2 class="d" style="font-size:44px;margin:4px 0 12px">Em breve</h2><div class="rlp" style="display:block"><b>Montar e publicar treinos</b><small style="line-height:1.45">Entra na próxima etapa do teste. Quando estiver pronto, o treino que você publicar aparece direto no app do aluno.</small></div>`;
-  else{const A=STUD.filter(x=>x.onboarded);const now=new Date();
-    h=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><div><span class="lbl">Alunos</span><h2 class="d" style="font-size:44px;margin:4px 0 6px">${A.length} ${A.length===1?'aluno':'alunos'}</h2></div><button class="btn solid" id="rl-inv2">+ Convidar</button></div>
-    ${RQ.length?`<button class="rlp" id="rl-req2" style="width:100%;text-align:left"><span class="n">${RQ.length}</span><span style="flex:1"><b>${RQ.length===1?'1 pedido de aluno novo':RQ.length+' pedidos de alunos novos'}</b><small>Toque para propor o horário</small></span><span>›</span></button>`:''}
-    ${A.map(x=>{const fx=FXS.filter(f=>f.student_id===x.id).sort((a,b)=>a.dow-b.dow),cd=x.cycle_day||1,cs=new Date(now.getFullYear(),now.getMonth()-(now.getDate()<cd?1:0),cd),ce=new Date(cs.getFullYear(),cs.getMonth()+1,cd);
-      const cy=CLS.filter(c=>c.student_id===x.id&&c.status!=='cancelada'&&new Date(c.starts_at)>=cs&&new Date(c.starts_at)<ce),done=cy.filter(c=>new Date(c.starts_at)<now).length,ini=(x.name||'?').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
-      return `<button class="rlp" style="width:100%;text-align:left" data-rstu="${x.id}"><span class="n">${ini}</span><span style="flex:1"><b>${esc(x.name||'Aluno')}</b><small>${fx.length?fx.map(f=>DOW[f.dow]+' '+f.at_time.slice(0,5)).join(' • '):'sem horário fixo ainda'} • ${done}/${(x.freq||2)*4} aulas no ciclo</small></span><span>›</span></button>`}).join('')||'<p class="meta">Nenhum aluno ainda. Convide o primeiro.</p>'}`}
-  ap.insertAdjacentHTML('beforeend',`<div class="rl-tab" style="padding:6px 0">${h}</div>`);
-  const i2=ap.querySelector('#rl-inv2');if(i2)i2.onclick=inviteSheet;const r2=ap.querySelector('#rl-req2');if(r2)r2.onclick=reqList;
-  ap.querySelectorAll('[data-rstu]').forEach(b=>b.onclick=e=>{e.stopPropagation();ficha(STUD.find(x=>x.id===b.dataset.rstu))})}
-function ficha(x){if(!x)return;const fx=FXS.filter(f=>f.student_id===x.id).sort((a,b)=>a.dow-b.dow),now=new Date(),nx=CLS.filter(c=>c.student_id===x.id&&c.status!=='cancelada'&&new Date(c.starts_at)>now).slice(0,4);
-  const pq=Object.entries(x.parq||{}).filter(([,v])=>v).length,age=x.birth_date?Math.floor((now-new Date(x.birth_date+'T12:00:00'))/(365.25*864e5)):null;
-  const row=(k,v)=>v?`<div style="display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px"><span style="color:var(--muted);font-weight:600">${k}</span><b style="text-align:right">${v}</b></div>`:'';
-  sheet(`<span class="lbl">Aluno</span><h3 class="d" style="font-size:34px;margin:4px 0 10px">${esc(x.name||'Aluno')}</h3>
-  ${row('Plano',`${x.freq||2}x por semana • ${(x.freq||2)*4} aulas`)}${row('Ciclo',x.cycle_day?`todo dia ${x.cycle_day}`:'')}${row('Vence',x.access_until?x.access_until.split('-').reverse().join('/'):'')}
-  ${row('Horários fixos',fx.map(f=>DOWL[f.dow]+' '+f.at_time.slice(0,5)).join('<br>')||'—')}${row('Próximas aulas',nx.map(c=>{const d=new Date(c.starts_at);return DOW[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(c.status==='confirmada'?' ✓':'')}).join('<br>')||'—')}
-  ${row('Treinos feitos (60 dias)',(()=>{const L=LGS.filter(l=>l.user_id===x.id);if(!L.length)return 'nenhum ainda';const nm=k=>{const w=WKS.find(w=>w.user_id===x.id&&w.letter===k);return esc(w?w.title:'Treino '+k)};return L.length+' no total<br>'+L.slice(0,4).map(l=>{const d=new Date(l.day+'T12:00:00');return DOW[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+' • '+nm(l.letter)+' • '+Math.round(l.volume_kg||0).toLocaleString('pt-BR')+' kg'}).join('<br>')})())}${row('Check-ins do dia (7 dias)',(()=>{const lim=new Date(Date.now()-7*864e5).toISOString().slice(0,10),L=DCI.filter(c=>c.user_id===x.id&&c.day>lim);if(!L.length)return 'nenhum ainda';const a=L[0].answers||{},E=['baixa','ok','alta'],S=['menos de 6h','6 a 7h','7h ou mais'];const d=new Date(L[0].day+'T12:00:00');return L.length+' de 7<br>último '+DOW[d.getDay()]+' '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+(a.energia!=null?' • energia '+E[a.energia]:'')+(a.sono!=null?' • sono '+S[a.sono]:'')})())}${row('Semana fechada',(()=>{const w=WCL.find(w=>w.user_id===x.id);if(!w)return 'nenhuma ainda';const P=['nenhuma dor','dor leve','dor moderada','dor forte'],d=new Date(w.week_start+'T12:00:00');return 'semana de '+pad(d.getDate())+'/'+pad(d.getMonth()+1)+'<br>'+(w.weight_kg?String(w.weight_kg).replace('.',',')+' kg • ':'')+(w.pain>=2?'<span style="color:#a8283f">'+P[w.pain]+'</span>':P[w.pain]||'')+(w.message?'<br>“'+esc(w.message)+'”':'')})())}${row('Objetivo',esc(x.goal||''))}${row('Nível',esc(x.level||''))}${row('Lesão ou dor',x.injury?esc(x.injury):'não')}${row('PAR-Q',pq?`<span style="color:#a8283f">${pq} resposta${pq>1?'s':''} sim</span>`:'tudo não')}
-  ${row('Idade',age?age+' anos':'')}${row('Altura e peso',x.height_cm?`${x.height_cm} cm • ${x.weight_kg||'?'} kg`:'')}${row('Documento',x.doc_num?esc((x.doc_type==='passaporte'?'Passaporte ':'CPF ')+x.doc_num+(x.country&&x.country!=='Brasil'?' • '+x.country:'')):'')}
-  ${x.phone?`<a class="btn solid wide" style="text-decoration:none;display:flex;align-items:center;justify-content:center;margin-top:14px" target="_blank" rel="noopener" href="https://wa.me/${waN(x.phone)}">WhatsApp</a>`:''}<button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`)}
+window.addEventListener('click',e=>{const b=e.target.closest('[data-bdone]');if(!b||T2.tpl||!T2.stu)return;const x=stu(T2.stu);if(x&&x._id)setTimeout(()=>saveWk(x),0)},true);
+
+/* ---------- pedidos de quem entrou pelo convite aberto ---------- */
+function reqCard(){if(S.tab!=='agenda'||NEWP.on||!RQ.length)return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-req'))return;
+  const open=RQ.filter(r=>r.status!=='proposta'),sent=RQ.filter(r=>r.status==='proposta');
+  const b=document.createElement('button');b.className='rlp';b.id='rl-req';b.style.cssText='width:100%;text-align:left';
+  b.innerHTML=`<span class="n">${open.length||sent.length}</span><span style="flex:1"><b>${open.length?`${open.length} ${open.length===1?'pedido de aluno novo':'pedidos de alunos novos'}`:'Proposta enviada'}</b><small>${open.length?'Toque para ver e propor o horário':`${sent.length} aguardando o aluno aceitar`}</small></span><span>›</span>`;
+  const br=ap.querySelector('.brand');br&&br.nextSibling?ap.insertBefore(b,br.nextSibling):ap.prepend(b);b.onclick=reqList}
+function reqList(){if(RQ.length===1)return proposeSheet(RQ[0]);sheet(`<span class="lbl">Alunos novos</span><h3 class="d">Pedidos</h3>${RQ.map(r=>{const s=STUD.find(x=>x.id===r.student_id)||{};return `<button class="rlp" style="width:100%;text-align:left" data-rq="${r.id}"><span style="flex:1"><b>${esc(s.name||'Aluno')}</b><small>${r.days.map(d=>DOW[d]).join(' e ')} • ${(PERI[r.period]||[''])[0]} • ${r.status==='proposta'?'proposta enviada':r.status==='conversar'?'quer conversar':'aguardando você'}</small></span><span>›</span></button>`}).join('')}`,s=>s.querySelectorAll('[data-rq]').forEach(b=>b.onclick=()=>{s.remove();proposeSheet(RQ.find(r=>r.id===b.dataset.rq))}))}
+function nextDate(dow){for(let k=1;k<=7;k++){const x=new Date(today.getTime()+k*864e5);if(x.getDay()===dow)return x}return today}
+function suggest(dow,period,ideal){const day=nextDate(dow),per=PERI[period]||['',6,22];
+  const mins=CLS.filter(c=>{const d=new Date(c.starts_at);return d.getDay()===dow&&c.status!=='cancelada'&&d>today}).map(c=>{const d=new Date(c.starts_at);return d.getHours()*60+d.getMinutes()});
+  const U=[...new Set(mins)].sort((a,b)=>a-b),busy=m=>U.some(x=>Math.abs(x-m)<60),inP=m=>m>=per[1]*60&&m+60<=per[2]*60;
+  const w=(()=>{const m=String(ideal||'').match(/(\d{1,2})(?:[:h](\d{2}))?/);return m?(+m[1])*60+(+(m[2]||0)):null})();
+  let best=U.flatMap(x=>[x+60,x-60]).filter(m=>inP(m)&&!busy(m)).sort((a,b)=>w!=null?Math.abs(a-w)-Math.abs(b-w):a-b)[0],why;
+  if(best!=null)why=U.includes(best-60)?'logo depois de outra aula, sem buraco':'logo antes de outra aula, sem buraco';else{best=w!=null&&inP(w)&&!busy(w)?w:per[1]*60;why=w!=null&&best===w?'o horário ideal do aluno':'início do período'}
+  const show=CLS.filter(c=>new Date(c.starts_at).toDateString()===day.toDateString()&&c.status!=='cancelada');
+  return {t:pad(Math.floor(best/60))+':'+pad(best%60),why,day,show}}
+const waN=p=>{const t=String(p||'');let d=t.replace(/\D/g,'');if(!t.trim().startsWith('+')&&d.length<=11)d='55'+d;return d};
+function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Object.values(p.parq||{}).filter(Boolean).length;const SG=r.days.map(dw=>({dow:dw,...suggest(dw,r.period,r.ideal_time)}));
+  const first=SG.map(x=>x.day).sort((a,b)=>a-b)[0],LL=[...new Set([...(LOCS||[]).map(l=>l.n),...(r.location?[r.location]:[]),...(r.location_other?[r.location_other]:[])])];
+  sheet(`<div class="rq9"><span class="lbl">${r.status==='proposta'?'Proposta enviada • mudar':'Novo aluno • pedido'}</span><h3 class="d">${esc(p.name||'Aluno')}</h3>
+  <div class="tg"><span>${r.freq||r.days.length}x por semana</span><span>${r.days.map(d=>DOW[d]).join(' e ')}</span><span>${(PERI[r.period]||[''])[0]}${r.ideal_time?' • ideal '+esc(r.ideal_time):''}</span><span>${esc(r.location||('Outro: '+(r.location_other||'')))}</span>${p.injury?'<span class="w">lesão/dor</span>':''}${yes?`<span class="w">PAR-Q: ${yes} sim</span>`:''}</div>
+  <p class="mini">${esc([p.goal,p.level].filter(Boolean).join(' • '))}${p.injury?'<br>Lesão/dor: '+esc(p.injury):''}</p>
+  ${SG.map((x,k)=>`<div class="dayb"><div class="dt"><b>${DOW[x.dow]}</b><input type="time" step="900" value="${x.t}" data-k="${k}"></div><div class="sug">Encaixe sugerido: ${x.t} • ${x.why}</div><p class="mini">${DOW[x.dow]} ${pad(x.day.getDate())}/${pad(x.day.getMonth()+1)}: ${x.show.length?x.show.map(c=>{const d=new Date(c.starts_at);return pad(d.getHours())+':'+pad(d.getMinutes())+' '+esc(nameOf(c.student_id).split(' ')[0])}).join(' • '):'nenhuma aula ainda'}</p></div>`).join('')}
+  <label>Local</label><select id="lc">${LL.map(l=>`<option ${l===(r.location||r.location_other)?'selected':''}>${esc(l)}</option>`).join('')}</select>
+  <label>Começa em</label><input id="sd" type="date" value="${iso(first)}"><label>Mensagem (opcional)</label><textarea id="ms" rows="2" placeholder="Ex.: Esses horários encaixam certinho na minha agenda. Fica bom pra você?"></textarea>
+  <button class="btn solid wide" id="sn" style="margin-top:14px">Enviar proposta</button>${p.phone?`<a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}">WhatsApp</a>`:''}
+  <button class="btn wide" id="rc" style="margin-top:8px;border:0">Recusar pedido</button></div>`,s=>{
+   s.querySelector('#sn').onclick=async()=>{const slots=[...s.querySelectorAll('[data-k]')].map(i=>({dow:SG[+i.dataset.k].dow,time:i.value,location:s.querySelector('#lc').value}));if(slots.some(x=>!x.time))return toast('Preencha os horários');
+    s.querySelector('#sn').disabled=true;await sb.from('proposals').update({status:'recusada'}).eq('request_id',r.id).eq('status','enviada');
+    const {error}=await sb.from('proposals').insert({request_id:r.id,slots,message:s.querySelector('#ms').value.trim()||null,start_date:s.querySelector('#sd').value||null,created_by:ME.id});
+    if(error){s.querySelector('#sn').disabled=false;return toast('Não enviou: '+error.message)}await sb.from('requests').update({status:'proposta',updated_at:new Date().toISOString()}).eq('id',r.id);
+    s.remove();toast('Proposta enviada');r.status='proposta';const nm=(p.name||'').split(' ')[0];
+    if(p.phone)sheet(`<span class="lbl">Proposta enviada</span><h3 class="d">Avisar ${esc(nm)}?</h3><p class="note">A proposta já está no app. Se quiser, mande um aviso no WhatsApp.</p><a class="btn solid" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Mandei sua proposta de horário no app: ${APP}`)}">Avisar no WhatsApp</a>`);
+    redraw()};
+   s.querySelector('#rc').onclick=async()=>{const {error}=await sb.from('requests').update({status:'recusado',updated_at:new Date().toISOString()}).eq('id',r.id);if(error)return toast(error.message);RQ=RQ.filter(x=>x!==r);s.remove();toast('Pedido recusado');redraw()}})}
+
+/* ---------- acesso do aluno (link) dentro da ficha ---------- */
+function accessCard(){if(S.tab!=='alunos')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-acc'))return;
+  const X=A2.open&&STU.find(x=>x._id&&x.n===A2.open);if(!X)return;
+  const st=X._email?(X._on?'Já usa o app':'Criou a senha, falta terminar o cadastro'):'Ainda não entrou no app';
+  const c=document.createElement('section');c.className='card';c.id='rl-acc';
+  c.innerHTML=`<div class="row"><span class="lbl">Acesso ao app</span><span class="note">${st}</span></div>${X._email?'':`<p class="note" style="margin:6px 0 10px">O link é de uso único. Ele coloca o e-mail, cria e confirma a senha e faz o cadastro.</p><div class="row2"><button class="btn" data-rlcp>Copiar link</button><button class="btn solid" data-rlwa>Enviar no WhatsApp</button></div><button class="lnk" data-rlnew style="margin-top:6px">Gerar link novo</button>`}`;
+  const h=ap.querySelector(':scope>section.card');h?ap.insertBefore(c,h):ap.appendChild(c);
+  const txt=code=>`Oi, ${X.n.split(' ')[0]}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu acesso ao app: ${APP}?c=${code} — toca no link, coloca seu e-mail e cria sua senha.`;
+  const getCode=async()=>{if(X._code&&!X._codeOld)return X._code;const r=await fn({action:'newcode',id:X._id});X._code=r.code;delete X._codeOld;saveSoon();return r.code};
+  c.addEventListener('click',async e=>{try{if(e.target.closest('[data-rlcp]')){const t=txt(await getCode());try{await navigator.clipboard.writeText(t);toast('Link copiado')}catch(_){toast(APP+'?c='+X._code)}}
+    if(e.target.closest('[data-rlwa]')){const t=txt(await getCode());window.open(`https://wa.me/${X.ph?ccOf(X)+X.ph:''}?text=${encodeURIComponent(t)}`,'_blank')}
+    if(e.target.closest('[data-rlnew]')){X._codeOld=1;await getCode();toast('Link novo gerado. O anterior parou de valer.')}}catch(er){toast('Não deu: '+er.message)}})}
+
+/* ---------- Asaas aparece, mas ainda não liga ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-rcv="asaas"]');if(!b)return;e.stopPropagation();e.preventDefault();toast('O Asaas entra em breve. Por enquanto o financeiro fica no manual.');const s=b.closest('.scrim');if(s)s.remove();PAY.mode='manual';NEWP.done.receber=1;draw()},true);
 
 
-/* avisos de demonstração e itens de exemplo */
+/* ---------- financeiro manual: cobrança do plano e renovação ---------- */
+const MON=X=>X.per==='Trimestral'?3:X.per==='Semestral'?6:1;
+const planVal=X=>{const f=(X.fixo||[]).length;if(X.mode==='Online'){const o=(PLANS||[])[0];return o?Math.round(o.p*MON(X)):0}if(!f)return +PRICE.avulsa||0;const au=+PRICE.aula[f]||0,d=MON(X)===3?(+PRICE.d3||0):MON(X)===6?(+PRICE.d6||0):0;return Math.round(au*f*(PRICE.wk||4)*MON(X)*(1-d/100))};
+const plName=X=>{const f=(X.fixo||[]).length;return X.mode==='Online'?'Online • '+(X.per||'Mensal').toLowerCase():f?`Presencial ${f}x • ${(X.per||'Mensal').toLowerCase()}`:'Aula avulsa'};
+const ddmm=d=>pad(d.getDate())+'/'+pad(d.getMonth()+1);
+function finCheck(){let ch=false;
+  STU.forEach(X=>{if(!X._id)return;const p=STUD.find(s=>s.id===X._id);if(!p||!p.access_until)return;
+    if(!CHG.some(c=>c.ref&&c.ref.startsWith('pl:'+X._id))){CHG.unshift({n:X.n,pl:plName(X),v:planVal(X),st:'aberto',d:'vence '+ddmm(today),ref:'pl:'+X._id});ch=true}
+    const due=Math.ceil((new Date(p.access_until+'T12:00:00')-new Date())/864e5),rk='ren:'+X._id+':'+p.access_until;
+    if(due<=7&&!CHG.some(c=>c.ref===rk)){CHG.unshift({n:X.n,pl:'Renovação • '+plName(X),v:planVal(X),st:'aberto',d:'vence '+ddmm(new Date(p.access_until+'T12:00:00')),ref:rk});ch=true}});
+  CHG.forEach(c=>{if(!c.ref||c.st!=='pago'||c._ok)return;c._ok=1;ch=true;if(!c.ref.startsWith('ren:'))return;const [,id,au]=c.ref.split(':'),X=stuById(id);if(!X)return;
+    const d=new Date(au+'T12:00:00'),nd=new Date(d.getFullYear(),d.getMonth()+MON(X),d.getDate());
+    sb.from('profiles').update({access_until:iso(nd)}).eq('id',id).then(async({error})=>{if(error)return toast('Não renovou: '+error.message);await sb.rpc('gen_classes',{p_student:id,p_weeks:9});toast(X.n.split(' ')[0]+' renovado até '+ddmm(nd));redraw()})});
+  if(ch)saveSoon()}
+/* ---------- conta: sair ---------- */
+try{const _g=gearSheet;gearSheet=function(){_g.apply(this,arguments);const sh=document.querySelector('.scrim:last-of-type .sheet');if(!sh||sh.querySelector('[data-rlout]'))return;
+  const b=document.createElement('button');b.className='opt2';b.dataset.rlout='1';b.innerHTML='<b>Sair da conta</b><small>'+esc(session.user.email||'')+'</small>';
+  const ok=sh.querySelector(':scope > .stick');ok?sh.insertBefore(b,ok):sh.appendChild(b);b.onclick=async()=>{await saveNow();await sb.auth.signOut();location.replace('/app/')};
+  sh.querySelectorAll('[data-newon]').forEach(x=>x.remove())}}catch(_){}
+
+/* ---------- desenho ---------- */
 const _draw=draw;
-draw=function(){_draw.apply(this,arguments);try{topCards()}catch(e){console.error(e)}try{if(S.tab==='fin'){const ap=document.getElementById('app')||document.querySelector('.scroller');if(ap&&!ap.querySelector('.rl-fin')){const br=ap.querySelector('.brand');[...ap.children].forEach(c=>{if(c!==br&&!c.classList.contains('subtrial')&&!c.classList.contains('subwarn'))c.style.display='none'});
-  const n=CLS.filter(c=>c.status!=='cancelada'&&new Date(c.starts_at)>=new Date(new Date().getFullYear(),new Date().getMonth(),1)).length;
-  ap.insertAdjacentHTML('beforeend',`<div class="rl-fin" style="padding:6px 0"><span class="lbl">Financeiro</span><h2 class="d" style="font-size:44px;margin:4px 0 12px">Em breve</h2><div class="rlp" style="display:block"><b>Ainda sem cobranças pelo app</b><small style="line-height:1.45">Os pagamentos dos alunos (plano, aula extra e renovação) entram aqui quando ligarmos o Asaas. Por enquanto, nada de valores de exemplo para não confundir.</small></div><div class="rlp" style="display:block"><b>${STU.length} ${STU.length===1?'aluno ativo':'alunos ativos'} • ${n} ${n===1?'aula':'aulas'} neste mês</b><small>Contado das aulas reais da agenda.</small></div></div>`)}}}catch(_){}
-try{if(S.tab==='alunos')realTab(S.tab)}catch(e){console.error(e)}try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0)};
+draw=function(){NEWP.on=!STU.length;try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{reqCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
+  try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0);setTimeout(linkCheck,0);setTimeout(()=>{try{finCheck()}catch(e){console.error(e)}},0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
-try{SUB.card='cartão de teste (conta dev, nada é cobrado)'}catch(_){}
-S.tab='agenda';draw();
+window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
+lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
+S.tab='agenda';draw();if(!PS||!PS.data||PS.data.v!==2)saveNow();
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');ld.remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 </script>
