@@ -120,7 +120,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--fg);outline-off
 .sw input{width:44px;height:26px;accent-color:var(--fg)}
 .info{padding:10px 12px;border-radius:12px;font-size:13px;font-weight:700}
 .info.ok{background:var(--okbg);color:var(--ok)}.info.warn{background:var(--warnbg);color:var(--warn)}
-.msg{padding:12px 14px;border-radius:14px 14px 14px 4px;background:var(--okbg);font-size:14px;font-weight:600;line-height:1.45}
+.msg{white-space:pre-line;padding:12px 14px;border-radius:14px 14px 14px 4px;background:var(--okbg);font-size:14px;font-weight:600;line-height:1.45}
 .brand{display:flex;align-items:center;gap:10px}.brand b{flex:1;min-width:0;font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .lg{border-radius:10px;object-fit:cover;flex:none;display:inline-grid;place-items:center}.lg.ph{background:var(--fg);color:var(--bg);font-weight:900}
 .gear{width:38px;height:38px;border-radius:50%;background:var(--frost);display:grid;place-items:center}
@@ -1363,7 +1363,7 @@ function newStudent(d,h,pre){pre=pre||{};if(d===undefined)d=S.day;let typ=pre.ty
       else if(book){(S.ev[d]=S.ev[d]||[]).push({h,n,st:'conf',extra:true});if(spOf(d,h))delete S.sp[d][h]}
       const link=PAY.mode==='asaas'?(typ!=='avulsa'?` Pagamento do plano ${per.toLowerCase()}: asaas.com/c/xyz`:` Pagamento da aula: asaas.com/c/xyz`):'';
       const code=window.__rlCode?window.__rlCode(X):'CC'+Math.random().toString(36).slice(2,6).toUpperCase(),first=n.split(' ')[0];
-      const msg=`Oi, ${first}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu cadastro tá pronto${isFx?`. Seus horários: toda ${fxTxt(fx)}, até o ${PER[per][2]}`:book?` e sua aula ${dayLbl(d).toLowerCase()} às ${hh(h)} tá marcada`:''}. Toca no link, cria sua senha e instala o app no celular: ${window.__rlLink?window.__rlLink(code):PERS.slug+'.app/convite/'+code}${link}`;
+      const msg=`Oi, ${first}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu cadastro tá pronto${isFx?`. Seus horários: toda ${fxTxt(fx)}, até o ${PER[per][2]}`:book?` e sua aula ${dayLbl(d).toLowerCase()} às ${hh(h)} tá marcada`:''}. Toca no link, cria sua senha e instala o app no celular: ${window.__rlLink?window.__rlLink(code):PERS.slug+'.app/convite/'+code}\n\nSeu código: ${code}\n(se o link não abrir, entre no app e digite o código)${link?'\n\n'+link.trim():''}`;
       s.remove();draw();
       sheet(`<span class="lbl">Cadastro feito</span><h3 class="d">${esc(first)} já está no app</h3>
         <div class="info ok">${esc(plan)}${isFx?` • ${per.toLowerCase()} • toda ${fxTxt(fx)} até o ${PER[per][2]}`:book?` • aula ${dayLbl(d).toLowerCase()} ${hh(h)} marcada`:''}</div>${skip.length?`<div class="info warn">Nesta semana ${skip.map(z=>DLONG[z.d]+' '+hh(z.h)).join(' e ')} já estava ocupado. A partir da próxima entra normal.</div>`:''}
@@ -2940,7 +2940,7 @@ function privPSheet(){const n=ACT().length,ok=n-1;
   <button class="lnk" data-pdel style="align-self:flex-start;color:var(--bad)">Excluir minha conta</button>
   <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{if(e.target.closest('[data-pexp]')){s.remove();toast('O arquivo chega no seu e-mail em alguns minutos')}if(e.target.closest('[data-pstu]'))toast('Nenhum pedido aberto');if(e.target.closest('[data-pdel]')){s.remove();confirmBox('Excluir sua conta?','Tem certeza? Seus alunos perdem o acesso e todos os dados são apagados em 7 dias. Baixe seus dados antes.','Sim, excluir',()=>toast('Conta marcada para exclusão em 7 dias'))}}))}
 /* ===== convite do aluno ===== */
-function inviteSheet(nm){const code=window.__rlInvite?window.__rlInvite(nm):Math.random().toString(36).slice(2,7),link=window.__rlLink?window.__rlLink(code).replace(/^https:\/\//,''):'crew.app/c/'+(PERS.slug||'sergio')+'/'+code,msg=`Oi${nm?', '+nm.split(' ')[0]:''}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Te mandei o convite do app: lá ficam seu treino, suas aulas e sua evolução. Toca no link, coloca seu e-mail e cria sua senha: https://${link}`;
+function inviteSheet(nm){const code=window.__rlInvite?window.__rlInvite(nm):Math.random().toString(36).slice(2,7),link=window.__rlLink?window.__rlLink(code).replace(/^https:\/\//,''):'crew.app/c/'+(PERS.slug||'sergio')+'/'+code,msg=`Oi${nm?', '+nm.split(' ')[0]:''}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Te mandei o convite do app: lá ficam seu treino, suas aulas e sua evolução. Toca no link, coloca seu e-mail e cria sua senha: https://${link}\n\nSeu código: ${code}\n(se o link não abrir, entre no app e digite o código)`;
   sheet(`<span class="lbl">Alunos</span><h3 class="d">Convidar aluno</h3>
   <div class="qrw">${window.__rlQR?window.__rlQR('https://'+link):qrSvg()}<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><b>Mostre o QR na aula</b><small class="note">O aluno aponta a câmera e entra. Vale 7 dias e só para uma pessoa.</small><span class="lnkbox">${link}</span></div></div>
   <span class="lbl">Ou mande no WhatsApp</span><div class="msg" id="ivm">${esc(msg)}</div>
@@ -3944,6 +3944,7 @@ draw();
 <style>
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
 body.rl .proto{display:none!important}
+#app .brand{cursor:pointer}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:#6d6d68;z-index:9999;background:var(--bg,#f3f3ef)}
 .rlp{border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);padding:12px 14px;margin:10px 0 4px;display:flex;align-items:center;gap:10px}
 .rlp b{display:block;font-size:15px}.rlp small{display:block;color:var(--muted);font-size:12.5px;font-weight:600;margin-top:2px}
@@ -4042,8 +4043,8 @@ window.__rlLink=c=>APP+'?c='+c;
 window.__rlCode=X=>{const c=CODE();if(X)X._code=c;return c};
 const ccOf=X=>{try{return ddiOf(X.country||'Brasil')[2]}catch(_){return '55'}};
 window.__rlWa=(ph,X)=>ccOf(X||{})+String(ph||'').replace(/\D/g,'');
-window.__rlWaName=nm=>{const x=STU.find(s=>s.n===nm);return x&&x.ph?ccOf(x)+x.ph:''};
-window.__rlInvite=nm=>{const c=CODE();sb.from('invites').insert({code:c,name:nm||null,plan:'treino',created_by:ME.id}).then(({error})=>{if(error)toast('O convite não salvou: '+error.message)});return c};
+window.__rlWaName=nm=>{if(window.__rlInvPh)return window.__rlInvPh;const x=STU.find(s=>s.n===nm);return x&&x.ph?ccOf(x)+x.ph:''};
+window.__rlInvite=nm=>{const c=CODE();sb.from('invites').insert({code:c,name:nm||null,phone:window.__rlInvPhRaw||null,plan:'treino',created_by:ME.id}).then(({error})=>{if(error)toast('O convite não salvou: '+error.message)});return c};
 window.__rlQR=txt=>{try{const q=qrcode(0,'M');q.addData(txt);q.make();return `<span class="rl-qr">${q.createSvgTag({cellSize:4,margin:0,scalable:true})}</span>`}catch(_){return ''}};
 const fn=async(body)=>{const {data:{session:s}}=await sb.auth.getSession();const r=await fetch(CF.supabaseUrl+'/functions/v1/alunos',{method:'POST',headers:{'Content-Type':'application/json',apikey:CF.supabaseKey,Authorization:'Bearer '+(s&&s.access_token)},body:JSON.stringify(body)});const j=await r.json().catch(()=>({error:'Resposta inválida'}));if(!r.ok||j.error)throw new Error(j.error||('Erro '+r.status));return j};
 const pill=document.createElement('div');pill.className='rl-sync';document.body.appendChild(pill);const busyMsg=t=>{pill.textContent=t||'';pill.classList.toggle('on',!!t)};
@@ -4207,7 +4208,7 @@ function accessCard(){if(S.tab!=='alunos')return;const ap=document.getElementByI
     if(e.target.closest('[data-rlnew]')){X._codeOld=1;await getCode();toast('Link novo gerado. O anterior parou de valer.')}}catch(er){toast('Não deu: '+er.message)}})}
 
 /* ---------- Asaas aparece, mas ainda não liga ---------- */
-document.addEventListener('click',e=>{const b=e.target.closest('[data-rcv="asaas"]');if(!b)return;e.stopPropagation();e.preventDefault();toast('O Asaas entra em breve. Por enquanto o financeiro fica no manual.');const s=b.closest('.scrim');if(s)s.remove();PAY.mode='manual';NEWP.done.receber=1;draw()},true);
+window.addEventListener('click',e=>{const b=e.target.closest('[data-rcv="asaas"]');if(!b)return;e.stopPropagation();e.preventDefault();toast('O Asaas entra em breve. Por enquanto o financeiro fica no manual.');const s=b.closest('.scrim');if(s)s.remove();PAY.mode='manual';NEWP.done.receber=1;draw()},true);
 
 
 /* ---------- financeiro manual: cobrança do plano e renovação ---------- */
@@ -4230,9 +4231,41 @@ try{const _g=gearSheet;gearSheet=function(){_g.apply(this,arguments);const sh=do
   const ok=sh.querySelector(':scope > .stick');ok?sh.insertBefore(b,ok):sh.appendChild(b);b.onclick=async()=>{await saveNow();await sb.auth.signOut();location.replace('/app/')};
   sh.querySelectorAll('[data-newon]').forEach(x=>x.remove())}}catch(_){}
 
+
+/* ---------- convite: nome e WhatsApp antes do link ---------- */
+try{const _iv=inviteSheet;inviteSheet=function(nm){if(nm)return _iv(nm);window.__rlInvPh='';window.__rlInvPhRaw='';
+  sheet(`<span class="lbl">Alunos</span><h3 class="d">Convidar aluno</h3><input class="inp" id="rlin" placeholder="Nome e sobrenome" autocomplete="off">${phoneField('rlip','')}<p class="note">O convite sai com o nome dele e abre direto a conversa no WhatsApp.</p><div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="rlig">Gerar convite</button></div>`,s=>{
+   s.querySelector('#rlig').onclick=()=>{const n=s.querySelector('#rlin').value.trim(),ip=s.querySelector('#rlip'),ph=ip.value.replace(/\D/g,'');if(!n){toast('Escreva o nome');return}
+     if(ph&&ip.dataset.cc==='55'&&ph.length<10){toast('WhatsApp com DDD');return}window.__rlInvPh=ph?ip.dataset.cc+ph:'';window.__rlInvPhRaw=ph?'+'+ip.dataset.cc+' '+ip.value.trim():'';s.remove();_iv(n)}})}}catch(e){console.error(e)}
+
+/* ---------- modelos de treino abrem no montador ---------- */
+window.addEventListener('click',e=>{const b=e.target.closest('.tplg [data-fs="treino"]');if(!b)return;e.stopImmediatePropagation();e.preventDefault();
+  const nm=((b.querySelector('b')||{}).textContent||'').trim(),id=Date.now();let t;
+  const cut=(a,n)=>a.slice(0,n);
+  if(/ABC/i.test(nm))t={id,kind:'semana',name:'ABC hipertrofia',tags:['Intermediário','Hipertrofia'],plans:[{name:'Perna',days:[0],ex:EXS.perna()},{name:'Peito e tríceps',days:[2],ex:EXS.peito()},{name:'Costas e bíceps',days:[4],ex:EXS.costas()}],cardio:[],cd:{}};
+  else if(/Full/i.test(nm))t={id,kind:'semana',name:'Full body iniciante',tags:['Iniciante'],plans:[{name:'Full body A',days:[0],ex:cut(EXS.perna(),2).concat(cut(EXS.peito(),2))},{name:'Full body B',days:[3],ex:cut(EXS.costas(),2).concat(cut(EXS.gluteo(),2))}],cardio:[],cd:{}};
+  else if(/Glúteo/i.test(nm))t={id,kind:'treino',name:'Glúteo e posterior',tags:['Glúteo'],p:{name:'Glúteo e posterior',days:[],ex:EXS.gluteo()}};
+  else{newTplSheet('treino');NEWP.done.treino=1;return}
+  FAVW.unshift(t);NEWP.done.treino=1;S.tab='treinos';T2.stu=null;T2.tpl=id;T2.sel=0;draw();const sc=document.querySelector('.scroller');if(sc)sc.scrollTop=0;toast('Ajuste do seu jeito. Ele fica nos seus Treinos prontos.')},true);
+
+/* ---------- IA: opções e benefícios (conexão chega em breve) ---------- */
+window.addEventListener('click',e=>{const b=e.target.closest('[data-fs="ia"]');if(!b)return;e.stopImmediatePropagation();e.preventDefault();
+  sheet(`<span class="lbl">Primeiros passos</span><h3 class="d">Sua IA no app</h3><p class="note" style="margin:0">Monte treino e anamnese falando, escrevendo ou mandando um PDF.</p>
+   <div class="row2" style="margin-top:12px"><button class="opt2" data-rlia="Claude"><b>Claude</b><small>Anthropic</small></button><button class="opt2" data-rlia="ChatGPT"><b>ChatGPT</b><small>OpenAI</small></button></div>
+   <div class="info ok"><b>Velocidade:</b> treino pronto em segundos.<br><b>Para você:</b> mais tempo para atender e vender.<br><b>Para o aluno:</b> treino mais rápido e mais personalizado.<br>Você revisa tudo antes de enviar.</div>
+   <div class="info warn">Chega em breve. Já está no seu plano.</div><button class="btn" data-rlia="skip">Pular por enquanto</button>`,s=>s.addEventListener('click',ev=>{const x=ev.target.closest('[data-rlia]');if(!x)return;if(x.dataset.rlia!=='skip'){toast(x.dataset.rlia+' entra na próxima etapa do app');return}s.remove();NEWP.done.ia=1;draw()}))},true);
+
+/* ---------- primeiros passos: pular e fechar ---------- */
+document.addEventListener('click',e=>{if(e.target.closest('[data-rlskip]')){NEWP.closed=1;draw();saveSoon()}if(e.target.closest('[data-rlmark]')){const m=[...document.querySelectorAll('#app button')].find(x=>/^\+\s*Marcar$/.test(x.textContent.trim()));if(m)m.click();else{try{bookSheet()}catch(_){toast('Toque num horário livre para marcar')}}}});
+function emptyDay(){if(S.tab!=='agenda'||NEWP.on||S.view!=='dia')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('.rl-eday'))return;const L=(S.ev[S.day]||[]).filter(e=>e.n||e.gc);if(L.length)return;
+  const anc=ap.querySelector('.days');if(!anc)return;const today=S.day===TODAY;
+  anc.insertAdjacentHTML('afterend',`<section class="card rl-eday" style="text-align:center"><span class="lbl">${today?'Hoje':'Neste dia'}</span><b class="d" style="display:block;font-size:34px;margin:4px 0">0 alunos ${today?'hoje':'neste dia'}</b><p class="note" style="margin:0 0 10px">${STU.length?'Nenhuma aula marcada. Toque num horário livre ou marque agora.':'Sua agenda está pronta. Marque a primeira aula ou cadastre um aluno.'}</p><button class="btn solid" data-rlmark>+ Marcar aula</button></section>`)}
+
+/* ---------- minha conta no topo ---------- */
+document.addEventListener('click',e=>{const b=e.target.closest('#app .brand');if(!b)return;sheet(`<span class="lbl">Minha conta</span><h3 class="d">${esc(PERS.name||ME.name||'')}</h3><p class="note" style="margin:0 0 12px">${esc(session.user.email||'')}</p><button class="opt2" data-rlcfg><b>Configurações</b><small>Perfil, agenda, treino, financeiro</small></button><button class="btn" data-rlout2>Sair da conta</button><button class="btn" data-close>Fechar</button>`,s=>{s.querySelector('[data-rlout2]').onclick=async()=>{await saveNow();await sb.auth.signOut();location.replace('/app/')};s.querySelector('[data-rlcfg]').onclick=()=>{s.remove();gearSheet()}})});
 /* ---------- desenho ---------- */
 const _draw=draw;
-draw=function(){NEWP.on=!STU.length;try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{reqCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
+draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
   try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0);setTimeout(linkCheck,0);setTimeout(()=>{try{finCheck()}catch(e){console.error(e)}},0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};

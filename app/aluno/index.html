@@ -6503,6 +6503,10 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
     if(pts.length>=2){pl.textContent=`${pts[0]} → ${pts[pts.length-1]} kg`;const mn=Math.min(...pts)-1,mx=Math.max(...pts)+1,X=i=>i*(300/(pts.length-1)),Y=v=>58-(v-mn)/(mx-mn)*52;sv.innerHTML=`<path d="${pts.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;sv.hidden=false}
     else{pl.textContent=pts.length?pts[0]+' kg':'primeiro registro';sv.hidden=true;if(!sc.querySelector('.rl-spk'))sc.insertAdjacentHTML('beforeend','<p class="meta rl-spk" style="font-size:13px;margin:6px 0 0">O gráfico aparece a partir do 2º treino com esse exercício.</p>')}}
   {const ad=document.getElementById('auto-diet');const q=ad&&ad.closest('.q');if(q)q.hidden=true}
+  /* renovar só nos últimos 15 dias do plano */
+  {const days=Math.ceil((endD-now)/864e5),far=days>15,rb=document.getElementById('rn-ban');
+   if(rb){if(far)rb.removeAttribute('data-renew');else rb.setAttribute('data-renew','');const c=rb.querySelector('.rn-cta');if(c)c.hidden=far;rb.style.pointerEvents=far?'none':''}
+   document.querySelectorAll('#v-hoje .disc-card [data-renew]').forEach(b=>b.hidden=far)}
   /* desconto: data real da renovação */
   const dc=$q('#v-hoje .disc-card .pill');if(dc&&/renova/.test(dc.textContent))dc.textContent='renova '+ends;
   /* check-in já enviado hoje */
