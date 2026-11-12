@@ -2835,10 +2835,10 @@ const LT=x=>x.toLocaleString('pt-BR')+' L';
 /* semana em andamento: hoje é o 6º dia (el = dias que já passaram) */
 window.WEEK=(window.__RD&&window.__RD.WEEK)||{el:5,ci:{d:5,t:6},limite:{d:2,t:STU.freq,nox:1},resist:{d:1,t:STU.cardio,nox:1},zero:{d:5,t:6},doce:{d:4,t:5},agua:{d:4,t:6},sono:{d:5,t:6},alim:{d:4,t:6}};
 /* ---------- CHECK-IN: diário e semanal ---------- */
-const QD=[['Treinou hoje?',['Sim','Não','Dia de descanso']],['Como foi o treino?',['Leve','Moderado','Pesado','No limite']],['Como está sua energia?',['Baixa','Ok','Alta']],['Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min']],['Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food']],['Comeu doce fora do plano?',['Não','Um pouco','Sim']],['Bateu sua meta de água hoje ('+LT(aguaMeta())+')?',['Não','Quase','Bati a meta']],['Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais']]];
+const QD=(window.__RD&&window.__RD.QD)||[['Treinou hoje?',['Sim','Não','Dia de descanso']],['Como foi o treino?',['Leve','Moderado','Pesado','No limite']],['Como está sua energia?',['Baixa','Ok','Alta']],['Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min']],['Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food']],['Comeu doce fora do plano?',['Não','Um pouco','Sim']],['Bateu sua meta de água hoje ('+LT(aguaMeta())+')?',['Não','Quase','Bati a meta']],['Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais']]];
 const QW=[['Alguma dor ou desconforto que o Sérgio precisa saber?',['Nenhuma','Leve','Moderada','Forte']]];
 const ans={dia:QD.map(()=>null),semana:QW.map(()=>null)};const sent={dia:!!(window.__RD&&window.__RD.SENT&&window.__RD.SENT.dia),semana:!!(window.__RD&&window.__RD.SENT&&window.__RD.SENT.semana)};let ciMode='dia';window.__CI={ans,sent,get mode(){return ciMode}};
-const qHTML=(Q,k)=>Q.map((q,i)=>`<div class="q"><h4>${q[0]}</h4><div class="chips">${q[1].map((o,j)=>`<button class="chip" aria-pressed="false" data-q="${k}-${i}-${j}">${o}</button>`).join('')}</div></div>`).join('');
+const qHTML=(Q,k)=>Q.map((q,i)=>`<div class="q"><h4>${q[0]}</h4>${q[2]==='txt'||q[2]==='num'||q[2]==='par'?`<${q[2]==='par'?'textarea rows="2"':'input'} class="inp" data-qi="${k}-${i}" ${q[2]==='num'?'inputmode="decimal"':''} placeholder="${q[2]==='num'?'Número':'Escreva aqui'}">${q[2]==='par'?'</textarea>':''}`:`<div class="chips">${q[1].map((o,j)=>`<button class="chip" aria-pressed="false" data-q="${k}-${i}-${j}">${o}</button>`).join('')}</div>${q[3]?`<input class="inp" data-qo="${k}-${i}" hidden placeholder="Qual?" style="margin-top:8px">`:''}`}</div>`).join('');
 $('#qs-dia').innerHTML=qHTML(QD,'dia')+`<div class="q"><h4>Dieta de hoje</h4><div class="auto" id="auto-diet"></div></div>`;
 /* ícones em metal escovado (estilo próprio, diferente das medalhas) */
 const LI={
@@ -4829,7 +4829,7 @@ var RMED_SRC={carga:'Conta pelo treino: semanas com progressão de carga',resist
    doce:['Fique 5 dos 7 dias sem doce fora do plano.','semanas sem doce'],
    perfeita:['Feche todas as suas medalhas da semana.','semanas perfeitas']};
   RA.MEDALS.forEach(m=>{const h=H[m.id];if(!h)return;if(m.id!=='perfeita')m.how=h[0];m.how2=h[0];m.unit=h[1];if(h[2])m.name=h[2];if(m.id==='doce')m.g='nutri'})})();
-function RMEDS(){return [...RA.MEDALS,RA.RECRUIT]}
+function RMEDS(){const off=(window.__RD&&window.__RD.MOFF)||[];return [...RA.MEDALS,RA.RECRUIT].filter(m=>!off.includes(m.id))}
 function isLocked(m){return window.lockedFor&&window.lockedFor(m)}
 function rtier(m){const v=(RMED_V||{})[m.id]||0;let t=-1;m.th.forEach((x,i)=>{if(v>=x)t=i});return t}
 function renderCase(){if(!RMED_V)return;const names=[...RA.LEVELS.map(l=>l.name),'Prestígio'];
@@ -6376,6 +6376,8 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-
   if(t.closest('.tabs'))return;e.stopImmediatePropagation();e.preventDefault();toast('Essa parte chega na próxima etapa do teste')},true);
 const me=document.getElementById('h-me');if(me){me.innerHTML=ini;me.onclick=()=>sheet(`<span class="lbl">Minha conta</span><p class="d" style="font-size:36px;margin:6px 0 4px">${(P.name||'').replace(/</g,'')}</p><p class="meta" style="margin:0 0 14px">${session.user.email}</p>
   <button class="btn wide" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`,s=>{s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}
+const CIC=await (async()=>{try{const r=await sb.rpc('public_ci');return r.data||{}}catch(_){return {}}})();
+const CISTD=[['treinou','Treinou hoje?',['Sim','Não','Dia de descanso'],'limite'],['intens','Como foi o treino?',['Leve','Moderado','Pesado','No limite'],null],['energia','Como está sua energia?',['Baixa','Ok','Alta'],null],['cardio','Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min'],'resist'],['livre','Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food'],'zero'],['doce','Comeu doce fora do plano?',['Não','Um pouco','Sim'],'doce'],['agua','Bateu sua meta de água hoje?',['Não','Quase','Bati a meta'],'agua'],['sono','Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais'],'sono']];
 /* ===== dados reais para Hoje, check-in e matilha (entram no __RD) ===== */
 function buildRD2(R){const TI=(now.getDay()+6)%7,DS=['dom','seg','ter','qua','qui','sex','sáb'],first=(P.name||'').split(' ')[0]||'Você';
   const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-TI),wsd=ymd(ws),inW=d=>d>=wsd&&d<=TODAY;
@@ -6385,6 +6387,9 @@ function buildRD2(R){const TI=(now.getDay()+6)%7,DS=['dom','seg','ter','qua','qu
   const cnt=(f)=>[...ciDays.entries()].filter(([d,a])=>inW(d)&&f(a)).length;
   const cardioN=(((WK||[]).find(w=>w.letter==='_cfg')||{}).exercises||{}).cardio||[];
   R.ME=first;
+  {const off=CIC.off||{},lab=CIC.lab||{},ag=Math.min(4,Math.max(2,Math.round((+P.weight_kg||70)*35/250)*.25));R.QD=[];R.QK=[];R.MOFF=[];
+   CISTD.forEach(([k,t,o,m])=>{if(off[k]){if(m)R.MOFF.push(m);return}let tt=lab[k]||t;if(k==='agua'&&!lab[k])tt=`Bateu sua meta de água hoje (${ag.toLocaleString('pt-BR')} L)?`;R.QD.push([tt,o]);R.QK.push(k)});
+   (CIC.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QD.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0]);R.QK.push('c_'+c.id)})}
   R.STU={plan:'treino',pres:P.presencial!==false,freq,cardio:cardioN.length||0,peso:+P.weight_kg||70,hideW:false,quota:freq*4};
   const el=TI;R.WEEK={el,ci:{d:cnt(()=>true),t:el+1},limite:{d:[...trDays].filter(inW).length,t:freq,nox:1},resist:{d:cnt(a=>a.cardio>0),t:Math.max(1,cardioN.length||2),nox:1},
     zero:{d:cnt(a=>a.livre!==2),t:el+1},doce:{d:cnt(a=>a.doce===0),t:el+1},agua:{d:cnt(a=>a.agua===2),t:el+1},sono:{d:cnt(a=>a.sono===2),t:el+1},alim:{d:0,t:el+1}};
@@ -6517,13 +6522,16 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
  paint();setTimeout(paint,300);document.addEventListener('click',()=>setTimeout(paint,80),true);
  /* dieta em PDF ainda não é guardada: não libera um cardápio de exemplo */
  document.addEventListener('click',e=>{if(e.target.closest('#dsend')){e.stopImmediatePropagation();e.preventDefault();toast('A dieta em PDF entra na próxima etapa do app. Por enquanto, fale com o Sérgio.')}},true);
+ /* perguntas abertas e "Outro" */
+ document.addEventListener('input',e=>{const x=e.target.closest('[data-qi]');if(!x||!window.__CI)return;const [k,i]=x.dataset.qi.split('-');window.__CI.ans[k][+i]=x.value.trim()?x.value.trim():null});
+ document.addEventListener('click',e=>{const c=e.target.closest('[data-q]');if(!c)return;const [k,i]=c.dataset.q.split('-'),oi=document.querySelector(`[data-qo="${k}-${i}"]`);if(oi)oi.hidden=c.textContent.trim()!=='Outro'});
  /* check-in -> banco */
  document.addEventListener('click',e=>{const b=e.target.closest('#send');if(!b||!window.__CI)return;const CI=window.__CI,mode=CI.mode,A=CI.ans[mode];
    if(mode==='semana'&&(!R.WCW||R.SENT.semana)){e.stopImmediatePropagation();e.preventDefault();toast(R.SENT.semana?'Essa semana já foi fechada':'Fechar a semana libera domingo às 18h');return}
    if(CI.sent[mode]||A.some(a=>a===null))return;/* o protótipo mostra o aviso */
    const peso=(document.getElementById('w-peso')||{value:''}).value,msg=((document.getElementById('w-msg')||{value:''}).value||'').trim();
    setTimeout(async()=>{if(!CI.sent[mode])return;
-     if(mode==='dia'){const K=['treinou','intens','energia','cardio','livre','doce','agua','sono'],ans={v:2};A.forEach((v,i)=>{if(v!==null)ans[K[i]]=v});
+     if(mode==='dia'){const K=R.QK||['treinou','intens','energia','cardio','livre','doce','agua','sono'],ans={v:2};A.forEach((v,i)=>{if(v!==null)ans[K[i]]=v;const oi=document.querySelector(`[data-qo="dia-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())ans[K[i]+'_outro']=oi.value.trim()});
        const {error}=await sb.from('daily_checkins').insert({user_id:uid,day:TODAY,answers:ans});if(error){toast(/duplicate|unique/.test(error.message)?'O check-in de hoje já foi enviado':'Não salvou: '+error.message);return}R.SENT.dia=true}
      else{const w=parseFloat(String(peso).replace(',','.'));const {error}=await sb.from('week_closes').insert({user_id:uid,week_start:R.WCW,weight_kg:w>30&&w<300?Math.round(w*10)/10:null,pain:A[0],message:msg.slice(0,1000)||null});
        if(error){toast(/duplicate|unique/.test(error.message)?'Essa semana já foi fechada':'Não salvou: '+error.message);return}R.SENT.semana=true}
