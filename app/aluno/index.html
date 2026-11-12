@@ -3962,7 +3962,7 @@ const _rau8=renderAula;renderAula=function(){_rau8();const next=AG.slots.find(x=
 agAll();
 /* ===== v10: cores, local, horários fixos, próximas aulas, recusa do personal ===== */
 AG.canc=AG.canc||[];
-function locOf(x){const wd=dDate(nOf(x.d)).getDay();return x.loc||(wd===5?'Condomínio Península':'Bodytech Barra')}
+function locOf(x){return x.loc||window.__LOC0||''}
 const FIXOS=[[3,18,'Bodytech Barra'],[5,7,'Condomínio Península']];
 const WDL=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 {const nx=$('#ag-next');nx.insertAdjacentHTML('afterend',`<div class="block frost agfix"><div class="row"><span class="lbl">Seus horários fixos</span><span class="pill">toda semana</span></div>
@@ -6334,7 +6334,7 @@ const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth()-1,window.__CYA
 const [{data:CL,error:e2},{data:FX}]=await Promise.all([
   sb.from('classes').select('*').eq('student_id',uid).gte('starts_at',m0.toISOString()).order('starts_at'),
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
-if(e2)return fail('Não deu para carregar suas aulas.');
+if(e2)return fail('Não deu para carregar suas aulas.');window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
 if(!(CL||[]).length){location.replace('/app/');return}
 
 /* ---- tempo: o protótipo conta dias a partir de 28/10/2026 ---- */
@@ -6354,7 +6354,7 @@ const DB={};
 (CL||[]).forEach(c=>{const d=new Date(c.starts_at),n=dayN(d),k=keyOf(n),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:c.status,note:c.note};
   if(c.status==='cancelada'){const cr=c.note==='credito';AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr)AG.dadas.push({d:k,h});return}
-  AG.slots.push({d:k,h,conf:c.status==='confirmada',fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||undefined})});
+  AG.slots.push({d:k,h,conf:c.status==='confirmada',fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||window.__LOC0||undefined})});
 try{R1.syncCred&&R1.syncCred()}catch(_){}
 {const fc=(CL||[]).find(c=>c.status!=='cancelada');if(fc){const d=new Date(fc.starts_at),A=window.__CYA;window.__CYM0=d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}}
 /* semana e dia de hoje na agenda */
@@ -6443,7 +6443,7 @@ function runHTML(){const P=PL.find(p=>p.k===RUN.k);const tot=P.ex.length,nd=P.ex
 let VIEW='home';
 function draw(){if(!box)return;box.innerHTML=VIEW==='run'&&RUN?runHTML():homeHTML();drawHoje()}
 function drawHoje(){const v=document.getElementById('v-hoje');if(!v||!PL.length)return;let c=document.getElementById('rl-trh');
-  if(!c){c=document.createElement('div');c.id='rl-trh';const h=v.querySelector('.hero');h?h.after(c):v.prepend(c)}
+  if(!c){c=document.createElement('div');c.id='rl-trh';const au=document.getElementById('aula'),ab=au&&au.closest('#v-hoje > *'),h=v.querySelector('.hero');ab?ab.after(c):h?h.after(c):v.prepend(c)}
   const dk=doneToday(),t=dk?dk.letter:pickToday(),P=PL.find(p=>p.k===t);if(!P){c.innerHTML='';return}
   c.innerHTML=`<div class="block ink trbig" style="margin:0"><div class="row"><span class="lbl">${dk?'Treino de hoje':P.days.includes(TDI)?'Treino de hoje':'Sugerido para hoje'}</span><span class="pill">${dk?'feito ✓':'~'+mins(P)+' min'}</span></div>
    <p class="d" style="font-size:40px">${esc(P.name)}</p><p class="meta" style="color:inherit;opacity:.8;margin:0 0 12px">${P.ex.length} exercício${P.ex.length>1?'s':''}</p>
