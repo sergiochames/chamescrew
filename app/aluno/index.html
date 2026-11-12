@@ -6438,7 +6438,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   /* ranking: só você por enquanto (as vagas aparecem como pontinhos) */
   const wkPct=Math.min(100,Math.round([...trDays].filter(inW).length/Math.max(1,freq)*100));R.RK=[[first,lv,0,cyc,Math.round(doneC/Math.max(1,T)*100),wkPct]];
   /* fechar a semana: abre no dia/hora do personal (padrão sexta 6h) e fecha às 22h do último dia */
-  const WO=Object.assign({dow:5,h:6,days:3,close:22},(CIC.wk||{}).open||{}),WD=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  const WO=Object.assign({dow:5,days:3},(CIC.wk||{}).open||{},{h:6,close:22}),WD=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
   let O=new Date(now.getFullYear(),now.getMonth(),now.getDate(),WO.h,0,0);while(O.getDay()!==WO.dow||O>now)O=new Date(O.getFullYear(),O.getMonth(),O.getDate()-1,WO.h,0,0);
   const Cl=new Date(O.getFullYear(),O.getMonth(),O.getDate()+WO.days-1,WO.close>=24?23:WO.close,WO.close>=24?59:0,0);
   const wOf=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1);x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};

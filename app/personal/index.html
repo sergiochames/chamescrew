@@ -2725,8 +2725,7 @@ function gearSheet(){
     <div class="gh" id="g-precos"><b>Preços e pagamentos</b><small>Quanto custa cada aula e como você recebe</small></div>
     <button class="opt2" data-gfin><b>Preços</b><small>Presencial: ${brl(PRICE.aula[3])} a aula em 3x • ${PLANS.length} planos online • avulsa ${brl(PRICE.avulsa)}</small></button>
     <button class="opt2" data-grecv><b>Recebimentos e saque</b><small>${typeof RCV!=="undefined"&&RCV.con?"Asaas conectado • disponível "+brl(RCV.saldo):"Conectar Asaas ou manual"}</small></button>
-    <div class="gh" id="g-alunos"><b>Alunos</b><small>Anamnese, indicação e prêmios</small></div>
-    <button class="opt2" data-anamgo><b>Anamnese</b><small>Agora fica em Treinos › Anamneses</small></button>
+    <div class="gh" id="g-alunos"><b>Alunos</b><small>Aniversários e indicação</small></div>
     <button class="opt2" data-bdayc><b>🎂 Aniversários</b><small>Aviso no dia, mensagem pronta${przTxt(BDAY.gift)!=='Nada'?' • presente: '+esc(przTxt(BDAY.gift)):''}</small></button>
     <button class="opt2" data-indc><b>Indicação</b><small>${IND.quem==='todos'?'Todos os alunos têm QR':'Só alunos escolhidos'} • indicado ganha ${IND.desc}% • quem indicou ganha ${IND.rec}%</small></button>
 
@@ -3513,12 +3512,12 @@ function cfgMenu(){sheet(`<span class="lbl">Configurações</span><h3 class="d">
   <button class="cfg" data-cg="perfil">${cic('perfil')}<span><b>Perfil</b><small>Nome, marca, foto, cor e mensagem no app do aluno</small></span><i>›</i></button>
   <button class="cfg" data-cg="disp">${cic('disp')}<span><b>Disponibilidade</b><small>${LOCS.length} ${LOCS.length===1?'local':'locais'}${LOCS.length>1?' e deslocamento':''} • horários de atendimento e folgas</small></span><i>›</i></button>
   <button class="cfg" data-cg="regras">${cic('regras')}<span><b>Regras da agenda</b><small>${RULES.auto?'Confirma sozinho':'Você confirma cada pedido'} • prazos, créditos, extras e dupla</small></span><i>›</i></button>
-  <button class="cfg" data-cg="neg">${cic('neg')}<span><b>Meu negócio</b><small>Preços, recebimentos, alunos, gamificação e IA</small></span><i>›</i></button>
+  <button class="cfg" data-cg="neg">${cic('neg')}<span><b>Meu negócio</b><small>Preços, recebimentos, aniversários, indicação, gamificação e IA</small></span><i>›</i></button>
   <button class="cfg" data-cg="ass">${cic('ass')}<span><b>Assinatura</b><small>${PLANOS[PLN.atual].n} • plano, cobrança e troca</small></span><i>›</i></button>
   <button class="cfg" data-cg="tut">${cic('tut')}<span><b>Ver tutorial</b><small>Tour de 5 passos pelo app</small></span><i>›</i></button></div>
   <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{const b=e.target.closest('[data-cg]');if(!b)return;const k=b.dataset.cg;s.remove();
    if(k==='regras')rulesSheet();else if(k==='ass')myPlan();else if(k==='tut')tutP(0);else cfgPart(k)}))}
-const CFGP={perfil:{t:'Perfil',g:['g-perfil','g-cor']},disp:{t:'Disponibilidade',g:['g-agenda']},neg:{t:'Meu negócio',g:['g-precos','g-alunos','g-foto','g-game','g-ia','g-prog']}};
+const CFGP={perfil:{t:'Perfil',g:['g-perfil','g-cor']},disp:{t:'Disponibilidade',g:['g-agenda']},neg:{t:'Meu negócio',g:['g-precos','g-alunos','g-foto','g-game','g-ia']}};
 function cfgPart(k){gearSheet();const sh=[...document.querySelectorAll('.scrim')].pop()?.querySelector('.sheet');if(!sh)return;const P=CFGP[k];
   const one=P.g.length===1;let cur=null,keep=false;[...sh.children].forEach((n,ix)=>{if(ix<2||n.classList.contains('stick'))return;
     if(n.classList.contains('gblk')){cur='blk';keep=false;n.hidden=true;return}
@@ -4274,13 +4273,14 @@ const ciCfg=()=>PERS.ci=PERS.ci||{off:{},lab:{},custom:[],meta:'freq'};
 function treinoHub(){const c=ciCfg(),on=CISTD.filter(q=>q[0]!=='treinou'&&!c.off[q[0]]).length+c.custom.length,med=CISTD.filter(q=>q[3]&&!c.off[q[0]]).length,def=(ANM.find(a=>a.id===ANMdef)||ANM[0]||{});
   sheet(`<span class="lbl">Configurações</span><h3 class="d">Treino</h3>
    <button class="opt2" data-th="anam"><b>Anamnese</b><small>${esc(def.n||'Anamnese')} • padrão${def.pronta?'':' • editada por você'}</small></button>
-   <button class="opt2" data-th="ci"><b>Check-in</b><small>Do dia: ${on} perguntas • ${med} contam para medalhas<br>Da semana: abre ${(()=>{const o=Object.assign({dow:5,h:6,days:3,close:22},(PERS.ciw||{}).open||{});return ['domingo','segunda','terça','quarta','quinta','sexta','sábado'][o.dow]+' às '+o.h+'h'})()}</small></button>
+   <button class="opt2" data-th="ci"><b>Check-in</b><small>Do dia: ${on} perguntas • ${med} contam para medalhas<br>Da semana: abre ${(()=>{const o=Object.assign({dow:5,days:3},(PERS.ciw||{}).open||{});return ['domingo','segunda','terça','quarta','quinta','sexta','sábado'][o.dow]+' às 6h • '+o.days+(o.days>1?' dias':' dia')+' para responder'})()}</small></button>
+   <button class="opt2" data-th="prog"><b>Progressão de carga</b><small>${PROG.on?`Ligada • passou ${PROG.r1} rep: +${PROG.p1}% • ${PROG.r2}+ reps: +${PROG.p2}%`:'Desligada'}</small></button>
    <button class="opt2" data-th="prontos"><b>Treinos prontos</b><small>${FAVW.length?FAVW.length+' modelo'+(FAVW.length>1?'s':'')+' • '+esc(FAVW.slice(0,2).map(f=>f.name).join(', ')):'Nenhum ainda • comece de um modelo'}</small></button>
    <button class="opt2" data-th="fav"><b>Exercícios favoritos</b><small>${T2.fav.size} ${T2.fav.size===1?'exercício aparece':'exercícios aparecem'} primeiro no montador</small></button>
    <button class="opt2" data-th="msg"><b>Lembretes e mensagens</b><small>Boas-vindas, convite, foto do mês, aniversário</small></button>
    <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{const b=e.target.closest('[data-th]');if(!b)return;s.remove();const k=b.dataset.th;
     if(k==='anam'){S.tab='treinos';T2.stu=null;T2.tpl=null;T2.view='anam';draw()}else if(k==='prontos'||k==='fav'){S.tab='treinos';T2.stu=null;T2.tpl=null;T2.view='prontos';draw();if(k==='fav')toast('Toque na ★ ao lado do exercício no montador para favoritar')}
-    else if(k==='ci')ciEditor();else msgList()}))}
+    else if(k==='ci')ciEditor();else if(k==='prog')progSheet();else msgList()}))}
 function ciEditor(){const c=ciCfg();
   const body=()=>`<div class="opt2" style="display:block"><b>Quem precisa fazer check-in</b><small class="note" style="display:block">Meta da semana de cada aluno</small><div class="chips" style="margin-top:8px"><button class="chip" data-cim="freq" aria-pressed="${(c.meta||'freq')==='freq'}">Igual à frequência</button><button class="chip" data-cim="todo" aria-pressed="${c.meta==='todo'}">Todo dia</button></div>
    <small class="note" style="display:block;margin-top:8px">${(c.meta||'freq')==='freq'?'Aluno 2x faz 2 check-ins por semana, nos dias em que treina. Nos outros dias fica opcional (só sono e água). Sábado e domingo não aparece, a não ser para quem treina 6 ou 7x.':'Check-in todos os dias, inclusive fim de semana.'} Dá para trocar só para um aluno na ficha dele.</small></div>
@@ -4312,7 +4312,7 @@ function msgEdit(k){const [n]=MSGD[k];sheet(`<span class="lbl">Treino › Lembre
     if(e.target.closest('[data-ms]')){PERS.msgs=PERS.msgs||{};if(t.value.trim()===MSGD[k][2])delete PERS.msgs[k];else PERS.msgs[k]=t.value.slice(0,1200);s.remove();saveNow();toast('Mensagem salva')}})})}
 /* entrada no Treino pelas Configurações */
 try{const _g2=gearSheet;gearSheet=function(){_g2.apply(this,arguments);const sh=document.querySelector('.scrim:last-of-type .sheet');if(!sh||sh.querySelector('[data-rltr]'))return;const h=sh.querySelector('h3');
-  const b=document.createElement('button');b.className='opt2';b.dataset.rltr='1';b.innerHTML='<b>Treino</b><small>Anamnese, check-in, treinos prontos, favoritos e lembretes</small>';b.onclick=()=>{sh.closest('.scrim').remove();treinoHub()};
+  const b=document.createElement('button');b.className='opt2';b.dataset.rltr='1';b.innerHTML='<b>Treino</b><small>Anamnese, check-in, progressão de carga, treinos prontos e lembretes</small>';b.onclick=()=>{sh.closest('.scrim').remove();treinoHub()};
   h&&h.nextSibling?sh.insertBefore(b,h.nextSibling):sh.prepend(b);
   /* foto do mês: mostra o texto atual e abre o editor */
   const fm=[...sh.querySelectorAll('.msg')].find(m=>/foto de evolução/i.test(m.textContent));if(fm&&!sh.querySelector('[data-rlfe]')){const wab=fm.querySelector('.wab');fm.firstChild&&(fm.firstChild.textContent=msgOf('foto').replace(/\{nome\}/g,'Fulano').replace(/\{personal\}/g,PERS.name||''));fm.insertAdjacentHTML('afterend','<button class="mini" data-rlfe style="margin-top:6px">✎ Editar mensagem</button>');sh.querySelector('[data-rlfe]').onclick=()=>{sh.closest('.scrim').remove();msgEdit('foto')}}}}catch(e){console.error(e)}
@@ -4332,7 +4332,7 @@ try{const _dc=dayCk;dayCk=function(x,i){_dc.apply(this,arguments);const ck=x&&x.
 try{const _cm=cfgMenu;cfgMenu=function(){_cm.apply(this,arguments);const sh=[...document.querySelectorAll('.scrim .sheet')].pop(),L=sh&&sh.querySelector('.cfgl');if(!L||L.querySelector('[data-rltr2]'))return;
   const ic='<span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 8v8M17.5 8v8M4 10v4M20 10v4M6.5 12h11"/></svg></span>';
   const ref=L.querySelector('[data-cg="neg"]'),b=document.createElement('button');b.className='cfg';b.dataset.rltr2='1';
-  b.innerHTML=(L.querySelector('.cfg>span:first-child')&&L.querySelector('.cfg>span:first-child').className?L.querySelector('.cfg>span:first-child').outerHTML.replace(/<svg[\s\S]*<\/svg>/,ic.replace(/^<span class="cic">|<\/span>$/g,'')):ic)+'<span><b>Treino</b><small>Anamnese, check-in, treinos prontos, favoritos e lembretes</small></span><i>›</i>';
+  b.innerHTML=(L.querySelector('.cfg>span:first-child')&&L.querySelector('.cfg>span:first-child').className?L.querySelector('.cfg>span:first-child').outerHTML.replace(/<svg[\s\S]*<\/svg>/,ic.replace(/^<span class="cic">|<\/span>$/g,'')):ic)+'<span><b>Treino</b><small>Anamnese, check-in, progressão de carga, treinos prontos e lembretes</small></span><i>›</i>';
   ref?L.insertBefore(b,ref):L.appendChild(b);b.onclick=()=>{sh.closest('.scrim').remove();treinoHub()};
   const o=document.createElement('button');o.className='cfg';o.innerHTML=ic.replace(/<svg[\s\S]*<\/svg>/,'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg>')+`<span><b>Sair da conta</b><small>${esc(session.user.email||'')}</small></span><i>›</i>`;L.appendChild(o);o.onclick=async()=>{await saveNow();await sb.auth.signOut();location.replace('/app/')}}}catch(e){console.error(e)}
 
@@ -4340,14 +4340,13 @@ try{const _cm=cfgMenu;cfgMenu=function(){_cm.apply(this,arguments);const sh=[...
 const WSTD=[['carga','Como sentiu os treinos da semana?','Leves demais • No ponto • Pesados demais','Diz se é para subir ou baixar a carga'],['chegou','Como você chegou no fim da semana?','Cansado • Normal • Bem disposto','Recuperação: 2 semanas cansado, hora de aliviar'],
  ['dor','Sentiu alguma dor ou desconforto?','Nenhuma • Leve • Moderada • Forte • se moderada ou forte, pergunta onde','Moderada ou forte aparece em vermelho na ficha'],['rotina','Como foi sua rotina na semana?','Tranquila • Normal • Puxada','Explica uma semana ruim'],['nota','Que nota você dá para a sua semana?','0 a 10','Mostra se ele está animado ou desanimando']];
 const WDS=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],WDL=['domingo','segunda','terça','quarta','quinta','sexta','sábado'],WMSGD='Quer pedir alguma mudança ou contar algo?';
-const ciwCfg=()=>{const c=PERS.ciw=PERS.ciw||{};c.peso=c.peso||'opt';if(c.msg==null)c.msg=true;c.custom=c.custom||[];c.off=c.off||{};c.lab=c.lab||{};if(c.dor&&!c.lab.dor){c.lab.dor=c.dor;c.dor=''}c.open=Object.assign({dow:5,h:6,days:3,close:22},c.open||{});return c};
+const ciwCfg=()=>{const c=PERS.ciw=PERS.ciw||{};c.peso=c.peso||'opt';if(c.msg==null)c.msg=true;c.custom=c.custom||[];c.off=c.off||{};c.lab=c.lab||{};if(c.dor&&!c.lab.dor){c.lab.dor=c.dor;c.dor=''}c.open=Object.assign({dow:5,h:6,days:3,close:22},c.open||{});c.open.h=6;c.open.close=22;return c};
 function ciwEditor(){const c=ciwCfg();
   const hh=x=>x>=24?'23h59':x+'h',ch=(attr,v,l,on)=>`<button class="chip" ${attr}="${v}" aria-pressed="${on}">${l}</button>`;
-  const body=()=>{const o=c.open,cd=(o.dow+o.days-1)%7;return `<div class="opt2" style="display:block"><b>Quando abre</b><div class="chips" style="margin-top:8px">${WDS.map((d,i)=>ch('data-wo',i,d,o.dow===i)).join('')}</div>
-     <small class="note" style="display:block;margin-top:10px">Horário</small><div class="chips" style="margin-top:6px">${[5,6,7,8,12,18].map(h=>ch('data-wh',h,h+'h',o.h===h)).join('')}</div>
-     <small class="note" style="display:block;margin-top:10px">Fica aberto</small><div class="chips" style="margin-top:6px">${[1,2,3].map(n=>ch('data-wdays',n,n+(n>1?' dias':' dia'),o.days===n)).join('')}</div>
-     <small class="note" style="display:block;margin-top:10px">Fecha às</small><div class="chips" style="margin-top:6px">${[20,22,24].map(h=>ch('data-wcl',h,hh(h),o.close===h)).join('')}</div>
-     <div class="info ok" style="margin:10px 0 0">Abre <b>${WDL[o.dow]} às ${o.h}h</b> e fecha <b>${WDL[cd]} às ${hh(o.close)}</b>. Quem não responder até lá não conta a semana na Temporada.</div></div>
+  const body=()=>{const o=c.open,cd=(o.dow+o.days-1)%7;return `<div class="opt2" style="display:block"><b>Quando abre o check-in semanal</b><small class="note" style="display:block">Abre às 6h da manhã do dia escolhido</small>
+     <div class="vseg" style="grid-template-columns:repeat(7,1fr);margin:8px 0 0">${WDS.map((d,i)=>`<button data-wkd="${i}" aria-pressed="${o.dow===i}" style="padding-left:0;padding-right:0">${d}</button>`).join('')}</div>
+     <small class="note" style="display:block;margin-top:12px">Quantos dias o aluno tem para responder</small><div class="vseg" style="grid-template-columns:repeat(3,1fr);margin:6px 0 0">${[1,2,3].map(n=>`<button data-wdays="${n}" aria-pressed="${o.days===n}">${n} ${n>1?'dias':'dia'}</button>`).join('')}</div>
+     <div class="info ok" style="margin:12px 0 0">O check-in semanal abre <b>${WDL[o.dow]} às 6h</b> e fecha <b>${o.days===1?'no mesmo dia':WDL[cd]} às 22h</b>. Quem não responder até lá não conta a semana na Temporada.</div></div>
    <div class="opt2" style="display:block"><b>Peso</b><small class="note" style="display:block">Pedido toda semana no fechamento</small><div class="chips" style="margin-top:8px">${[['opt','Opcional'],['req','Obrigatório'],['off','Desligado']].map(([k,l])=>ch('data-wp',k,l,c.peso===k)).join('')}</div></div>
    ${WSTD.map(([k,t,o,why])=>`<div class="opt2" style="display:block"><div class="row" style="gap:10px"><span style="min-width:0;flex:1"><input class="inp" data-wl="${k}" value="${esc(c.lab[k]||t)}" style="margin:0 0 6px"><small class="note" style="display:block">${o}</small><small class="note" style="display:block;opacity:.75">${why}</small></span><label class="sw" style="padding:0;background:none"><input type="checkbox" data-wof="${k}" ${c.off[k]?'':'checked'}></label></div></div>`).join('')}
    <div class="opt2" style="display:block"><div class="row" style="gap:10px"><span style="min-width:0;flex:1"><input class="inp" data-wl="msg" value="${esc(c.lab.msg||WMSGD)}" style="margin:0 0 6px"><small class="note">Recado • campo livre, opcional para o aluno</small></span><label class="sw" style="padding:0;background:none"><input type="checkbox" data-wm ${c.msg!==false?'checked':''}></label></div></div>
@@ -4357,7 +4356,7 @@ function ciwEditor(){const c=ciwCfg();
    <button class="lnk" data-wr style="margin-top:8px">Voltar ao padrão</button><div class="row2"><button class="btn" data-close>Fechar</button><button class="btn solid" data-ws>Salvar</button></div>`,s=>{const re=()=>{s.querySelector('#cwb').innerHTML=body()};
    s.addEventListener('input',e=>{const l=e.target.closest('[data-wl]');if(l){const k=l.dataset.wl,v=l.value.trim(),d=k==='msg'?WMSGD:WSTD.find(q=>q[0]===k)[1];if(!v||v===d)delete c.lab[k];else c.lab[k]=v.slice(0,90)}});
    s.addEventListener('change',e=>{if(e.target.matches('[data-wm]'))c.msg=e.target.checked;const o=e.target.closest('[data-wof]');if(o){if(o.checked)delete c.off[o.dataset.wof];else c.off[o.dataset.wof]=1}});
-   s.addEventListener('click',e=>{const t=e.target.closest('[data-wo],[data-wh],[data-wdays],[data-wcl]');if(t){const d=t.dataset;if(d.wo!=null)c.open.dow=+d.wo;if(d.wh!=null)c.open.h=+d.wh;if(d.wdays!=null)c.open.days=+d.wdays;if(d.wcl!=null)c.open.close=+d.wcl;re();return}
+   s.addEventListener('click',e=>{const t=e.target.closest('[data-wkd],[data-wdays]');if(t){const d=t.dataset,sc=s.querySelector('.sheet')||s,y=sc.scrollTop;if(d.wkd!=null)c.open.dow=+d.wkd;if(d.wdays!=null)c.open.days=+d.wdays;re();sc.scrollTop=y;return}
     const w=e.target.closest('[data-wp]');if(w){c.peso=w.dataset.wp;re();return}const d=e.target.closest('[data-wcd]');if(d){c.custom.splice(+d.dataset.wcd,1);re();return}
     if(e.target.closest('[data-cit]')){s.remove();ciEditor();return}
     if(e.target.closest('[data-qnew]')){qForm(null,q=>{c.custom.push(q);re()});return}const qe=e.target.closest('[data-qed]');if(qe){const i=+qe.dataset.qed;qForm(c.custom[i],q=>{c.custom[i]=q;re()});return}
@@ -4375,7 +4374,7 @@ try{const _dc2=dayCk;dayCk=function(x,i){_dc2.apply(this,arguments);const ck=x&&
   const t=a.treinou===2?'Dia de descanso • registro opcional':a.extra?'Treino extra: '+a.extra.map(k=>k==='musc'?'musculação':'cardio').join(' + '):a.tr==='manual'?'Treinou • marcado pelo aluno (Treinei hoje)':'';
   const g=sh.querySelector('.ckg');if(t&&g&&!sh.querySelector('.rl-tx'))g.insertAdjacentHTML('beforebegin',`<div class="info ${a.extra?'warn':'ok'} rl-tx" style="margin:0 0 8px">${t}</div>`)}}catch(e){console.error(e)}
 /* atalho ⚙ Padrões de treino na aba Treinos */
-function trGear(){if(S.tab!=='treinos'||T2.stu||T2.tpl||T2.view==='anam'||NEWP.on)return;const r=document.querySelector('#app .row.top');if(!r||r.querySelector('[data-rltrcfg]'))return;r.insertAdjacentHTML('beforeend','<button class="pbell" data-rltrcfg aria-label="Padrões de treino" title="Padrões de treino" style="align-self:center;flex:none"><svg viewBox="0 0 24 24" class="ei" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></button>');r.querySelector('[data-rltrcfg]').onclick=treinoHub}
+function trGear(){if(S.tab!=='treinos'||T2.stu||T2.tpl||T2.view==='anam'||NEWP.on)return;const r=document.querySelector('#app .row.top');if(!r||r.querySelector('[data-rltrcfg]'))return;r.insertAdjacentHTML('beforeend','<button class="rl-cfgt" data-rltrcfg aria-label="Configurações de treino"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg><span>Config. de treino</span></button>');r.querySelector('[data-rltrcfg]').onclick=treinoHub}
 
 /* formulário de pergunta própria: tipo, opções uma a uma, "Outro" */
 function qForm(q0,done){const q=q0?JSON.parse(JSON.stringify(q0)):{id:Date.now().toString(36),t:'',type:'yn',opts:['',''],outro:false};if(!q.opts||!q.opts.length)q.opts=['',''];
@@ -4394,6 +4393,34 @@ function qForm(q0,done){const q=q0?JSON.parse(JSON.stringify(q0)):{id:Date.now()
     if(e.target.closest('[data-qfs]')){keep();q.t=q.t.trim().slice(0,90);if(!q.t){toast('Escreva a pergunta');return}
       if(isM()){q.opts=q.opts.map(o=>o.trim()).filter(Boolean).slice(0,8);if(q.opts.length<2){toast('Coloque pelo menos 2 opções');if(q.opts.length<2)while(q.opts.length<2)q.opts.push('');s.querySelector('#qfb').innerHTML=body();return}}else{q.opts=[];q.outro=false}
       s.remove();done(q)}})})}
+/* ===== Progressão de carga (Configurações › Treino) ===== */
+function progSheet(){const P0={...PROG};
+  const kg=(b,p)=>String(Math.round(b*(1+p/100)*2)/2).replace('.',',');
+  const stp=(k,v)=>`<span class="pg-stp"><button data-pg="${k}:-1" aria-label="Menos">−</button><b>${v}</b><button data-pg="${k}:1" aria-label="Mais">+</button></span>`;
+  const rule=(n,r,p,lbl)=>`<div class="pg-rule"><span class="pg-n">${n}</span><div class="pg-l"><span>Passou da meta</span>${stp('r'+n,lbl)}</div><div class="pg-l"><span>Subir a carga</span>${stp('p'+n,'+'+p+'%')}</div></div>`;
+  const body=()=>`<div class="opt2"><label class="sw" style="padding:0;background:none"><span><b>Sugerir aumento de carga</b><br><small class="note">O app avisa o aluno quando ele passa da meta de repetições</small></span><input type="checkbox" data-pgon ${PROG.on?'checked':''}></label></div>
+    <div class="pg-box" ${PROG.on?'':'data-off'}>
+     ${rule(1,PROG.r1,PROG.p1,'+'+PROG.r1+(PROG.r1>1?' reps':' rep'))}
+     ${rule(2,PROG.r2,PROG.p2,'+'+PROG.r2+' ou mais')}
+     <div class="pg-ex"><span class="lbl">Como o aluno vê</span><p>Meta <b>10 reps</b> com <b>40 kg</b></p>
+      <div class="pg-exr"><span>Fez ${10+PROG.r1}</span><b>↑ ${kg(40,PROG.p1)} kg</b></div><div class="pg-exr"><span>Fez ${10+PROG.r2} ou mais</span><b>↑ ${kg(40,PROG.p2)} kg</b></div>
+      <small class="note">O aluno decide se aceita. Dá para desligar em cada exercício no montador.</small></div></div>`;
+  sheet(`<span class="lbl">Treino › Progressão</span><h3 class="d">Progressão de carga</h3><div id="pgb" style="display:flex;flex-direction:column;gap:10px">${body()}</div>
+   <div class="row2" style="margin-top:12px"><button class="btn" data-pgx>Fechar</button><button class="btn solid" data-pgs>Salvar</button></div>`,s=>{const re=()=>{s.querySelector('#pgb').innerHTML=body()};
+   s.addEventListener('change',e=>{if(e.target.matches('[data-pgon]')){PROG.on=e.target.checked;re()}});
+   s.addEventListener('click',e=>{const b=e.target.closest('[data-pg]');if(b){const [k,v]=b.dataset.pg.split(':'),kk=k[0]==='r'?'r'+k[1]:'p'+k[1];PROG[kk]=Math.max(1,Math.min(kk[0]==='p'?30:10,PROG[kk]+ +v));if(PROG.r2<=PROG.r1){if(kk==='r1')PROG.r2=PROG.r1+1;else PROG.r1=Math.max(1,PROG.r2-1)}if(PROG.r2<=PROG.r1)PROG.r2=PROG.r1+1;if(PROG.p2<PROG.p1){if(kk==='p1')PROG.p2=PROG.p1;else PROG.p1=PROG.p2}re();return}
+    if(e.target.closest('[data-pgx]')){Object.assign(PROG,P0);s.remove();return}
+    if(e.target.closest('[data-pgs]')){s.remove();saveNow();toast('Progressão de carga salva')}})})}
+{const st=document.createElement('style');st.textContent=`.pg-box{display:flex;flex-direction:column;gap:10px}.pg-box[data-off]{opacity:.4;pointer-events:none}
+.pg-rule{position:relative;border:1px solid var(--line);border-radius:16px;padding:12px 14px 12px 50px;display:flex;flex-direction:column;gap:10px;background:var(--card)}
+.pg-n{position:absolute;left:14px;top:14px;width:24px;height:24px;border-radius:50%;background:var(--ink,currentColor);color:var(--bg,#fff);display:grid;place-items:center;font-weight:800;font-size:12.5px}
+.pg-l{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:700}
+.pg-stp{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;overflow:hidden;flex:none}
+.pg-stp button{width:36px;height:34px;font-weight:800;font-size:17px;background:none;border:0;color:inherit}
+.pg-stp b{min-width:78px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
+.pg-ex{border-radius:16px;padding:12px 14px;background:color-mix(in srgb,var(--card) 70%,transparent);border:1px dashed var(--line)}.pg-ex p{margin:6px 0 8px;font-size:14px}
+.pg-exr{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-top:1px solid var(--line)}.pg-exr b{font-variant-numeric:tabular-nums}`;document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='.rl-cfgt{align-self:center;flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:inherit;font:700 12.5px/1 inherit;white-space:nowrap}.rl-cfgt svg{flex:none;opacity:.85}';document.head.appendChild(st)}
 /* ---------- desenho ---------- */
 const _draw=draw;
 draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
@@ -4404,6 +4431,7 @@ lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
 S.tab='agenda';draw();if(!PS||!PS.data||PS.data.v!==2)saveNow();
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');ld.remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
+
 </script>
 
 </body></html>
