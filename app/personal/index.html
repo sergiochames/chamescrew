@@ -4023,8 +4023,8 @@ async function sync(){if(busy)return;if(document.querySelector('.cbox')){setTime
   for(const [wi,L] of Object.entries(S.ev))for(const e of L||[]){
     if(!e._id){if(e.n&&!e.gc&&!e._new){e._new=1;const s=STU.find(x=>x.n===e.n);if(!s){toast('Aluno não encontrado no banco');continue}
         const d=new Date(wk0.getFullYear(),wk0.getMonth(),wk0.getDate()+(+wi),Math.floor(e.h),Math.round((e.h%1)*60));
-        const {data,error}=await sb.from('classes').insert({student_id:s._id,starts_at:d.toISOString(),location:null,status:'marcada',kind:e.extra?'extra':'plano'}).select().single();
-        if(error){toast('Não salvou a aula nova: '+error.message);continue}e._id=data.id;e._wi=+wi;e._h=e.h;e._st=e.st;DBC[data.id]={st:'marcada'};CLS.push(data)}continue}
+        const {data,error}=await sb.from('classes').insert({student_id:s._id,starts_at:d.toISOString(),location:((FXS||[]).find(f=>f.student_id===s._id)||{}).location||null,status:'marcada',kind:e.extra?'extra':'plano'}).select().single();
+        if(error){toast('Não salvou a aula nova: '+error.message);continue}e._id=data.id;e._wi=+wi;e._h=e.h;e._st=e.st;DBC[data.id]={st:'marcada'};CLS.push(data);seen.add(data.id)}else if(e._id)seen.add(e._id);continue}
     seen.add(e._id);const up={};
     if(+wi!==e._wi||Math.abs(e.h-e._h)>.001){const d=new Date(wk0.getFullYear(),wk0.getMonth(),wk0.getDate()+(+wi),Math.floor(e.h),Math.round((e.h%1)*60));up.starts_at=d.toISOString()}
     if(e.st!==e._st){up.status=e.st==='can'?'cancelada':e.st==='ok'?'feita':e.st==='conf'?'confirmada':'marcada'}
