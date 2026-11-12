@@ -2838,7 +2838,8 @@ window.WEEK=(window.__RD&&window.__RD.WEEK)||{el:5,ci:{d:5,t:6},limite:{d:2,t:ST
 const QD=(window.__RD&&window.__RD.QD)||[['Treinou hoje?',['Sim','Não','Dia de descanso']],['Como foi o treino?',['Leve','Moderado','Pesado','No limite']],['Como está sua energia?',['Baixa','Ok','Alta']],['Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min']],['Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food']],['Comeu doce fora do plano?',['Não','Um pouco','Sim']],['Bateu sua meta de água hoje ('+LT(aguaMeta())+')?',['Não','Quase','Bati a meta']],['Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais']]];
 const QW=(window.__RD&&window.__RD.QW)||[['Alguma dor ou desconforto que o Sérgio precisa saber?',['Nenhuma','Leve','Moderada','Forte']]];
 const ans={dia:QD.map(()=>null),semana:QW.map(()=>null)};const sent={dia:!!(window.__RD&&window.__RD.SENT&&window.__RD.SENT.dia),semana:!!(window.__RD&&window.__RD.SENT&&window.__RD.SENT.semana)};let ciMode='dia';window.__CI={ans,sent,get mode(){return ciMode}};
-const qHTML=(Q,k)=>Q.map((q,i)=>`<div class="q"><h4>${q[0]}</h4>${q[2]==='txt'||q[2]==='num'||q[2]==='par'?`<${q[2]==='par'?'textarea rows="2"':'input'} class="inp" data-qi="${k}-${i}" ${q[2]==='num'?'inputmode="decimal"':''} placeholder="${q[2]==='num'?'Número':'Escreva aqui'}">${q[2]==='par'?'</textarea>':''}`:`<div class="chips">${q[1].map((o,j)=>`<button class="chip" aria-pressed="false" ${q[4]==='check'?'data-qc':'data-q'}="${k}-${i}-${j}">${o}</button>`).join('')}</div>${q[4]==='check'?'<small class="meta" style="font-size:12px">Pode marcar mais de uma</small>':''}${q[3]?`<input class="inp" data-qo="${k}-${i}" hidden placeholder="Qual?" style="margin-top:8px">`:''}`}</div>`).join('');
+const qHTML=(Q,k)=>Q.map((q,i)=>`<div class="q"><h4>${q[0]}</h4>${q[2]==='txt'||q[2]==='num'||q[2]==='par'?`<${q[2]==='par'?'textarea rows="2"':'input'} class="inp" data-qi="${k}-${i}" ${q[2]==='num'?'inputmode="decimal"':''} placeholder="${q[2]==='num'?'Número':'Escreva aqui'}">${q[2]==='par'?'</textarea>':''}`:`<div class="chips">${q[1].map((o,j)=>`<button class="chip" aria-pressed="false" ${q[4]==='check'?'data-qc':'data-q'}="${k}-${i}-${j}">${o}</button>`).join('')}</div>${q[4]==='check'?'<small class="meta" style="font-size:12px">Pode marcar mais de uma</small>':''}${q[3]?`<input class="inp" data-qo="${k}-${i}" ${q[5]==='where'?'data-where':''} hidden placeholder="${q[5]==='where'?'Onde? (ex.: joelho direito)':'Qual?'}" style="margin-top:8px">`:''}`}</div>`).join('');
+window.__qHTML=qHTML;
 $('#qs-dia').innerHTML=qHTML(QD,'dia')+`<div class="q"><h4>Dieta de hoje</h4><div class="auto" id="auto-diet"></div></div>`;
 /* ícones em metal escovado (estilo próprio, diferente das medalhas) */
 const LI={
@@ -2861,23 +2862,23 @@ function steelIc(id){const m=(RA.MEDALS.find(x=>x.id===id));return m?RA.disc(m,1
 function renderWkLive(){const el=$('#wk-live');if(!el)return;const W=window.WEEK,S=window.STU||{plan:'ambos'};
   const R=[['limite','Treinos','treino',0],['resist','Cardio','cardio',0],['ci','Check-in do dia','checkin',0],['alim','Dieta no horário','dieta',1],['agua','Meta de água','agua',1],['sono','Sono de 7h ou mais','sono',1],['zero','Sem fast food','fastfood',1],['doce','Sem doce','doce',1]]
    .filter(r=>!(S.plan==='treino'&&r[3])&&!(S.plan==='dieta'&&['limite','resist'].includes(r[0]))&&W[r[0]].t>0);
-  el.innerHTML=`<div class="row"><span class="lbl">Semana 26/10 a 01/11</span><span class="pill">dia ${W.el+1} de 7</span></div>
+  el.innerHTML=`<div class="row"><span class="lbl">${window.__RD&&window.__RD.WCLBL||'Semana'}</span><span class="pill">dia ${W.el+1} de 7</span></div>
    <div class="wl">${R.map(([k,n,ic])=>{const w=W[k],ok=w.d>=w.t;return `<div class="wl-r${ok?' ok':''}"><span class="wl-ic">${mtile(ic,38)}</span><span class="wl-n">${n}</span><span class="wl-v">${w.d} de ${w.t}${ok?' ✓':''}</span><div class="wl-b"><i style="width:${Math.min(100,w.d/w.t*100)}%"></i></div></div>`}).join('')}</div>
    <p class="meta" style="font-size:12.5px;margin:10px 0 0">Tudo isso soma sozinho com o seu check-in do dia. Você não precisa lembrar de nada no fim da semana.</p>`}
 $('#qs-sem').innerHTML=`<div id="wk-live"></div>
- <div class="wk-close"><span class="lbl">Fechar a semana</span><p class="d" style="font-size:30px;margin:4px 0 6px">30 segundos</p>
-  <div class="wk-dl"><b>Libera domingo às 18h • prazo até terça 23h59</b><span>Lembretes no domingo às 20h e na segunda às 9h. Se passar do prazo, a semana fecha sozinha sem o peso e o Sérgio é avisado.</span></div>
+ <div class="wk-close"><span class="lbl">Fechar a semana</span><p class="d" style="font-size:30px;margin:4px 0 6px">1 minuto</p>
+  <div class="wk-dl"><b>${window.__RD?'Abre '+window.__RD.WOPEN+' • fecha '+window.__RD.WCLOSE:'Libera domingo às 18h • prazo até terça 23h59'}</b><span>${window.__RD?'Se passar do prazo, essa semana não conta para a Temporada.':'Lembretes no domingo às 20h e na segunda às 9h. Se passar do prazo, a semana fecha sozinha sem o peso e o Sérgio é avisado.'}</span></div>
   <div class="q"><h4>Seu peso hoje <small style="font-weight:700;color:var(--muted)">(opcional)</small></h4>
   <input class="inp" id="w-peso" inputmode="decimal" placeholder="ex.: 69,4" aria-label="Peso em kg" style="max-width:160px">
   <p class="meta" style="font-size:12.5px;margin:8px 0 0"><b>OBS:</b> é opcional, mas é importante. Pese em jejum, de manhã, depois de ir ao banheiro, sempre na mesma balança.</p></div>`+qHTML(QW,'semana')+
- `<div class="q"><h4>Quer contar algo para o Sérgio? <small style="font-weight:700;color:var(--muted)">(opcional)</small></h4><textarea class="inp" id="w-msg" rows="2" style="min-height:64px" placeholder="Como foi a semana, dúvidas, viagem…"></textarea></div></div>`;
+ `<div class="q"><h4>${window.__RD?(window.__RD.WKC&&window.__RD.WKC.msgl)||'Quer pedir alguma mudança ou contar algo?':'Quer contar algo para o Sérgio?'} <small style="font-weight:700;color:var(--muted)">(opcional)</small></h4><textarea class="inp" id="w-msg" rows="2" style="min-height:64px" placeholder="Como foi a semana, dúvidas, viagem…"></textarea></div></div>`;
 renderWkLive();
 function ciUI(){const A=ans[ciMode],n=A.filter(a=>a!==null).length;$('#send').textContent=ciMode==='dia'?'Enviar check-in do dia':'Fechar a semana';renderWkLive();
   $('#send').hidden=sent[ciMode];$('#ci-count').hidden=sent[ciMode];
   $('#ci-count').textContent=`${n} de ${A.length} respondidas`;const ad=$('#auto-diet');if(ad)ad.textContent=`${marked.filter(Boolean).length} de 4 refeições no horário • preenchido automaticamente`}
 ciUI();
 $('#v-checkin .seg').addEventListener('click',e=>{const b=e.target.closest('[data-ci]');if(!b)return;ciMode=b.dataset.ci;$$('#v-checkin .seg button').forEach(x=>x.setAttribute('aria-selected',x===b));
-  $('#ci-dia').hidden=ciMode!=='dia';$('#ci-photos').hidden=true;$('#ci-evo').hidden=ciMode!=='semana';$('#ci-semana').hidden=ciMode!=='semana';$('#ci-sub').textContent=ciMode==='dia'?'Rápido: 8 toques. A dieta entra sozinha.':'Sua semana se monta sozinha com o check-in do dia. No fim, feche com o peso e 1 pergunta.';ciUI()});
+  $('#ci-dia').hidden=ciMode!=='dia';$('#ci-photos').hidden=true;$('#ci-evo').hidden=ciMode!=='semana';$('#ci-semana').hidden=ciMode!=='semana';$('#ci-sub').textContent=ciMode==='dia'?'Rápido: 8 toques. A dieta entra sozinha.':'Sua semana se monta sozinha com o check-in do dia. No fim, feche com o peso e umas perguntas rápidas.';ciUI()});
 document.addEventListener('click',e=>{const c=e.target.closest('[data-q]');if(!c)return;const [k,i,j]=c.dataset.q.split('-');ans[k][+i]=+j;c.parentElement.querySelectorAll('.chip').forEach((x,n)=>x.setAttribute('aria-pressed',n===+j));ciUI()});
 $('#send').onclick=()=>{if(sent[ciMode])return;const A=ans[ciMode];if(A.some(a=>a===null)){$('#ci-count').textContent=`Responda todas as perguntas para enviar (${A.filter(a=>a!==null).length} de ${A.length}).`;return}
   const PESO=($('#w-peso')||{value:''}).value;sent[ciMode]=true;
@@ -3039,7 +3040,7 @@ function evoSheet(view,justSent){const sergio=view==='sergio';const R=EVO.rows.f
   const peso=(!sergio&&STU.hideW)?`<p class="meta" style="margin:6px 0 0">Seu peso fica registrado só para o Sérgio acompanhar.</p>`:
     `<div class="row" style="margin-top:2px"><b class="d" style="font-size:30px">${String(l).replace('.',',')} kg</b><span class="pill">${(dl>0?'+':'')+String(dl).replace('.',',')} kg desde o início</span></div>${wChart(P,EVO.sem)}<div class="wlist">${wl}</div>
      ${P[P.length-1]==null?`<p class="meta" style="font-size:12.5px">Esta semana sem peso registrado. Tudo bem: é opcional.</p>`:''}${sergio&&STU.hideW?'<p class="meta" style="font-size:12.5px">Oculto para a Ana. Só você vê.</p>':''}`;
-  sheet(`${justSent?`<span class="lbl">Semana 26/10 a 01/11</span><p class="d" style="font-size:40px;margin:6px 0 2px">Semana fechada ✓</p><p class="meta" style="margin:0 0 10px">O Sérgio recebe este mesmo resumo.</p>`:
+  sheet(`${justSent?`<span class="lbl">${window.__RD&&window.__RD.WCLBL||'Semana'}</span><p class="d" style="font-size:40px;margin:6px 0 2px">Semana fechada ✓</p><p class="meta" style="margin:0 0 10px">O Sérgio recebe este mesmo resumo.</p>`:
     `<span class="lbl">${sergio?'Painel • '+((typeof FX!=='undefined'&&FX)||'Ana'):'Sua evolução'}</span><p class="d" style="font-size:40px;margin:6px 0 10px">${sergio?'Evolução de '+((typeof FX!=='undefined'&&FX)||'Ana'):'Como você está indo'}</p>`}
     <div class="block frost" style="margin:0"><span class="lbl">Peso por semana</span>${peso}</div>
     <div class="block line" style="margin:12px 0 0"><div class="row"><span class="lbl">Início vs agora</span><span class="pill">${EVO.sem.length} semanas</span></div>${rows}</div>`)}
@@ -4726,9 +4727,9 @@ $('#rk-me').addEventListener('change',renderRank);
 renderRank();
 setTimeout(()=>{renderMot();renderRank()},0);
 /* alerta do check-in: some quando envia; pisca depois das 20h */
-function renderCiAlert(){const a=$('#ci-alert');if(!a)return;const pend=!sent.dia;a.hidden=!pend;a.classList.toggle('late',pend&&CI_HOUR>=20);
-  const t=$('#h-ci-txt');if(pend&&t&&CI_HOUR>=20&&!t.dataset.late){t.dataset.late=1;t.innerHTML=`8 toques • <span class="ci-late">faltam ${24-CI_HOUR}h para meia-noite</span>`}}
-var CI_HOUR=21;window.__ciSet=v=>{CI_HOUR=v;const t=$('#h-ci-txt');if(t&&t.dataset.late&&v<20){delete t.dataset.late;t.textContent='8 toques, 1 minuto'}};setInterval(renderCiAlert,500);
+function renderCiAlert(){const a=$('#ci-alert');if(!a)return;const pend=!sent.dia&&!window.__CINR;a.hidden=!pend;a.classList.toggle('late',pend&&CI_HOUR>=20);
+  const t=$('#h-ci-txt');if(pend&&t&&CI_HOUR>=20&&!t.dataset.late){t.dataset.late=1;t.innerHTML=`${window.__CITX||'8 toques'} • <span class="ci-late">faltam ${24-CI_HOUR}h para meia-noite</span>`}}
+var CI_HOUR=21;window.__ciSet=v=>{CI_HOUR=v;const t=$('#h-ci-txt');if(t&&t.dataset.late&&v<20){delete t.dataset.late;t.textContent=(window.__CITX||'8 toques')+', 1 minuto'}};setInterval(renderCiAlert,500);
 /* perfil no ranking */
 const EQUIV=[[500,'piano de cauda','pianos de cauda'],[1200,'carro popular','carros populares'],[1500,'hipopótamo','hipopótamos'],[2700,'caminhonete','caminhonetes'],[6000,'elefante africano','elefantes africanos'],[8000,'tiranossauro rex','tiranossauros rex'],[13000,'ônibus','ônibus'],[30000,'carreta carregada','carretas carregadas'],[45000,'trio elétrico','trios elétricos'],[60000,'tanque de guerra','tanques de guerra'],[100000,'foguete Falcon 9 abastecido','foguetes Falcon 9 abastecidos'],[150000,'baleia-azul','baleias-azuis'],[180000,'Boeing 747','Boeings 747'],[204000,'Estátua da Liberdade','Estátuas da Liberdade'],[300000,'guindaste portuário','guindastes portuários'],[635000,'Cristo Redentor','Cristos Redentores'],[7300000,'Torre Eiffel','Torres Eiffel'],[50000000,'navio cargueiro','navios cargueiros']];
 function equivList(kg){return EQUIV.filter(([w])=>kg/w>=1&&kg/w<=60).map(([w,a,b])=>{const q=kg/w;const n=q>=10?Math.round(q):Math.round(q*10)/10;return `${String(n).replace('.',',')} ${n>=2?b:a}`})}
@@ -6378,23 +6379,31 @@ const me=document.getElementById('h-me');if(me){me.innerHTML=ini;me.onclick=()=>
   <button class="btn wide" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px" data-close>Fechar</button>`,s=>{s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}
 const CIC=await (async()=>{try{const r=await sb.rpc('public_ci');return r.data||{}}catch(_){return {}}})();
 const CISTD=[['treinou','Treinou hoje?',['Sim','Não','Dia de descanso'],'limite'],['intens','Como foi o treino?',['Leve','Moderado','Pesado','No limite'],null],['energia','Como está sua energia?',['Baixa','Ok','Alta'],null],['cardio','Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min'],'resist'],['livre','Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food'],'zero'],['doce','Comeu doce fora do plano?',['Não','Um pouco','Sim'],'doce'],['agua','Bateu sua meta de água hoje?',['Não','Quase','Bati a meta'],'agua'],['sono','Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais'],'sono']];
+const WSTD=[['carga','Como sentiu os treinos da semana?',['Leves demais','No ponto','Pesados demais']],['chegou','Como você chegou no fim da semana?',['Cansado','Normal','Bem disposto']],['dor','Sentiu alguma dor ou desconforto?',['Nenhuma','Leve','Moderada','Forte']],['rotina','Como foi sua rotina na semana?',['Tranquila','Normal','Puxada']],['nota','Que nota você dá para a sua semana?',['0','1','2','3','4','5','6','7','8','9','10']]];
 /* ===== dados reais para Hoje, check-in e matilha (entram no __RD) ===== */
-function buildRD2(R){const TI=(now.getDay()+6)%7,DS=['dom','seg','ter','qua','qui','sex','sáb'],first=(P.name||'').split(' ')[0]||'Você';
+function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):null;const TI=(now.getDay()+6)%7,DS=['dom','seg','ter','qua','qui','sex','sáb'],first=(P.name||'').split(' ')[0]||'Você';
   const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-TI),wsd=ymd(ws),inW=d=>d>=wsd&&d<=TODAY;
   const clsDays=new Set((CL||[]).filter(c=>(c.status==='feita'||c.status==='confirmada')&&new Date(c.starts_at)<now).map(c=>ymd(new Date(c.starts_at))));
-  const trDays=new Set([...LOGS.map(l=>l.day),...clsDays]);const ciDays=new Map(DCS.map(c=>[c.day,c.answers||{}]));
+  const ciDays=new Map(DCS.map(c=>[c.day,c.answers||{}]));const trDays=new Set([...LOGS.map(l=>l.day),...clsDays,...[...ciDays].filter(([,a])=>a.treinou===0).map(([d])=>d)]);
+  /* meta de check-ins: frequência do aluno (padrão) ou todo dia */
+  const META=((CIC.stu||{})[uid])||CIC.meta||'freq',TODO=META==='todo',GOAL=TODO?6:Math.min(7,freq),isRest=a=>a&&a.treinou===2;
+  R.CIM={meta:META,goal:GOAL,wkndOff:!TODO&&freq<6};
+  {const dw=now.getDay(),hasFx=(FX||[]).length>0,clsT=(CL||[]).filter(c=>c.status!=='cancelada'&&ymd(new Date(c.starts_at))===TODAY);
+   R.TRT=LOGS.some(l=>l.day===TODAY)||clsDays.has(TODAY);R.CLT=clsT.length?clsT[0].starts_at:null;R.WKND=dw===0||dw===6;
+   R.OFFPLAN=(hasFx&&!clsT.length)||[...trDays].filter(d=>inW(d)&&d<TODAY).length>=freq}
   const complete=d=>trDays.has(d)&&ciDays.has(d)||(ciDays.has(d)&&(ciDays.get(d).treinou===2));
   const cnt=(f)=>[...ciDays.entries()].filter(([d,a])=>inW(d)&&f(a)).length;
   const cardioN=(((WK||[]).find(w=>w.letter==='_cfg')||{}).exercises||{}).cardio||[];
   R.ME=first;
   {const off=CIC.off||{},lab=CIC.lab||{},ag=Math.min(4,Math.max(2,Math.round((+P.weight_kg||70)*35/250)*.25));R.QD=[];R.QK=[];R.MOFF=[];
-   CISTD.forEach(([k,t,o,m])=>{if(off[k]){if(m)R.MOFF.push(m);return}let tt=lab[k]||t;if(k==='agua'&&!lab[k])tt=`Bateu sua meta de água hoje (${ag.toLocaleString('pt-BR')} L)?`;R.QD.push([tt,o]);R.QK.push(k)});
-   {const W=CIC.wk||{};R.WKC={peso:W.peso||'opt',msg:W.msg!==false};R.QW=[[W.dor||'Alguma dor ou desconforto que o Sérgio precisa saber?',['Nenhuma','Leve','Moderada','Forte']]];R.QWK=['dor'];
+   CISTD.forEach(([k,t,o,m])=>{if(k==='treinou')return;if(off[k]){if(m)R.MOFF.push(m);return}let tt=lab[k]||t;if(k==='agua'&&!lab[k])tt=`Bateu sua meta de água hoje (${ag.toLocaleString('pt-BR')} L)?`;R.QD.push([tt,o]);R.QK.push(k)});
+   {const W=CIC.wk||{},wo=W.off||{},wl=W.lab||{};R.WKC={peso:W.peso||'opt',msg:W.msg!==false,msgl:wl.msg||'Quer pedir alguma mudança ou contar algo?'};R.QW=[];R.QWK=[];
+    WSTD.forEach(([k,t,o])=>{if(wo[k])return;R.QW.push(k==='dor'?[wl.dor||W.dor||t,o,null,1,null,'where']:[wl[k]||t,o]);R.QWK.push(k)});
     (W.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QW.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0,ty]);R.QWK.push('w_'+c.id)})}
    (CIC.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QD.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0,ty]);R.QK.push('c_'+c.id)})}
   R.STU={plan:'treino',pres:P.presencial!==false,freq,cardio:cardioN.length||0,peso:+P.weight_kg||70,hideW:false,quota:freq*4};
-  const el=TI;R.WEEK={el,ci:{d:cnt(()=>true),t:el+1},limite:{d:[...trDays].filter(inW).length,t:freq,nox:1},resist:{d:cnt(a=>a.cardio>0),t:Math.max(1,cardioN.length||2),nox:1},
-    zero:{d:cnt(a=>a.livre!==2),t:el+1},doce:{d:cnt(a=>a.doce===0),t:el+1},agua:{d:cnt(a=>a.agua===2),t:el+1},sono:{d:cnt(a=>a.sono===2),t:el+1},alim:{d:0,t:el+1}};
+  const el=TI,HT=TODO?el+1:Math.min(el+1,GOAL);R.WEEK={el,ci:{d:cnt(a=>TODO||!isRest(a)),t:GOAL},limite:{d:[...trDays].filter(inW).length,t:freq,nox:1},resist:{d:cnt(a=>a.cardio>0),t:Math.max(1,cardioN.length||2),nox:1},
+    zero:{d:cnt(a=>a.livre!=null&&a.livre!==2),t:HT},doce:{d:cnt(a=>a.doce===0),t:HT},agua:{d:cnt(a=>a.agua===2),t:HT},sono:{d:cnt(a=>a.sono===2),t:HT},alim:{d:0,t:HT}};
   /* bolinhas da semana: dia completo */
   R.WKDOTS=[0,1,2,3,4,5,6].map(i=>{const d=ymd(new Date(ws.getTime()+i*864e5));if(d>TODAY)return '';return complete(d)?'on':(trDays.has(d)||ciDays.has(d))?'half':''});
   /* evolução semanal (7 semanas) */
@@ -6415,21 +6424,29 @@ function buildRD2(R){const TI=(now.getDay()+6)%7,DS=['dom','seg','ter','qua','qu
   R.LV=lv;R.CYCN=cyc;R.CYLEFT=lv<4?CYC[lv+1]-cyc:0;R.CYPCT=lv<4?Math.round((cyc-CYC[lv])/(CYC[lv+1]-CYC[lv])*100):100;
   /* medalhas: semanas completas */
   const wks={};const wkOfD=d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};const W_=k=>wks[k]=wks[k]||{tr:0,cardio:0,ci:0,agua:0,sono:0,ff:0,doce:0,carga:false};
-  trDays.forEach(d=>W_(wkOfD(d)).tr++);ciDays.forEach((a,d)=>{const w=W_(wkOfD(d));w.ci++;if(a.cardio>0)w.cardio++;if(a.agua===2)w.agua++;if(a.sono===2)w.sono++;if(a.livre===2)w.ff++;if(a.doce>0)w.doce++});
+  trDays.forEach(d=>W_(wkOfD(d)).tr++);ciDays.forEach((a,d)=>{const w=W_(wkOfD(d));if(TODO||!isRest(a))w.ci++;if(a.cardio>0)w.cardio++;if(a.agua===2)w.agua++;if(a.sono===2)w.sono++;if(a.livre===2)w.ff++;if(a.doce>0)w.doce++});
   {const best={};LOGS.slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>{const w=W_(wkOfD(l.day));(l.sets||[]).forEach(z=>{if(z.cardio||!z.n)return;const k=+z.kg||0;if(best[z.n]!=null&&k>best[z.n])w.carga=true;best[z.n]=Math.max(best[z.n]||0,k)})})}
   const DN=Object.entries(wks).filter(([k])=>k<wsd),C=f=>DN.filter(([k,w])=>f(w,k)).length,closed=new Set(WCS.map(w=>w.week_start));
-  R.RMV={doce:C(w=>w.ci>=5&&w.doce===0),tempo:closed.size,carga:C(w=>w.carga),resist:C(w=>w.cardio>=2),limite:C(w=>w.tr>=4),agua:C(w=>w.agua>=5),alim:0,sono:C(w=>w.sono>=5),zero:C(w=>w.ci>=5&&w.ff===0),
-    destaque:(AW||[]).filter(a=>a.medal_id==='destaque').length,perfeita:C((w,k)=>w.ci>=7&&w.tr>=Math.min(freq,4)&&closed.has(k)),recrutador:0};
+  const TH=TODO?5:GOAL;R.RMV={doce:C(w=>w.ci>=TH&&w.doce===0),tempo:closed.size,carga:C(w=>w.carga),resist:C(w=>w.cardio>=2),limite:C(w=>w.tr>=Math.min(4,freq)),agua:C(w=>w.agua>=TH),alim:0,sono:C(w=>w.sono>=TH),zero:C(w=>w.ci>=TH&&w.ff===0),
+    destaque:(AW||[]).filter(a=>a.medal_id==='destaque').length,perfeita:C((w,k)=>w.ci>=(TODO?7:GOAL)&&w.tr>=Math.min(freq,4)&&closed.has(k)),recrutador:0};
   R.MEDD={alim:0,uivo:ciDays.size,perfeita:[...ciDays.keys()].filter(complete).length,agua:[...ciDays.values()].filter(a=>a.agua===2).length,sono:[...ciDays.values()].filter(a=>a.sono===2).length,limite:trDays.size};
-  let st=0;for(let d=new Date(now);;d=new Date(d.getTime()-864e5)){const k=ymd(d);if(k===TODAY&&!complete(k))continue;if(complete(k))st++;else break;if(st>400)break}R.STREAK=st;
+  let st=0;if(TODO){for(let d=new Date(now);;d=new Date(d.getTime()-864e5)){const k=ymd(d);if(k===TODAY&&!complete(k))continue;if(complete(k))st++;else break;if(st>400)break}}
+  else{/* meta pela frequência: dia sem treino não quebra; quebra a semana passada que ficou abaixo da meta */
+   for(let w=new Date(ws),n=0;n<60;n++,w=new Date(w.getTime()-7*864e5)){const a=ymd(w),b=ymd(new Date(w.getTime()+6*864e5)),c=[...trDays].filter(d=>d>=a&&d<=b&&d<=TODAY&&complete(d)).length;
+     if(n>0&&c<GOAL)break;st+=c;if(n>0&&created0&&a<created0)break}}R.STREAK=st;
   {const m0=ymd(new Date(now.getFullYear(),now.getMonth(),1)),best={};let n=0;LOGS.slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>(l.sets||[]).forEach(z=>{if(z.cardio||!z.n)return;const k=+z.kg||0;if(best[z.n]!=null&&k>best[z.n]&&l.day>=m0)n++;best[z.n]=Math.max(best[z.n]||0,k)}));R.PROGM=n}
   /* ranking: só você por enquanto (as vagas aparecem como pontinhos) */
   const wkPct=Math.min(100,Math.round([...trDays].filter(inW).length/Math.max(1,freq)*100));R.RK=[[first,lv,0,cyc,Math.round(doneC/Math.max(1,T)*100),wkPct]];
-  /* fechar a semana: domingo 18h até terça */
-  const dw=now.getDay(),h=now.getHours(),cw=dw===0&&h>=18?wsd:(dw===1||dw===2)?ymd(new Date(ws.getTime()-7*864e5)):null;R.WCW=cw;
+  /* fechar a semana: abre no dia/hora do personal (padrão sexta 6h) e fecha às 22h do último dia */
+  const WO=Object.assign({dow:5,h:6,days:3,close:22},(CIC.wk||{}).open||{}),WD=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+  let O=new Date(now.getFullYear(),now.getMonth(),now.getDate(),WO.h,0,0);while(O.getDay()!==WO.dow||O>now)O=new Date(O.getFullYear(),O.getMonth(),O.getDate()-1,WO.h,0,0);
+  const Cl=new Date(O.getFullYear(),O.getMonth(),O.getDate()+WO.days-1,WO.close>=24?23:WO.close,WO.close>=24?59:0,0);
+  const wOf=d=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate()-1);x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};
+  const cw=now<Cl?wOf(O):null;R.WCW=cw;const hh=x=>x>=24?'23h59':x+'h',Cd=new Date(O.getFullYear(),O.getMonth(),O.getDate()+WO.days-1).getDay();
+  R.WOPEN=`${WD[WO.dow]} às ${hh(WO.h)}`;R.WCLOSE=`${WD[Cd]} às ${hh(WO.close)}`;R.WCLOSEIN=cw?(ymd(Cl)===TODAY?`Fecha hoje às ${hh(WO.close)}`:`Fecha ${WD[Cl.getDay()]} às ${hh(WO.close)}`):'';
   const s0=new Date(2026,10,2),sn=Math.max(0,Math.min(8,[...closed].filter(k=>k>=ymd(s0)).length));R.SEASON={n:sn,left:Math.max(0,Math.round((new Date(2026,11,27)-now)/864e5))};
   if(cw){const a=new Date(cw+'T12:00:00'),b=new Date(a.getTime()+6*864e5),f=x=>String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0');R.WCLBL='Semana '+f(a)+' a '+f(b)}else R.WCLBL='Semana';
-  R.WCDONE=`+1 semana na temporada (${Math.min(8,sn+1)} de 8). A próxima libera domingo às 18h.`;
+  R.WCDONE=`+1 semana na temporada (${Math.min(8,sn+1)} de 8). A próxima abre ${R.WOPEN}.`;
   R.SENT={dia:ciDays.has(TODAY),semana:!!(cw&&closed.has(cw))};R.DONETODAY=LOGS.some(l=>l.day===TODAY);
   return R}
 
@@ -6519,15 +6536,15 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
   const dc=$q('#v-hoje .disc-card .pill');if(dc&&/renova/.test(dc.textContent))dc.textContent='renova '+ends;
   /* check-in já enviado hoje */
   if(window.__CI){const ci=$q('#ci-dia');if(R.SENT.dia&&ci&&!ci.dataset.rl){ci.dataset.rl=1;ci.innerHTML=`<div class="row"><div><span class="lbl">Check-in do dia</span><p class="d" style="font-size:34px;margin:6px 0 2px">Enviado ✓</p><p class="meta" style="margin:0">Volte amanhã para o próximo.</p></div></div>`;ci.classList.add('meal','ok');const t=$q('#h-ci-txt');if(t)t.textContent='Enviado ✓';const hb=$q('#h-ci-btn');if(hb)hb.hidden=true}
-    const cs=$q('#ci-semana');if(cs&&!R.WCW&&!cs.dataset.rl){cs.dataset.rl=1;cs.innerHTML=`<div class="row"><div><span class="lbl">Fechar a semana</span><p class="d" style="font-size:30px;margin:6px 0 2px">Libera domingo às 18h</p><p class="meta" style="margin:0">O prazo vai até terça 23h59. Leva 30 segundos: peso (opcional), se tem alguma dor e um recado para o Sérgio.</p></div></div>`}
-    else if(cs&&R.SENT.semana&&!cs.dataset.rl){cs.dataset.rl=1;cs.innerHTML=`<div class="row"><div><span class="lbl">${esc2(R.WCLBL)}</span><p class="d" style="font-size:34px;margin:6px 0 2px">Semana fechada ✓</p><p class="meta" style="margin:0">A próxima libera domingo às 18h.</p></div></div>`;cs.classList.add('meal','ok')}}
+    const cs=$q('#ci-semana');if(cs&&!R.WCW&&!cs.dataset.rl){cs.dataset.rl=1;cs.innerHTML=`<div class="row"><div><span class="lbl">Fechar a semana</span><p class="d" style="font-size:30px;margin:6px 0 2px">Abre ${esc2(R.WOPEN||'sexta às 6h')}</p><p class="meta" style="margin:0">Fica aberto até ${esc2(R.WCLOSE||'domingo às 22h')}. Leva 1 minuto: como foram os treinos, como você chegou, dor, rotina e uma nota para a semana.</p></div></div>`}
+    else if(cs&&R.SENT.semana&&!cs.dataset.rl){cs.dataset.rl=1;cs.innerHTML=`<div class="row"><div><span class="lbl">${esc2(R.WCLBL)}</span><p class="d" style="font-size:34px;margin:6px 0 2px">Semana fechada ✓</p><p class="meta" style="margin:0">A próxima abre ${esc2(R.WOPEN||'sexta às 6h')}.</p></div></div>`;cs.classList.add('meal','ok')}}
  }catch(e){console.error('paint',e)}};
  paint();setTimeout(paint,300);document.addEventListener('click',()=>setTimeout(paint,80),true);
  /* dieta em PDF ainda não é guardada: não libera um cardápio de exemplo */
  document.addEventListener('click',e=>{if(e.target.closest('#dsend')){e.stopImmediatePropagation();e.preventDefault();toast('A dieta em PDF entra na próxima etapa do app. Por enquanto, fale com o Sérgio.')}},true);
  /* perguntas abertas e "Outro" */
  document.addEventListener('input',e=>{const x=e.target.closest('[data-qi]');if(!x||!window.__CI)return;const [k,i]=x.dataset.qi.split('-');window.__CI.ans[k][+i]=x.value.trim()?x.value.trim():null});
- document.addEventListener('click',e=>{const c=e.target.closest('[data-q]');if(!c)return;const [k,i]=c.dataset.q.split('-'),oi=document.querySelector(`[data-qo="${k}-${i}"]`);if(oi)oi.hidden=c.textContent.trim()!=='Outro'});
+ document.addEventListener('click',e=>{const c=e.target.closest('[data-q]');if(!c)return;const [k,i,j]=c.dataset.q.split('-'),oi=document.querySelector(`[data-qo="${k}-${i}"]`);if(oi)oi.hidden=oi.hasAttribute('data-where')?+j<2:c.textContent.trim()!=='Outro'});
  document.addEventListener('click',e=>{const c=e.target.closest('[data-qc]');if(!c||!window.__CI)return;const [k,i]=c.dataset.qc.split('-');const on=c.getAttribute('aria-pressed')!=='true';c.setAttribute('aria-pressed',on);
    const sel=[...c.parentElement.querySelectorAll('[data-qc]')].map((b,j)=>b.getAttribute('aria-pressed')==='true'?j:-1).filter(j=>j>=0);window.__CI.ans[k][+i]=sel.length?sel:null;
    const oi=document.querySelector(`[data-qo="${k}-${i}"]`);if(oi)oi.hidden=![...c.parentElement.querySelectorAll('[data-qc]')].some(b=>b.textContent.trim()==='Outro'&&b.getAttribute('aria-pressed')==='true');
@@ -6535,17 +6552,69 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
  /* check-in -> banco */
  document.addEventListener('click',e=>{const b=e.target.closest('#send');if(!b||!window.__CI)return;const CI=window.__CI,mode=CI.mode,A=CI.ans[mode];
    if(mode==='semana'&&R.WKC&&R.WKC.peso==='req'&&R.WCW&&!R.SENT.semana){const pv=parseFloat(String((document.getElementById('w-peso')||{value:''}).value).replace(',','.'));if(!(pv>30&&pv<300)){e.stopImmediatePropagation();e.preventDefault();toast('Coloque seu peso para fechar a semana');return}}
-   const WANS={};if(mode==='semana')A.forEach((v,i)=>{if(i===0||v===null)return;const k=(R.QWK||[])[i]||('w'+i);WANS[k]=v;const oi=document.querySelector(`[data-qo="semana-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())WANS[k+'_outro']=oi.value.trim()});
-   if(mode==='semana'&&(!R.WCW||R.SENT.semana)){e.stopImmediatePropagation();e.preventDefault();toast(R.SENT.semana?'Essa semana já foi fechada':'Fechar a semana libera domingo às 18h');return}
+   const WANS={};if(mode==='semana')A.forEach((v,i)=>{const k=(R.QWK||[])[i]||('w'+i);if(k==='dor'||v===null)return;WANS[k]=v;const oi=document.querySelector(`[data-qo="semana-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())WANS[k+'_outro']=oi.value.trim()});
+   if(mode==='semana'){const j=(R.QWK||[]).indexOf('dor'),oi=j>=0&&document.querySelector(`[data-qo="semana-${j}"]`);if(oi&&!oi.hidden&&oi.value.trim())WANS.dor_onde=oi.value.trim().slice(0,120)}
+   if(mode==='semana'&&(!R.WCW||R.SENT.semana)){e.stopImmediatePropagation();e.preventDefault();toast(R.SENT.semana?'Essa semana já foi fechada':'O check-in da semana abre '+(R.WOPEN||'sexta às 6h'));return}
    if(CI.sent[mode]||A.some(a=>a===null))return;/* o protótipo mostra o aviso */
    const peso=(document.getElementById('w-peso')||{value:''}).value,msg=((document.getElementById('w-msg')||{value:''}).value||'').trim();
-   const K0=R.QK||['treinou','intens','energia','cardio','livre','doce','agua','sono'],ANS={v:2};if(mode==='dia')A.forEach((v,i)=>{if(v!==null)ANS[K0[i]]=v;const oi=document.querySelector(`[data-qo="dia-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())ANS[K0[i]+'_outro']=oi.value.trim()});
+   const K0=window.__CIK||R.QK||[],ANS=Object.assign({v:3},window.__CIX||{});if(mode==='dia')A.forEach((v,i)=>{if(v!==null)ANS[K0[i]]=v;const oi=document.querySelector(`[data-qo="dia-${i}"]`);if(oi&&!oi.hidden&&oi.value.trim())ANS[K0[i]+'_outro']=oi.value.trim()});
    setTimeout(async()=>{if(!CI.sent[mode])return;
      if(mode==='dia'){const ans=ANS;
        const {error}=await sb.from('daily_checkins').insert({user_id:uid,day:TODAY,answers:ans});if(error){toast(/duplicate|unique/.test(error.message)?'O check-in de hoje já foi enviado':'Não salvou: '+error.message);return}R.SENT.dia=true}
-     else{const w=parseFloat(String(peso).replace(',','.'));const {error}=await sb.from('week_closes').insert({user_id:uid,week_start:R.WCW,weight_kg:w>30&&w<300?Math.round(w*10)/10:null,pain:A[0],message:msg.slice(0,1000)||null,answers:Object.keys(WANS).length?WANS:null});
+     else{const w=parseFloat(String(peso).replace(',','.'));const {error}=await sb.from('week_closes').insert({user_id:uid,week_start:R.WCW,weight_kg:w>30&&w<300?Math.round(w*10)/10:null,pain:(()=>{const j=(R.QWK||[]).indexOf('dor');return j>=0?A[j]:null})(),message:msg.slice(0,1000)||null,answers:Object.keys(WANS).length?WANS:null});
        if(error){toast(/duplicate|unique/.test(error.message)?'Essa semana já foi fechada':'Não salvou: '+error.message);return}R.SENT.semana=true}
      try{localStorage.setItem('rd',JSON.stringify(R))}catch(_){}},150)},true);
+
+ /* ===== check-in do dia pela frequência: dia de treino, descanso, treino extra e fim de semana ===== */
+ {const CI=window.__CI;const QK=R.QK||[],QD=R.QD||[],TRK=['intens','energia'],HAB=['agua','sono'];
+  const LK='rl:trm:'+TODAY;let man=null;try{man=JSON.parse(localStorage.getItem(LK)||'null')}catch(_){}
+  const hhm=s=>{const d=new Date(s);return d.getHours()+'h'+(d.getMinutes()?String(d.getMinutes()).padStart(2,'0'):'')};
+  const mode=()=>(R.SENT.dia||CI.sent.dia)?'sent':(R.TRT||man)?'treino':(R.CIM&&R.CIM.wkndOff&&R.WKND)?'fds':'desc';
+  const keysFor=m=>{if(m==='treino'&&man&&man.extra){const k=[];if(man.k.includes('musc'))k.push(...QK.filter(x=>TRK.includes(x)||x.startsWith('c_')));if(man.k.includes('cardio'))k.push(...QK.filter(x=>x==='cardio'));k.push(...QK.filter(x=>HAB.includes(x)));return QK.filter(x=>k.includes(x))}
+    if(m==='treino')return QK.slice();if(m==='desc')return QK.filter(x=>HAB.includes(x));return []};
+  const btnTr=()=>`<button class="btn small" data-rltr style="margin-top:10px">${R.OFFPLAN?'Treinei mesmo assim':'Treinei hoje'}</button>`;
+  const head=m=>{if(m==='treino')return `<div class="rl-cih"><span class="lbl">Check-in do dia</span><p class="meta" style="margin:4px 0 0">${R.TRT?'Treino de hoje registrado ✓':man&&man.extra?'Treino extra: '+man.k.map(k=>k==='musc'?'musculação':'cardio').join(' + ')+' ✓':'Treino de hoje ✓'}</p></div>`;
+    if(m==='fds')return `<div class="rl-cih"><span class="lbl">Fim de semana</span><p class="d" style="font-size:30px;margin:6px 0 2px">Sem check-in hoje</p><p class="meta" style="margin:0">Aproveite o descanso. Treinou mesmo assim? Registre aqui.</p>${btnTr()}</div>`;
+    return `<div class="rl-cih"><span class="lbl">${R.CLT?'Hoje tem treino às '+hhm(R.CLT):'Dia de descanso'}</span><p class="meta" style="margin:4px 0 0">${R.CLT?'Depois do treino, finalize no app ou toque em Treinei hoje para liberar o check-in.':'Sem cobrança hoje. Se quiser, registre seu sono e sua água.'}</p>${btnTr()}</div>`};
+  let cur='';
+  const setDay=(force)=>{const m=mode();if(m==='sent')return;const K=keysFor(m),sig=m+'|'+K.join(',');if(!force&&sig===cur)return;cur=sig;
+    window.__CIK=K;window.__CIX=m==='treino'?(R.TRT?{treinou:0,tr:'app'}:{treinou:0,tr:'manual',...(man&&man.extra?{extra:man.k}:{})}):{treinou:2,rest:1};
+    window.__CINR=m!=='treino';window.__CITX=K.length+(K.length===1?' toque':' toques');
+    const box=$q('#qs-dia');if(!box)return;const Q=K.map(k=>QD[QK.indexOf(k)]);box.innerHTML=head(m)+(Q.length?window.__qHTML(Q,'dia'):'');
+    CI.ans.dia.length=0;Q.forEach(()=>CI.ans.dia.push(null));
+    const sd=$q('#send'),cc=$q('#ci-count');if(CI.mode==='dia'){if(sd){sd.hidden=!Q.length;sd.textContent=m==='desc'?'Registrar (opcional)':'Enviar check-in do dia'}if(cc){cc.hidden=!Q.length;cc.textContent=`0 de ${Q.length} respondidas`}}
+    const sub=$q('#ci-sub');if(sub&&CI.mode==='dia')sub.textContent=m==='treino'?`Rápido: ${K.length} toques sobre o treino de hoje.`:m==='fds'?'Fim de semana sem check-in do dia.':'Hoje é opcional.';
+    const ht=$q('#h-ci-txt'),hb=$q('#h-ci-btn'),row=ht&&ht.closest('.srow');if(row)row.hidden=m==='fds';
+    if(ht){delete ht.dataset.late;ht.textContent=m==='treino'?`${K.length} toques, 1 minuto`:R.CLT?'Libera depois do treino':'Dia de descanso • opcional'}if(hb)hb.textContent=m==='treino'?'Fazer':'Abrir'};
+  setDay(true);
+  document.addEventListener('click',e=>{if(e.target.closest('[data-ci="dia"]'))setTimeout(()=>setDay(true),0)});
+  /* finalizou o treino no app: vira dia de treino */
+  document.addEventListener('click',e=>{if(e.target.closest('#finish,#finish2,#ctok'))setTimeout(()=>{if(!R.TRT&&R.DONETODAY){R.TRT=true;setDay(true)}},900)},true);
+  /* "Treinei hoje / mesmo assim": musculação e/ou cardio */
+  document.addEventListener('click',e=>{if(!e.target.closest('[data-rltr]'))return;e.preventDefault();const sel=new Set(['musc']);
+    const ov=document.createElement('div');ov.className='scrim rl-trs';ov.innerHTML=`<div class="sheet rl-trsi" role="dialog" aria-modal="true"><span class="lbl">${R.OFFPLAN?'Treino fora do plano':'Treino de hoje'}</span><p class="d" style="font-size:30px;margin:6px 0 4px">O que você fez?</p><p class="meta" style="margin:0 0 12px">Pode marcar os dois.</p>
+      <div class="chips"><button class="chip" data-k="musc" aria-pressed="true">Musculação</button><button class="chip" data-k="cardio" aria-pressed="false">Cardio</button></div>
+      <button class="btn solid wide" data-ok style="margin-top:14px">Continuar</button><button class="btn wide" data-x style="margin-top:8px">Cancelar</button></div>`;document.body.appendChild(ov);
+    ov.addEventListener('click',ev=>{const c=ev.target.closest('[data-k]');if(c){const k=c.dataset.k;sel.has(k)?sel.delete(k):sel.add(k);c.setAttribute('aria-pressed',sel.has(k));return}
+      if(ev.target.closest('[data-x]')||ev.target===ov){ov.remove();return}
+      if(ev.target.closest('[data-ok]')){if(!sel.size){toast('Marque musculação ou cardio');return}man={k:[...sel],extra:!!R.OFFPLAN||!sel.has('musc')};
+        try{localStorage.setItem(LK,JSON.stringify(man))}catch(_){}ov.remove();setDay(true);if(typeof go==='function'&&!$q('#v-checkin:not([hidden])'))go('checkin')}})});
+  setInterval(()=>{try{setDay(false)}catch(_){}},1500);
+  document.addEventListener('click',e=>{if(!e.target.closest('#send'))return;setTimeout(()=>{if(CI.sent.dia&&window.__CIX&&window.__CIX.treinou===2){const t=$q('#h-ci-txt');if(t)t.textContent='Descanso registrado ✓';const p=$q('#ci-dia .meta');if(p)p.textContent='Bom descanso. Até o próximo treino.'}},50)});
+  /* medalhas do check-in pelas chaves (o protótipo lia por posição) */
+  const _mr=window.medalRun;window.medalRun=function(A,custom){if(custom||!Array.isArray(A)||!window.__CIK)return _mr.apply(this,arguments);
+    const K=window.__CIK,a={};K.forEach((k,i)=>a[k]=A[i]);const W=window.WEEK,el=W.el,X=window.__CIX||{},it=[];const off=R.MOFF||[];
+    const step=(k,ok)=>{const w=W[k];let f=el-w.d;if(ok)w.d=Math.min(7,w.d+1);else f++;w.f=f;w.tod=ok?'on':'x';return {d:w.d,t:w.t,need:Math.max(0,w.t-w.d),closed:ok&&w.d===w.t,dead:f>7-w.t}};
+    const P=(id,why,wk,gain,ok)=>{if(!off.includes(id))it.push([id,why,wk,gain,ok])};const s_=n=>n>1?'s':'';
+    const rest=X.treinou===2;
+    if(!rest||R.CIM.meta==='todo'){const c=step('ci',true);P('tempo',c.closed?`Check-in da semana completo: ${c.t} de ${c.t}.`:`Check-in feito: ${c.d} de ${c.t} na semana.`,'ci',c.closed,true)}
+    if(rest)P('limite','Dia de descanso. Não conta contra você.','limite',false,true);
+    else{const t=step('limite',true);P('limite',X.extra?`Treino extra registrado: ${t.d} na semana.`:t.closed?`Treino feito: ${t.d} de ${t.t}. Semana de treinos fechada.`:`Treino feito: ${t.d} de ${t.t} na semana.`,'limite',t.closed,true)}
+    if('cardio' in a&&W.resist.t>0){const cd=a.cardio>0,c=cd?step('resist',true):{d:W.resist.d,t:W.resist.t,need:W.resist.t-W.resist.d};P('resist',cd?(c.closed?`Cardio de hoje: ${c.d} de ${c.t}. Semana fechada.`:`Cardio de hoje: ${c.d} de ${c.t}.`):`Sem cardio hoje. Falta${s_(c.need)} ${c.need} na semana.`,'resist',!!c.closed,cd)}
+    const hab=(k,id,ok,yes,no)=>{if(!(k in a))return;const c=step(id,ok);P(id,ok?(c.closed?`${yes}: ${c.t} de ${c.t}. Semana fechada.`:`${yes}: ${c.d} de ${c.t}.`):`${no} Falta${s_(c.need)} ${c.need}.`,id,c.closed,ok||!c.dead)};
+    hab('livre','zero',a.livre===0,'Sem fast food',a.livre===1?'Refeição livre hoje.':'Fast food hoje.');hab('doce','doce',a.doce===0,'Sem doce','Doce hoje.');
+    hab('agua','agua',a.agua===2,'Meta de água','Abaixo da meta de água hoje.');hab('sono','sono',a.sono===2,'7h ou mais de sono','Menos de 7h hoje.');
+    return _mr.call(this,null,it)}}
 }
 
 document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha conta'&&b.id!=='h-me')b.onclick=e=>{e.stopImmediatePropagation();document.getElementById('h-me').click()}});
