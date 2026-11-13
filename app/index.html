@@ -261,15 +261,15 @@ async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';
     R.innerHTML=`<div class="scr"><div class="box g" style="margin-top:20px"><b>O ${PN} respondeu seu pedido</b></div>
     <div class="pro"><span style="font-size:12.5px;color:var(--mu);font-weight:700">Proposta de horário</span><p class="big">${sl.map(fmtSlot).join(' • ')}</p>
     <p class="qs">${esc(sl[0]&&sl[0].location||r.location||r.location_other||'')} • com ${PN}${pr.start_date?' • começa '+pr.start_date.split('-').reverse().slice(0,2).join('/'):''}</p>${pr.message?`<div class="msg">“${esc(pr.message)}”</div>`:''}</div>
-    <p class="err" id="er"></p><div class="cta"><button class="b1" id="ac">Aceitar horário</button><button class="b2" id="tk">Conversar com o ${PN}</button></div></div>`;
+    <p class="err" id="er"></p><div class="cta"><button class="b1" id="ac">Aceitar horário</button><button class="b2" id="tk">Conversar com o ${PN}</button><button class="b2 nb" id="out">Sair da conta</button></div></div>`;$('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()};
     $('#ac').onclick=async()=>{$('#ac').disabled=true;const {error}=await sb.rpc('accept_proposal',{p_id:pr.id});if(error){$('#ac').disabled=false;return err('Não deu para aceitar: '+error.message)}toast('Horário fechado!');home()};
     $('#tk').onclick=async()=>{await sb.rpc('talk_proposal',{p_id:pr.id});location.href=`https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Sobre a proposta de horário: ')}`};return}
   const st=r?r.status:'aguardando';
   R.innerHTML=`<div class="scr" style="text-align:center"><div class="okc">✓</div><p class="q" style="margin-top:0">${fresh?'Pedido enviado!':'Pedido com o '+PN}</p>
   <p class="qs" style="padding:0 10px">${st==='recusado'?`O ${PN} não conseguiu atender esse pedido. Fale com ele para ver outra opção.`:st==='conversar'?`Você pediu para conversar sobre o horário. O ${PN} vai te chamar.`:`O ${PN} recebe agora e responde por aqui. Você é avisado quando ele mandar a proposta de horário.`}</p>
   <div class="nx" style="text-align:left"><div class="on"><i>1</i>O ${PN} manda a proposta de horário<small>${st==='aguardando'?'aguardando':''}</small></div><div><i>2</i>Você aceita e as aulas entram na agenda</div><div><i>3</i>Pagamento e anamnese completa<small>em breve</small></div></div>
-  <div class="cta"><button class="b1" id="rf">Atualizar</button><a class="b2" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Acabei de mandar meu pedido pelo app.')}" target="_blank" rel="noopener">Falar com o ${PN}</a></div></div>`;
-  $('#rf').onclick=()=>home()}
+  <div class="cta"><button class="b1" id="rf">Atualizar</button><a class="b2" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Acabei de mandar meu pedido pelo app.')}" target="_blank" rel="noopener">Falar com o ${PN}</a><button class="b2 nb" id="out">Sair da conta</button></div></div>`;
+  $('#rf').onclick=()=>home();$('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()}}
 
 /* ---------- rota ---------- */
 async function route(){const {data:{session}}=await sb.auth.getSession();if(!session){ST.code?openInvite():welcome();return}
