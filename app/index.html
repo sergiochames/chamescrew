@@ -241,7 +241,7 @@ function cpfOk(v){const c=String(v).replace(/\D/g,'');if(c.length!==11||/^(\d)\1
 async function submit(){const D=ST.d,b=$('#go');b.disabled=true;b.textContent='Enviando…';const now=new Date().toISOString();
   const up={name:D.name,phone:D.phone,doc_type:D.foreign?'passaporte':'cpf',doc_num:D.doc,country:D.foreign?D.country:'Brasil',birth_date:D.birth,height_cm:D.height,weight_kg:D.weight,goal:D.goal,level:D.level,injury:D.injury||null,parq:D.parq,consent_at:now,rules_ok_at:now,onboarded:true};if(!ST.hasFx){up.presencial=true;up.freq=(D.days||[]).length}
   let {error}=await sb.from('profiles').update(up).eq('id',ST.user.id);
-  if(!error&&!ST.hasFx){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:PRICES[D.days.length]||null});error=r.error}
+  if(!error&&!ST.hasFx){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:(mens(D.days.length)||{}).m||null});error=r.error}
   if(error){b.disabled=false;b.textContent='Enviar para o '+PN;err('Não deu para enviar agora. Tente de novo. ('+error.message+')');return}
   try{localStorage.removeItem('cc_draft')}catch(_){}ST.d={};home(true)}
 
