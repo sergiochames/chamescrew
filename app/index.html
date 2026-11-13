@@ -121,12 +121,31 @@ const refGet=()=>{try{return localStorage.getItem('cc_ref')||''}catch(_){return 
 async function linkRef(){const c=refGet();if(!c)return;try{await sb.rpc('set_referrer',{p_code:c})}catch(_){}try{localStorage.removeItem('cc_ref')}catch(_){}}
 let REFD=0;async function refDesc(){try{const {data}=await sb.rpc('my_ref');REFD=data&&data.mine&&!data.mine.paid_at?(+data.desc||0):0}catch(_){REFD=0}}
 let REFQ2='';async function refLanding(cc){const RQ=cc||REFQ;R.innerHTML='<div class="ld">Abrindo…</div>';let r=null;try{const {data}=await sb.rpc('public_ref',{p_code:RQ});r=data}catch(_){}
-  if(!r){welcome();const c=document.querySelector('.cta');if(c)c.insertAdjacentHTML('beforebegin',`<p class="qs" style="margin:0 0 10px">Código de indicação <b style="color:var(--fg)">${esc(REFQ)}</b> guardado. Ele entra quando você criar a conta.</p>`);return}
+  if(!r){welcome();const c=document.querySelector('.cta');if(c)c.insertAdjacentHTML('beforebegin',`<p class="qs" style="margin:0 0 10px">Código de indicação <b style="color:var(--fg)">${esc(RQ)}</b> guardado. Ele entra quando você criar a conta.</p>`);return}
+  try{localStorage.setItem('cc_ref',RQ)}catch(_){}
   R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">INDICAÇÃO</span>
   <h1 style="font-size:clamp(46px,15vw,66px)"><span>${esc(r.name)}</span><br>te chamou<br>para treinar.</h1>
-  <p class="qs" style="margin-top:14px">${r.desc?`Você ganha <b style="color:var(--fg)">${r.desc}% de desconto</b> no primeiro plano. `:''}Fale com o ${PN} para combinar seus horários. Ele te manda o convite do app.</p>
-  <div class="cta"><a class="b1" style="display:grid;place-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi! Vim pela indicação do '+r.name+' (código '+RQ+') e quero treinar.')}">Falar com o ${PN}</a><button class="b2 nb" id="w1">Já tenho o convite</button></div></div>`;
-  $('#w1').onclick=askCode}
+  <p class="qs" style="margin-top:14px">${r.desc?`Você ganha <b style="color:var(--fg)">${r.desc}% de desconto</b> no primeiro plano. `:''}Crie sua conta, escolha seus dias e horários e pronto.</p>
+  <div class="cta"><button class="b1" id="w1">Quero começar</button><button class="b2 nb" id="w2">Já tenho conta • Entrar</button>
+  <a style="display:block;text-align:center;margin-top:6px;font-size:13px;color:var(--mut,#9a978f);text-decoration:underline" target="_blank" rel="noopener" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi! Vim pela indicação do '+r.name+' (código '+RQ+') e tenho uma dúvida.')}">Prefiro falar com o ${PN} antes</a></div></div>`;
+  $('#w1').onclick=()=>refSignup(RQ,r);$('#w2').onclick=login}
+function refSignup(RQ,r){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Crie sua conta</p><p class="qs">Indicação de ${esc(r.name)}${r.desc?` • ${r.desc}% de desconto no primeiro plano`:''}.</p>
+  <span class="lb">Seu nome</span><input class="in" id="nm" autocomplete="name" placeholder="Nome e sobrenome" value="${esc(ST.d.name||'')}">
+  <span class="lb">Seu e-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+  <span class="lb">Crie uma senha</span><div class="pw"><input class="in" id="pw" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"><button id="sh" type="button">mostrar</button></div>
+  <span class="lb">Confirme a senha</span><div class="pw"><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="Digite a mesma senha de novo"></div>
+  <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">Criar minha conta</button></div></div>`;
+  $('#bk').onclick=()=>refLanding(RQ);
+  $('#sh').onclick=()=>{const t=$('#pw').type==='password'?'text':'password';$('#pw').type=t;$('#pw2').type=t;$('#sh').textContent=t==='password'?'mostrar':'esconder'};
+  $('#go').onclick=async()=>{const nm=$('#nm').value.trim(),em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value,pw2=$('#pw2').value;
+    if(nm.split(/\s+/).length<2){$('#er').textContent='Coloque nome e sobrenome.';return}
+    if(!/^\S+@\S+\.\S+$/.test(em)){$('#er').textContent='Confira o e-mail.';return}if(pw.length<8){$('#er').textContent='A senha precisa ter pelo menos 8 caracteres.';return}
+    if(pw!==pw2){$('#er').textContent='As senhas não estão iguais. Digite de novo.';$('#pw2').value='';$('#pw2').focus();return}
+    $('#go').disabled=true;$('#go').textContent='Criando…';try{localStorage.setItem('cc_ref',RQ)}catch(_){}
+    const {data,error}=await sb.auth.signUp({email:em,password:pw,options:{data:{name:nm,ref:RQ}}});$('#go').disabled=false;$('#go').textContent='Criar minha conta';
+    if(error){$('#er').textContent=/registered|exists/i.test(error.message)?'Esse e-mail já tem conta. Volte e toque em Entrar.':'Não deu para criar agora: '+error.message;return}
+    if(!data.session){$('#er').textContent='Conta criada. Confirme pelo e-mail e depois entre.';return}
+    ST.d={name:nm,phone:''};saveDraft();try{history.replaceState(null,'','/app/')}catch(_){}route()}}
 const saveDraft=()=>{try{localStorage.setItem('cc_draft',JSON.stringify(ST.d))}catch(_){}};
 
 /* ---------- entrada ---------- */
