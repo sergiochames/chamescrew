@@ -120,12 +120,12 @@ const REFQ=(qp.get('ref')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12
 const refGet=()=>{try{return localStorage.getItem('cc_ref')||''}catch(_){return ''}};
 async function linkRef(){const c=refGet();if(!c)return;try{await sb.rpc('set_referrer',{p_code:c})}catch(_){}try{localStorage.removeItem('cc_ref')}catch(_){}}
 let REFD=0;async function refDesc(){try{const {data}=await sb.rpc('my_ref');REFD=data&&data.mine&&!data.mine.paid_at?(+data.desc||0):0}catch(_){REFD=0}}
-async function refLanding(){R.innerHTML='<div class="ld">Abrindo…</div>';let r=null;try{const {data}=await sb.rpc('public_ref',{p_code:REFQ});r=data}catch(_){}
+let REFQ2='';async function refLanding(cc){const RQ=cc||REFQ;R.innerHTML='<div class="ld">Abrindo…</div>';let r=null;try{const {data}=await sb.rpc('public_ref',{p_code:RQ});r=data}catch(_){}
   if(!r){welcome();const c=document.querySelector('.cta');if(c)c.insertAdjacentHTML('beforebegin',`<p class="qs" style="margin:0 0 10px">Código de indicação <b style="color:var(--fg)">${esc(REFQ)}</b> guardado. Ele entra quando você criar a conta.</p>`);return}
   R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">INDICAÇÃO</span>
   <h1 style="font-size:clamp(46px,15vw,66px)"><span>${esc(r.name)}</span><br>te chamou<br>para treinar.</h1>
   <p class="qs" style="margin-top:14px">${r.desc?`Você ganha <b style="color:var(--fg)">${r.desc}% de desconto</b> no primeiro plano. `:''}Fale com o ${PN} para combinar seus horários. Ele te manda o convite do app.</p>
-  <div class="cta"><a class="b1" style="display:grid;place-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi! Vim pela indicação do '+r.name+' (código '+REFQ+') e quero treinar.')}">Falar com o ${PN}</a><button class="b2 nb" id="w1">Já tenho o convite</button></div></div>`;
+  <div class="cta"><a class="b1" style="display:grid;place-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi! Vim pela indicação do '+r.name+' (código '+RQ+') e quero treinar.')}">Falar com o ${PN}</a><button class="b2 nb" id="w1">Já tenho o convite</button></div></div>`;
   $('#w1').onclick=askCode}
 const saveDraft=()=>{try{localStorage.setItem('cc_draft',JSON.stringify(ST.d))}catch(_){}};
 
@@ -160,13 +160,14 @@ function login(){R.innerHTML=`<div class="scr"><div class="nav"><button class="b
     if(error){$('#er').textContent=/Invalid/i.test(error.message)?'E-mail ou senha não conferem.':'Não deu para entrar agora. Tente de novo.';return}route()}}
 
 /* ---------- convite ---------- */
-function askCode(){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Seu convite</p><p class="qs">Abra o link que o ${PN} mandou no seu WhatsApp, ou digite o código de 6 letras.</p>
+function askCode(){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Seu convite</p><p class="qs">Abra o link que o ${PN} mandou no seu WhatsApp, ou digite o código de 6 letras. Se um amigo te indicou, pode digitar o código dele.</p>
   <span class="lb">Código do convite</span><input class="in" id="cd" maxlength="6" autocapitalize="characters" placeholder="Ex.: A1B2C3" style="text-transform:uppercase;letter-spacing:3px">
   <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">Continuar</button></div></div>`;
   $('#bk').onclick=welcome;$('#go').onclick=()=>{ST.code=$('#cd').value.trim().toUpperCase();if(ST.code.length<6){$('#er').textContent='O código tem 6 letras ou números.';return}openInvite()}}
 async function openInvite(){R.innerHTML='<div class="ld">Abrindo seu convite…</div>';
   const {data,error}=await sb.rpc('invite_info',{p_code:ST.code});const inv=data&&data[0];
-  if(error||!inv){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Convite não encontrado</p><p class="qs">Esse convite não existe ou já foi usado. Peça um novo ao ${PN}, ou entre se você já tem conta.</p><div class="cta"><button class="b1" id="lg">Entrar</button><button class="b2 nb" id="bk2">Voltar</button></div></div>`;const out=()=>{ST.code='';try{history.replaceState(null,'','/app/')}catch(_){}welcome()};$('#bk').onclick=$('#bk2').onclick=out;$('#lg').onclick=()=>{ST.code='';try{history.replaceState(null,'','/app/')}catch(_){}login()};return}
+  if(error||!inv){try{const {data:rr}=await sb.rpc('public_ref',{p_code:ST.code});if(rr){const c=ST.code;ST.code='';try{localStorage.setItem('cc_ref',c);history.replaceState(null,'','/app/?ref='+c)}catch(_){}REFQ2=c;return refLanding(c)}}catch(_){}
+  R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Convite não encontrado</p><p class="qs">Esse convite não existe ou já foi usado. Peça um novo ao ${PN}, ou entre se você já tem conta.</p><div class="cta"><button class="b1" id="lg">Entrar</button><button class="b2 nb" id="bk2">Voltar</button></div></div>`;const out=()=>{ST.code='';try{history.replaceState(null,'','/app/')}catch(_){}welcome()};$('#bk').onclick=$('#bk2').onclick=out;$('#lg').onclick=()=>{ST.code='';try{history.replaceState(null,'','/app/')}catch(_){}login()};return}
   ST.inv=inv;const nm=(inv.name||'').split(' ')[0];
   R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">CONVITE DO ${PN.toUpperCase()}</span>
   <h1 style="font-size:clamp(50px,16vw,70px)">${nm?`Bem-vindo(a),<br><span>${esc(nm)}</span>`:'Bem-vindo(a)'}</h1>
