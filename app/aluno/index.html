@@ -4599,11 +4599,13 @@ weekListSheet=function(M0){let M=M0||NOWMO();const months=[10,11,12].filter(m=>m
      <div class="wkl mol">${h||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">${AG.creds.length?`Ver meus créditos (${AG.creds.length})`:'Extrato de créditos'}</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
-function hxFill(){const hx=document.getElementById('hx94');if(!hx)return;const M=NOWMO(),Q=monthData(M),N=AG.quota,u=chgOf(M),lim=AG.chgLim;
-  const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.m).fill('m'),...Array(window.__CI2?AG.creds.length:Q.c).fill('c'),...Array(Q.falta).fill('e'),...Array(Q.perdidas).fill('x')].slice(0,Math.max(N,Q.f+Q.d+Q.m+Q.c));
-  const st=[[Q.f,Q.f===1?'feita':'feitas',1],[Q.m,Q.m===1?'marcada':'marcadas',1],[(window.__CI2?AG.creds.length:Q.c),(window.__CI2?AG.creds.length:Q.c)===1?'crédito':'créditos',1],[Q.falta,'para marcar'],[Q.perdidas,Q.perdidas===1?'não usada':'não usadas']].filter(z=>z[0]||z[2]);
-  hx.innerHTML=`<p class="d">Suas aulas</p><div class="mb93" style="grid-template-columns:repeat(${seg.length},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div><div class="st">${st.map(z=>`<span><b>${z[0]}</b> ${z[1]}</span>`).join('')}${Q.ex.length?`<span><b>+${Q.ex.length}</b> extra</span>`:''}<span><b>${u} de ${lim}</b> ${lim===1?'mudança':'mudanças'}</span></div><div class="go"><span>Ver aulas, créditos e mudanças</span><span>›</span></div>`;
+function hxFill(){const hx=document.getElementById('hx94');if(!hx)return;const M=NOWMO(),Q=monthData(M),N=AG.quota,u=chgOf(M),lim=AG.chgLim,cr=window.__CI2?AG.creds.length:Q.c;
+  const seg=[...Array(Q.f).fill('f'),...Array(Q.d).fill('d'),...Array(Q.m).fill('m'),...Array(cr).fill('c'),...Array(Q.falta).fill('e')].slice(0,Math.max(N,Q.f+Q.d+Q.m+cr));
+  const nx=Q.up.slice().sort((a,b)=>nOf(a.d)-nOf(b.d)||a.h-b.h)[0];
+  hx.innerHTML=`<p class="d">Suas aulas</p>${au94(Q,u,lim,cr)}<div class="mb93" style="grid-template-columns:repeat(${seg.length||1},1fr)">${seg.map(k=>`<i class="${k}"></i>`).join('')}</div>
+   <div class="ft94">${nx?`<span>Próxima: <b>${dlab(nx.d)} • ${hh2(nx.h)}</b></span>`:'<span>Nenhuma aula marcada</span>'}${window.__ENDS?`<span>Plano até ${window.__ENDS}</span>`:''}</div><div class="go"><span>Ver aulas, créditos e mudanças</span><span>›</span></div>`;
   hx.hidden=false;hx.onclick=()=>weekListSheet()}
+function au94(Q,u,lim,cr){const dd=Q.f+Q.d;return `<div class="au94"><div><b>${dd}<em>/${AG.quota}</em></b><small>aulas dadas</small></div><div class="${u>=lim?'full':''}"><b>${u}<em>/${lim}</em></b><small>mudanças</small></div><div class="${cr?'on':''}"><b>${cr}</b><small>${cr===1?'crédito':'créditos'}</small></div></div>`}
 sumRender=(prev=>function(){prev();try{hxFill()}catch(_){}})(sumRender);setTimeout(()=>{try{hxFill()}catch(_){}},0);
 sumRender=(prev=>function(){prev();const bar=$('#sumbar');if(!bar)return;const I=monthInfo(NOWMO()),n=I.tot+I.ex;const sp=bar.querySelector('span');if(sp)sp.innerHTML=`<b>${MESC2(NOWMO())}:</b> ${I.used} de ${AG.quota} aulas${I.ex?` + ${I.ex} extra`:''}`;bar.onclick=()=>weekListSheet()})(sumRender);
 agAll();
@@ -4620,7 +4622,7 @@ function monthData(M){const I=monthInfo(M),cur=M===NOWMO();
   let cap=0;const st=liveSt(),last=new Date(2026,M,(window.__CYA||1)-1);const n0=TDN()+1,nEnd=Math.round((last-dDate(0))/864e5);const W={};
   if(M>NOWMO())cap=resto;else if(M===NOWMO()){for(let n=n0;n<=nEnd;n++){if(dDate(n).getDay()===0)continue;const w=Math.floor((n+2)/7);W[w]=(W[w]||0)+1}
     Object.entries(W).forEach(([w,dias])=>{let pw=0;try{pw=ENG.planW(st,+w)}catch(_){}cap+=Math.min(dias,Math.max(0,AG.week-pw))})}
-  const falta=Math.min(resto,cap),perdidas=resto-falta;
+  const falta=resto,perdidas=0;
   return {I,doneL,up,ex,dadas,creds,f,m,c,d,falta,perdidas}}
 weekListSheet=function(M0){let M=NOWMO();const months=[10,11,12].filter(m=>m>=10&&m<=Math.max(NOWMO(),10));
   const draw=s=>{const Q=monthData(M),N=AG.quota;
@@ -4632,15 +4634,19 @@ weekListSheet=function(M0){let M=NOWMO();const months=[10,11,12].filter(m=>m>=10
     const dts=n=>{const d=dDate(n);return `${WDN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`};
     const rowF=z=>`<div class="r93 done"><span class="ic">✓</span><span><b>${dts(z.n)} • ${hh2(z.h)}</b><small>feita</small></span></div>`;
     const rowU=x=>`<div class="r93 next"><span class="ic"></span><span><b>${nOf(x.d)===TDN()?'Hoje, '+dts(nOf(x.d)).toLowerCase():dts(nOf(x.d))} • ${hh2(x.h)}</b><small>${x.pend?'aguardando o '+PN():x.conf?'confirmada':x===Q.up.find(y=>!y.conf&&!y.pend)?'a confirmar':'marcada'}${x.extra?' • extra paga':''}${x.mv?` • ${PN()} mudou de ${x.mv}`:''}${x.rep==='cr'?' • com crédito':''}</small></span></div>`;
-    let L='';
-    if(false)L+=`<details class="g93"><summary class="r93 done"><span class="ic">✓</span><span><b>${Q.f} aulas feitas</b><small>ver as datas</small></span><span class="go">›</span></summary>${Q.doneL.map(rowF).join('')}</details>`;else L+=Q.doneL.map(rowF).join('');
-    L+=Q.dadas.map(z=>`<div class="r93 dada"><span class="ic">–</span><span><b>${dts(nOf(z.d))} • ${hh2(z.h)}</b><small>não foi • contou como dada</small></span></div>`).join('');
-    const UQ=[...Q.up,...Q.ex].sort((a,b)=>nOf(a.d)-nOf(b.d)||a.h-b.h),UP=UQ,MORE=[];L+=UP.map(rowU).join('');
-    if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'marcada':'marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
+    let L='',LN='',LF='',LC='';
+    if(false)L+=`<details class="g93"><summary class="r93 done"><span class="ic">✓</span><span><b>${Q.f} aulas feitas</b><small>ver as datas</small></span><span class="go">›</span></summary>${Q.doneL.map(rowF).join('')}</details>`;else{const FD=[...Q.doneL.map(z=>({n:z.n,h:z.h,t:0})),...Q.dadas.map(z=>({n:nOf(z.d),h:z.h,t:1}))].sort((a,b)=>b.n-a.n||b.h-a.h);
+      LF=FD.map(z=>z.t?`<div class="r93 dada"><span class="ic">✓</span><span><b>${dts(z.n)} • ${hh2(z.h)}</b><small>Dada • faltou</small></span></div>`:rowF(z)).join('')}
+    LC=(AG.canc||[]).filter(c=>c.ok&&monOf(c.d)===M).map(c=>`<div class="r93 cr"><span class="ic">↺</span><span><b>${dts(nOf(c.d))} • ${hh2(c.h)}</b><small>Avisou no prazo • virou crédito</small></span></div>`).join('');
+    const UQ=[...Q.up,...Q.ex].sort((a,b)=>nOf(a.d)-nOf(b.d)||a.h-b.h),UP=UQ.slice(0,4),MORE=UQ.slice(4);L+=UP.map(rowU).join('');
+    if(MORE.length)L+=`<details class="g93"><summary class="r93 next"><span class="ic"></span><span><b>+${MORE.length} ${MORE.length===1?'aula marcada':'aulas marcadas'}</b><small>ver todas</small></span><span class="go">›</span></summary>${MORE.map(rowU).join('')}</details>`;
     L+=Q.creds.map(c=>`<div class="r93 cr"><span class="ic">+1</span><span><b>1 crédito para usar</b><small>vale até ${fmtDM(c.exp)} • da aula de ${dlab(c.from).toLowerCase()}</small></span><button class="btn small solid" data-m93="use">Usar</button></div>`).join('');
     if(Q.falta&&M>=NOWMO())L+=`<div class="r93 empty"><span class="ic"></span><span><b>${Q.falta} ${Q.falta===1?'aula para marcar':'aulas para marcar'}</b><small>até ${(d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'))(new Date(2026,M,(window.__CYA||1)-1))}</small></span><button class="btn small" data-m93="book">Marcar</button></div>`;
+    LN=L;L='';
     if(Q.perdidas){const wk=Object.keys({}).length;L+=`<div class="r93 lost"><span class="ic">×</span><span><b>${Q.perdidas} ${Q.perdidas===1?'aula não usada':'aulas não usadas'} em ${MESN(M)}</b><small>${M<NOWMO()?'O prazo do mês acabou.':`Não cabem mais no plano até ${(d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'))(new Date(2026,M,(window.__CYA||1)-1))}: sua semana já está completa no plano (${AG.week} por semana). ${AG.creds.length?'Use seu crédito ou peça uma aula extra.':'Um horário a mais seria extra.'}`}</small></span></div>`}
-    s.querySelector('#mx').innerHTML=`<span class="lbl">${MESC2(M)}</span><p class="d" style="font-size:40px;margin:4px 0 10px">Suas aulas</p><div class="chg93${full?' full':''}"><span class="dots">${Array.from({length:lim},(_,i)=>`<i class="${i<u?'on':''}"></i>`).join('')}</span><span>${full?`Você já usou as ${lim} mudanças de ${MESN(M)}. Se não for, a aula conta como feita.`:`Mudanças sem custo: <b>${u} de ${lim}</b> usadas`}</span></div><div class="l93">${L||'<p class="meta">Nenhuma aula neste mês.</p>'}</div>`;
+    const SEC=(t,h)=>h?`<p class="lbl s94">${t}</p><div class="l93">${h}</div>`:'';
+    s.querySelector('#mx').innerHTML=`<p class="d" style="font-size:40px;margin:4px 0 10px">Suas aulas</p>${au94(Q,u,lim,window.__CI2?AG.creds.length:Q.c)}${window.__ENDS?`<p class="meta" style="margin:8px 0 0;font-size:12.5px">Plano até ${window.__ENDS}. Mudanças e créditos valem até lá.</p>`:''}${full?`<div class="chg93 full" style="margin:10px 0 0"><span>Você já usou as ${lim} mudanças do plano. Se não for, a aula conta como dada.</span></div>`:''}
+     ${SEC('Próximas',LN)}${SEC('Dadas',LF)}${SEC('Guardadas',LC)}${L}${!(LN||LF||LC||L)?'<p class="meta">Nenhuma aula ainda.</p>':''}`;
     s.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{M=+b.dataset.mm;draw(s)});
     s.querySelectorAll('[data-m93]').forEach(b=>b.onclick=()=>{s.remove();go('agenda');setTimeout(()=>{const h=$('#ag-cal-h');h&&h.scrollIntoView({behavior:'smooth',block:'start'})},60)})};
   sheet(`<div id="mx"></div><button class="btn wide" id="wl-cr" style="margin-top:12px">Histórico de créditos</button>`,s=>{draw(s);s.querySelector('#wl-cr').onclick=()=>{s.remove();credSheet(M)}})};
@@ -6266,6 +6272,8 @@ header.top{top:env(safe-area-inset-top,0px)!important}
 <style>.msum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:4px 0 14px}.msum>div{border:1px solid var(--line);border-radius:8px;padding:8px 6px;text-align:center;background:var(--card)}.msum b{display:block;font-family:var(--display);font-size:26px;line-height:1}.msum small{font-size:11.5px;color:var(--muted);font-weight:600}</style>
 
 <style>/* v93: tela do mês e créditos */
+#hx94 .au94,.au94{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 12px}.au94>div{border:1px solid var(--line);border-radius:12px;padding:10px 10px 8px;background:var(--card)}.au94 b{display:block;font-size:26px;font-weight:900;line-height:1;letter-spacing:-.5px}.au94 b em{font-style:normal;font-size:15px;color:var(--muted);font-weight:800}.au94 small{display:block;margin-top:4px;font-size:12px;color:var(--muted);font-weight:700}.au94 .full{border-color:var(--y83)}.au94 .on b{color:var(--fg)}
+#hx94 .ft94{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--muted);font-weight:600;margin:2px 0 4px;flex-wrap:wrap}#hx94 .ft94 b{color:var(--fg)}.s94{margin:16px 0 6px}
 #hx94 .st{display:flex!important;flex-wrap:nowrap!important;gap:12px!important;white-space:nowrap;overflow-x:auto;font-size:13px;scrollbar-width:none}#hx94 .st span{flex:none}.mb93{display:grid;gap:4px;margin:0 0 8px}.mb93 i,.mb93c i{height:10px;border-radius:3px;display:block}
 .mb93c{display:flex;gap:3px;margin:0 0 8px}
 .mb93 .f,.mb93c .f,.lg93 i.f{background:var(--g83)}.mb93 .m,.mb93c .m,.lg93 i.m{border:1.5px solid var(--fg)}.mb93 .c,.mb93c .c,.lg93 i.c{background:var(--y83)}.mb93 .d,.mb93c .d,.lg93 i.d{background:var(--muted);opacity:.6}.mb93 .e,.mb93c .e,.lg93 i.e{border:1.5px dashed var(--muted)}
@@ -6400,7 +6408,7 @@ const ALU=R2.ALU;ALU.n=P.name||'';ALU.ini=ini;ALU.email=session.user.email;
 document.querySelectorAll('button,span,div').forEach(el=>{if(el.children.length===0&&el.textContent.trim()==='AS')el.textContent=ini});
 const WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],MS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const h2=document.querySelector('#v-hoje .hero h2'),sub=document.querySelector('#v-hoje .hero .sub');if(h2)h2.textContent='Bora, '+first;if(sub)sub.textContent=`${WD[now.getDay()]}, ${now.getDate()} de ${MS[now.getMonth()]}`;
-const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;const PLN=R1.PLN;PLN.f=Math.min(4,Math.max(1,freq));if(R1.WAL)R1.WAL.items.length=0;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
+const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;window.__ENDS=ends;const PLN=R1.PLN;PLN.f=Math.min(4,Math.max(1,freq));if(R1.WAL)R1.WAL.items.length=0;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
 const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Seu plano';const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
 document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês/.test(el.textContent))el.textContent=`${freq*4} aulas por mês`});
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
