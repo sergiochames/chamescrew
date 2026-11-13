@@ -5077,9 +5077,9 @@ document.addEventListener('click',e=>{if(!e.target.closest('[data-invite]'))retu
        <div style="background:#fff;border-radius:10px;padding:6px;width:104px;height:104px;flex:none">${qrSVG(link)}</div>
        <span style="font-size:14px;line-height:1.35">Bora treinar comigo?<br>Escaneia e vem pra matilha.<br><b>Código ${RCODE}</b></span></div></div>
    <p class="meta" style="font-size:13px;text-align:center">Tire um print desta tela e poste no Stories, ou mande o link.</p>
-   <div class="grid2"><button class="btn small" id="inv-copy" style="padding:12px">Copiar link</button>
-   <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? '+(window.__REF&&window.__REF.desc?'Você ganha '+window.__REF.desc+'% no primeiro plano. ':'')+'Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
-  $('#inv-copy').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(()=>toast('Link copiado'),()=>toast('Não deu para copiar aqui. Use o QR.'))}});
+   <div class="grid2"><button class="btn small" id="inv-copy" style="padding:12px">Copiar código e link</button>
+   <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? '+(window.__REF&&window.__REF.desc?'Você ganha '+window.__REF.desc+'% no primeiro plano. ':'')+'Meu código de indicação: '+RCODE+'. Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
+  $('#inv-copy').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText('Meu código de indicação: '+RCODE+' • '+link):Promise.reject()).then(()=>toast('Link copiado'),()=>toast('Não deu para copiar aqui. Use o QR.'))}});
 renderCrew();
 document.addEventListener('click',e=>{const b=e.target.closest('[data-med]');if(!b)return;const id=b.dataset.med;let k,n,t,d,extra='';
   if(id[0]==='d'){const m=MEDDAY[+id.slice(1)];k=m.k;n=m.n;t=dayTier(m.cnt);d=m.d;const next=DAY_T[t+1];extra=`<p style="font-weight:800;margin:10px 0 0">${m.cnt} dias seguidos${next?` • ${TIERS[t+1]} em ${next}`:''}</p>`}

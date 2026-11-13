@@ -121,7 +121,7 @@ const refGet=()=>{try{return localStorage.getItem('cc_ref')||''}catch(_){return 
 async function linkRef(){const c=refGet();if(!c)return;try{await sb.rpc('set_referrer',{p_code:c})}catch(_){}try{localStorage.removeItem('cc_ref')}catch(_){}}
 let REFD=0;async function refDesc(){try{const {data}=await sb.rpc('my_ref');REFD=data&&data.mine&&!data.mine.paid_at?(+data.desc||0):0}catch(_){REFD=0}}
 async function refLanding(){R.innerHTML='<div class="ld">Abrindo…</div>';let r=null;try{const {data}=await sb.rpc('public_ref',{p_code:REFQ});r=data}catch(_){}
-  if(!r){welcome();return}
+  if(!r){welcome();const c=document.querySelector('.cta');if(c)c.insertAdjacentHTML('beforebegin',`<p class="qs" style="margin:0 0 10px">Código de indicação <b style="color:var(--fg)">${esc(REFQ)}</b> guardado. Ele entra quando você criar a conta.</p>`);return}
   R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">INDICAÇÃO</span>
   <h1 style="font-size:clamp(46px,15vw,66px)"><span>${esc(r.name)}</span><br>te chamou<br>para treinar.</h1>
   <p class="qs" style="margin-top:14px">${r.desc?`Você ganha <b style="color:var(--fg)">${r.desc}% de desconto</b> no primeiro plano. `:''}Fale com o ${PN} para combinar seus horários. Ele te manda o convite do app.</p>
