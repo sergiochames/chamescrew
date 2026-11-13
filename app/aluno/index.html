@@ -2973,9 +2973,9 @@ document.addEventListener('click',e=>{const f=e.target.closest('[data-finf]'),x=
   if(a==='undo'){it.st='enviado';it.info='pagamento desfeito por você';renderFin()}});
 /* ===== renovação: página própria, pagamento pelo Asaas por trás ===== */
 const PLN={base:450,cur:'tri',ends:'07/12',days:35,auto:false};
-const PLANS3=[{k:'mes',n:'Mensal',m:1,off:0,tag:'',end:'09/12/2026',note:'Cobrança automática todo mês. Sem fidelidade.'},
-  {k:'tri',n:'Trimestral',m:3,off:.10,tag:'Mais escolhido',end:'09/02/2027',note:'3 meses. À vista no Pix ou até 3x no cartão.'},
-  {k:'sem',n:'Semestral',m:6,off:.20,tag:'Melhor preço',end:'09/05/2027',note:'6 meses. À vista no Pix ou até 6x no cartão.'}];
+const PLANS3=[{k:'mes',n:'Mensal',m:1,off:0,tag:'',end:'09/12/2026',note:'Paga mês a mês. Sem fidelidade.'},
+  {k:'tri',n:'Trimestral',m:3,off:.10,tag:'Mais escolhido',end:'09/02/2027',note:'3 meses, pago à vista no Pix.'},
+  {k:'sem',n:'Semestral',m:6,off:.20,tag:'Melhor preço',end:'09/05/2027',note:'6 meses, pago à vista no Pix.'}];
 const MYOFF=[['Level Atleta',10],['Indicação (Bruno)',10]];
 let RN={p:'tri',pay:'pix',inst:1};
 const R2=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -3000,14 +3000,14 @@ function rnDraw(){const el=$('#rnw');const c=rnCalc(),my=MYOFF.reduce((a,x)=>a+x
      ${c.pixOff?`<div><span>Desconto do Pix (3%)</span><span>−${R2(c.pixOff)}</span></div>`:''}
      <div class="tot"><span>Total</span><span>${R2(c.total)}</span></div><p class="meta" style="font-size:12.5px;margin:4px 0 0">Válido até ${c.pl.end}. Você economiza ${R2(c.full-c.total)}.</p></div>
    <button class="btn solid wide" data-rn-go style="margin-top:14px">${RN.pay==='pix'?`Gerar Pix de ${R2(c.total)}`:`Continuar para o cartão • ${RN.inst}x`}</button>
-   <p class="meta" style="font-size:12px;text-align:center;margin:8px 0 0">Pagamento processado pelo Asaas. O plano renova assim que o pagamento cai.</p>`}
-function rnPix(){const c=rnCalc(),code='00020126580014BR.GOV.BCB.PIX0136chames-crew-asaas-'+Date.now().toString(36)+'5204000053039865406'+c.total.toFixed(2)+'5802BR5912CHAMES CREW6014RIO DE JANEIRO62070503***6304ABCD';
+   <p class="meta" style="font-size:12px;text-align:center;margin:8px 0 0">Você paga no Pix e o ${window.PERS_NOME_X?window.PERS_NOME_X():'personal'} confirma. O plano renova na hora.</p>`}
+function rnPix(){const c=rnCalc(),k=window.__PIX||'',PN=()=>window.PERS_NOME_X?window.PERS_NOME_X():'personal';
   $('#rnw').innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Pix</span></div>
    <span class="lbl" style="display:block;margin-top:16px">${c.pl.n} • ${R2(c.total)}</span><p class="d" style="font-size:44px;margin:4px 0 12px">Pague com Pix</p>
-   <div class="rn-qr">${qrSVG(code)}</div>
-   <button class="btn wide" data-rn-copy="${code}" style="margin-top:12px">Copiar código Pix (copia e cola)</button>
-   <div class="rn-wait"><i></i><span>Aguardando pagamento… assim que cair, o plano renova sozinho. Pode fechar o app.</span></div>
-   <button class="btn small line wide" data-rn-paid style="margin-top:12px">Simular pagamento (protótipo)</button>`}
+   ${k?`<div class="block" style="word-break:break-all"><small class="meta" style="display:block;margin-bottom:4px">Chave Pix do ${PN()}</small><b>${k}</b></div>
+   <button class="btn solid wide" id="rn-ck" style="margin-top:12px">Copiar chave Pix</button>`:`<p class="meta">O ${PN()} ainda não cadastrou a chave Pix. Fale com ele.</p>`}
+   <p class="meta" style="font-size:13px;margin-top:12px">Pague <b>${R2(c.total)}</b> e mande o comprovante para o ${PN()} no WhatsApp. Ele confirma e o plano renova.</p>`;
+  const b=document.getElementById('rn-ck');if(b)b.onclick=async()=>{try{await navigator.clipboard.writeText(k);toast('Chave Pix copiada')}catch(_){toast('Copie a chave: '+k)}}}
 function rnCard(){const c=rnCalc();
   $('#rnw').innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">asaas.com • seguro</span></div>
    <div class="rn-asaas"><small>Página segura do Asaas (simulação)</small><b>Chames Crew • ${c.pl.n}</b><p class="d" style="font-size:36px;margin:2px 0 10px">${RN.inst}x ${R2(c.total/RN.inst)}</p>
@@ -3821,7 +3821,7 @@ for(let n=4;n<=40;n++){const dt=dDate(n),wd=dt.getDay();if(wd===0)continue;const
   RECUR.forEach(([w,h])=>{if(wd===w)AG.slots.push({d:k,h,conf:false,fix:1})});
   [6.5,7,8,9,12,16,17.25,18,19,20.5].forEach((h,i)=>{if(RECUR.some(([w,hh])=>w===wd&&hh===h))return;const r=(n*7+i*5)%9;if(r<3)AG.free.push(n<=12&&r===0&&(n+i)%2===0?[k,h,'des']:[k,h])})}
 {const f=AG.free.find(f=>f[0]==='Amanhã'&&f[1]===18);if(f)f[2]='des'}
-window.__RL1={get WAL(){try{return WAL}catch(e){return null}},get AGV(){try{return AGV}catch(e){return null}},get wkOf(){try{return wkOf}catch(e){return null}},get AG(){try{return AG}catch(e){return null}},get RECUR(){try{return RECUR}catch(e){return null}},get keyOf(){try{return keyOf}catch(e){return null}},get PLN(){try{return PLN}catch(e){return null}},get HIST(){try{return HIST}catch(e){return null}},get OCC(){try{return OCC}catch(e){return null}},get syncCred(){try{return syncCred}catch(e){return null}},get sumRender(){try{return sumRender}catch(e){return null}},get agAll(){try{return agAll}catch(e){return null}},get NOWH(){try{return NOWH}catch(e){return null}},setNow(v){NOWH=v},setAA(f){agAll=f}};
+window.__RL1={get FREQ(){try{return FREQ}catch(e){return null}},get PLANS3(){try{return PLANS3}catch(e){return null}},get WAL(){try{return WAL}catch(e){return null}},get AGV(){try{return AGV}catch(e){return null}},get wkOf(){try{return wkOf}catch(e){return null}},get AG(){try{return AG}catch(e){return null}},get RECUR(){try{return RECUR}catch(e){return null}},get keyOf(){try{return keyOf}catch(e){return null}},get PLN(){try{return PLN}catch(e){return null}},get HIST(){try{return HIST}catch(e){return null}},get OCC(){try{return OCC}catch(e){return null}},get syncCred(){try{return syncCred}catch(e){return null}},get sumRender(){try{return sumRender}catch(e){return null}},get agAll(){try{return agAll}catch(e){return null}},get NOWH(){try{return NOWH}catch(e){return null}},setNow(v){NOWH=v},setAA(f){agAll=f}};
 AG.free.push(['Amanhã',17.25],['Sáb',8.25]);
 const DONE_PAST=[{n:-2,h:18}];
 const AGV={v:'sem',w:1,sel:5,mo:11};
@@ -4360,7 +4360,8 @@ const _rd24=rnDraw;rnDraw=function(){_rd24();const el=$('#rnw');if(!el)return;co
   const sum=el.querySelector('.rn-sum');if(sum){[...sum.children].forEach(d=>{if(/Seu desconto/.test(d.textContent))d.outerHTML=c.used?`<div><span>Saldo de desconto</span><span>−${R2(c.used)}</span></div>`:''});if(c.left)sum.querySelector('.tot').insertAdjacentHTML('afterend',`<p class="meta" style="font-size:12.5px;margin:4px 0 0">${R2(c.left)} do seu saldo ficam para a próxima renovação.</p>`)}
   el.querySelectorAll('.rn-pl').forEach(b=>{const P=PLANS3.find(x=>x.k===b.dataset.rnp),k=calcPkg({p:P.k,f:RN.f,wal:W,pay:'card'}),pr=b.querySelector('.rn-pr b');if(pr)pr.textContent=R2(k.total/P.m)});
   const go=el.querySelector('[data-rn-go]');if(go&&c.total<=0)go.outerHTML=`<button class="btn solid wide" data-rn-free style="margin-top:14px">Confirmar renovação • sem custo</button>`;
-  el.insertAdjacentHTML('beforeend',`<p class="lbl" style="margin:22px 0 8px">Histórico</p><div class="hist2">${[['ago/2026','Trimestral 2x • Pix',R2(1215)],['mai/2026','Trimestral 2x • Cartão 3x',R2(1215)]].map(([m,t,v])=>`<div><span><b>${m}</b><small>${t}</small></span><span><b>${v}</b><em>pago</em></span></div>`).join('')}</div>`)};
+  el.insertAdjacentHTML('beforeend',`<p class="lbl" style="margin:22px 0 8px">Histórico</p><div class="hist2">${(window.__PAYH||[]).length?(window.__PAYH||[]).map(([m,t,v])=>`<div><span><b>${m}</b><small>${t}</small></span><span><b>${v?R2(v):'—'}</b><em>pago</em></span></div>`).join(''):'<p class="meta" style="margin:0">Nenhum pagamento registrado ainda.</p>'}</div>`);
+  el.querySelectorAll('[data-rnpay]').forEach(b=>{if(b.dataset.rnpay==='card')b.remove();else b.textContent='Pix • −3%'});const sg=el.querySelector('.seg2');if(sg)sg.style.gridTemplateColumns='1fr'};
 document.addEventListener('click',e=>{if(e.target.closest('[data-rn-free]')){const c=rnCalc();WAL.items=WAL.items.filter(x=>!x.ok);if(c.left)WAL.items.unshift({o:'Sobra da renovação anterior',pct:0,ok:1,val:c.left});rnDone();return}
   if(e.target.closest('[data-walinfo]'))sheet(`<span class="lbl">Saldo de desconto</span><p class="d" style="font-size:34px;margin:6px 0">Como funciona</p><p class="meta">Cada level e cada amigo que vira aluno somam um valor em reais no seu saldo. Na renovação ele é abatido do plano que você escolher. O que sobrar fica para a próxima. Indicação só conta depois que o amigo paga a primeira cobrança. O saldo vale 12 meses e não abate aula extra.</p><p class="meta" style="margin-top:10px"><b>Não vai renovar?</b> Fale com o ${PN()} antes do vencimento.</p><a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/5521971275039?text=${encodeURIComponent('Oi, '+PN()+'! Sobre meu saldo de desconto: estou pensando em não renovar o plano.')}">Falar com o ${PN()}</a>`)},true);
 document.addEventListener('click',e=>{if(e.target.closest('[data-rn-paid]')){const c=rnCalc();setTimeout(()=>{WAL.items=WAL.items.filter(x=>!x.ok);if(c.left)WAL.items.unshift({o:'Sobra da renovação anterior',pct:0,ok:1,val:c.left})},0)}},true);
@@ -6409,7 +6410,13 @@ document.querySelectorAll('button,span,div').forEach(el=>{if(el.children.length=
 const WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],MS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const h2=document.querySelector('#v-hoje .hero h2'),sub=document.querySelector('#v-hoje .hero .sub');if(h2)h2.textContent='Bora, '+first;if(sub)sub.textContent=`${WD[now.getDay()]}, ${now.getDate()} de ${MS[now.getMonth()]}`;
 const ends=`${String(endD.getDate()).padStart(2,'0')}/${String(endD.getMonth()+1).padStart(2,'0')}`;window.__ENDS=ends;const PLN=R1.PLN;PLN.f=Math.min(4,Math.max(1,freq));if(R1.WAL)R1.WAL.items.length=0;PLN.ends=ends;PLN.days=Math.max(0,Math.ceil((endD-now)/864e5));
-const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Seu plano';const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
+try{const F=R1.FREQ,PL3=R1.PLANS3;const {data:pr}=await sb.rpc('public_prices');if(pr&&F&&PL3){const A=pr.aula||{},wk=+pr.wk||4;
+  for(let n=1;n<=7;n++){const a=+A[n]||0;F[n]={p:a*n*wk,a:Math.round(n*wk),ok:a>0,why:a>0?'':'Para esse plano, fale com o seu personal'}}
+  const off={mes:0,tri:(+pr.d3||0)/100,sem:(+pr.d6||0)/100},z=n=>String(n).padStart(2,'0');PL3.forEach(p=>{p.off=off[p.k]||0;const e=new Date(endD.getFullYear(),endD.getMonth()+p.m,endD.getDate());p.end=`${z(e.getDate())}/${z(e.getMonth()+1)}/${e.getFullYear()}`;if(p.k!=='mes')p.tag=p.off?(p.k==='tri'?'Mais escolhido':'Melhor preço'):''});
+  PLN.f=Math.min(7,Math.max(1,freq));PLN.base=F[PLN.f].p;PLN.cur={Mensal:'mes',Trimestral:'tri',Semestral:'sem'}[P.plan_period]||'mes'}}catch(_){}
+try{const {data:ph}=await sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false});const MC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  window.__PAYH=(ph||[]).map(r=>{const d=new Date(r.created_at);return [`${MC[d.getMonth()]}/${d.getFullYear()}`,`${r.plan_period||'Mensal'} ${r.freq||''}x • Pix`,+r.pay_amount||0]})}catch(_){window.__PAYH=[]}
+AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Plano '+AG.planNome;const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
 document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês/.test(el.textContent))el.textContent=`${freq*4} aulas por mês`});
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
 
@@ -6467,7 +6474,7 @@ let DVK='';function dietView(force){const v=document.getElementById('v-dieta');i
    <p class="meta" style="font-size:12px;margin:14px 2px 0;line-height:1.45">A dieta é responsabilidade do nutricionista que assinou. O app e o seu personal só guardam o arquivo para você.</p></div>`;
   const op=box.querySelector('#dt-open');if(op)op.onclick=async()=>{const {data,error}=await sb.storage.from('diets').createSignedUrl(D.path,600);if(error||!data)return toast('Não abriu a dieta');window.open(data.signedUrl,'_blank')};
   box.querySelector('#dt-new').onclick=dietSheet}
-{const st=document.createElement('style');st.textContent='#v-dieta>:not(#rl-diet){display:none!important}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='#v-dieta>:not(#rl-diet){display:none!important}html body #v-dieta>#rl-diet#rl-diet{display:block!important}';document.head.appendChild(st)}
 function dietSheet(){let file=null;sheet(`<span class="lbl">Dieta</span><p class="d" style="font-size:34px;margin:6px 0 10px">Enviar dieta</p>
   <label class="btn wide" style="display:flex;align-items:center;justify-content:center;gap:8px"><input type="file" id="df" accept="application/pdf" hidden><span id="dfl">📎 Escolher o PDF</span></label>
   <div class="field" style="margin-top:12px"><label>Nome do nutricionista</label><input class="inp" id="dn" placeholder="Como está no CRN"></div>
