@@ -6756,7 +6756,12 @@ setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&wi
   /* renovar só nos últimos 15 dias do plano */
   {const days=Math.ceil((endD-now)/864e5),far=days>15,rb=document.getElementById('rn-ban');
    if(rb){rb.hidden=far;rb.style.display=far?'none':'';if(!far){rb.setAttribute('data-renew','');const sm=rb.querySelector('small'),bb=rb.querySelector('b');if(sm)sm.textContent='Plano '+String(P.plan_period||'mensal').toLowerCase();if(bb)bb.textContent='Vence em '+String(endD.getDate()).padStart(2,'0')+'/'+String(endD.getMonth()+1).padStart(2,'0');const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}}
-   {const dc=document.querySelector('#v-hoje .disc-card');if(dc&&far)dc.style.display='none'}
+   document.body.classList.toggle('rnfar',far);if(!document.getElementById('rnfar-css')){const z=document.createElement('style');z.id='rnfar-css';z.textContent='body.rnfar #v-hoje .disc-card [data-renew]{display:none!important}';document.head.appendChild(z)}
+   {const dc=document.querySelector('#v-hoje .disc-card');if(dc){const has=!!(R1.WAL&&R1.WAL.items.length);dc.style.display=has?'':'none';if(has){const W=window.walAvailX?window.walAvailX():0,BR=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+     dc.innerHTML=`<div class="row"><span class="lbl">Seu saldo de desconto</span><span class="pill">renova ${ends}</span></div><p class="d" style="font-size:56px;margin:6px 0 4px">${BR(W)}</p>
+      <div class="dsc-rows">${R1.WAL.items.map(x=>`<div${x.ok?'':' style="opacity:.55"'}><span>${x.o}${x.ok?'':`<small style="display:block;font-size:11.5px;font-weight:600">${x.info||''}</small>`}</span><b>${x.ok?'+'+BR(x.val):'aguardando'}</b></div>`).join('')}</div>
+      <p class="meta" style="font-size:12.5px;margin:6px 0 0">É abatido sozinho na sua próxima renovação, em qualquer plano. O que sobrar fica para a seguinte.</p>
+      ${far?'':'<button class="btn solid wide" style="margin-top:12px" data-renew>Renovar meu plano</button>'}<button class="btn wide" style="margin-top:8px" data-invite>Convidar um amigo</button>`}}}
    document.querySelectorAll('#v-hoje .disc-card [data-renew]').forEach(b=>b.hidden=far)}
   if(R.WKC){const wp=document.getElementById('w-peso'),wm=document.getElementById('w-msg');const qp=wp&&wp.closest('.q'),qm=wm&&wm.closest('.q');if(qp)qp.hidden=R.WKC.peso==='off';if(qm)qm.hidden=!R.WKC.msg;if(wp&&R.WKC.peso==='req'){const h=qp&&qp.querySelector('h4 small');if(h)h.textContent='(obrigatório)'}}
   /* desconto: data real da renovação */
