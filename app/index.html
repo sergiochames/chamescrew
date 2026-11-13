@@ -76,7 +76,7 @@ a.b1,a.b2{display:grid;place-items:center;text-decoration:none}a.b1{color:#1c1d2
 .pro .msg{margin-top:14px;border-left:3px solid var(--g);padding:8px 12px;font-size:14px;background:rgba(143,199,162,.08);border-radius:0 8px 8px 0}
 .cls{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:13px 14px;margin-top:8px}.cls b{font-size:15px}.cls small{display:block;color:var(--mu);font-size:12.5px;font-weight:600;margin-top:2px}
 .cls .st{font-size:12px;font-weight:800;border-radius:6px;padding:4px 8px;background:rgba(255,255,255,.07);color:var(--mu)}.cls .st.ok{background:rgba(143,199,162,.16);color:var(--g)}
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 100px);transform:translateX(-50%);background:var(--fg);color:#1c1d20;padding:12px 16px;border-radius:10px;font-weight:700;font-size:14px;z-index:99;max-width:90%;text-align:center}
+.toast{position:fixed!important;left:50%!important;top:auto!important;right:auto!important;bottom:calc(110px + env(safe-area-inset-bottom,0px))!important;transform:translateX(-50%)!important;background:rgba(32,33,37,.96)!important;color:#f1f0eb!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;padding:10px 14px!important;font:650 13.5px/1.35 inherit!important;max-width:min(340px,calc(100% - 40px))!important;width:max-content!important;text-align:center!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important;z-index:9999!important;animation:rlT .22s ease-out!important;pointer-events:none}@keyframes rlT{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 .ld{display:grid;place-items:center;min-height:100dvh;color:var(--mu);font-weight:700}
 .link{color:var(--fg);text-decoration:underline;text-underline-offset:3px;font-weight:700}
 </style></head><body><div id="root"><div class="ld">Carregando…</div></div>
@@ -239,7 +239,12 @@ function step(i){if(i<0){return}const D=ST.d;ST.d.step=i;saveDraft();const k=STE
   <span class="lb">Período</span><div class="seg" style="grid-template-columns:repeat(3,1fr)" id="prs"></div>
   <span class="lb">Horário ideal (opcional)</span><input class="in" id="ih" value="${esc(D.ideal||'')}" placeholder="Ex.: por volta das 11h">
   <div id="spc"></div><div id="pl"></div>`);
-  const pl=()=>{const n=D.days.length,v=mens(n);$('#pl').innerHTML=n?`<div class="plan"><span><small>${n}x por semana${v?' • '+brl(v.a)+' por aula':''}</small><b>${v?v.q:n*4} aulas por mês</b></span><span style="font-weight:800">${v?brl(v.m)+'/mês':'valor a combinar'}</span></div>`:''};
+  const pl=()=>{const n=D.days.length,v=mens(n);D.per=D.per||'Mensal';if(!n){$('#pl').innerHTML='';return}
+    const P=[['Mensal',1,0],['Trimestral',3,+PRICE.d3||0],['Semestral',6,+PRICE.d6||0]];
+    $('#pl').innerHTML=`<div class="plan"><span><small>${n}x por semana${v?' • '+brl(v.a)+' por aula':''}</small><b>${v?v.q:n*4} aulas por mês</b></span><span style="font-weight:800">${v?brl(v.m)+'/mês':'valor a combinar'}</span></div>
+    ${v?`<span class="lb">Plano</span><div class="seg" style="grid-template-columns:repeat(3,1fr)">${P.map(([k3,mo,dc])=>{const tot=Math.round(v.m*mo*(1-dc/100));return `<button data-per="${k3}" class="${D.per===k3?'on':''}">${k3}<small>${mo>1?brl(tot/mo)+'/mês':brl(tot)}${dc?' • -'+dc+'%':''}</small></button>`}).join('')}</div>
+    ${D.per!=='Mensal'?`<p class="qs" style="margin:8px 0 0;font-size:13px">Total: <b style="color:var(--fg)">${brl(Math.round(v.m*P.find(x=>x[0]===D.per)[1]*(1-P.find(x=>x[0]===D.per)[2]/100)))}</b> por ${P.find(x=>x[0]===D.per)[1]} meses</p>`:''}`:''}`;
+    R.querySelectorAll('[data-per]').forEach(b=>b.onclick=()=>{D.per=b.dataset.per;pl()})};
   const sp=()=>{$('#spc').innerHTML=D.note?`<div class="spc"><b>Seu pedido especial:</b> ${esc(D.note)}</div>`:''};
   const prs=()=>{$('#prs').innerHTML=PERIODS.map(([k2,l,s2])=>{const ok=perOk(k2,D.days)||D.period===k2;return `<button data-pr="${k2}" class="${D.period===k2?'on':''}${ok?'':' off'}">${l}<small>${ok?s2:'não atende'}</small></button>`}).join('');
     R.querySelectorAll('[data-pr]').forEach(b=>b.onclick=()=>{const p=b.dataset.pr,lbl=PERIODS.find(x=>x[0]===p)[1].toLowerCase();
@@ -260,12 +265,39 @@ function cpfOk(v){const c=String(v).replace(/\D/g,'');if(c.length!==11||/^(\d)\1
 async function submit(){const D=ST.d,b=$('#go');b.disabled=true;b.textContent='Enviando…';const now=new Date().toISOString();
   const up={name:D.name,phone:D.phone,doc_type:D.foreign?'passaporte':'cpf',doc_num:D.doc,country:D.foreign?D.country:'Brasil',birth_date:D.birth,height_cm:D.height,weight_kg:D.weight,goal:D.goal,level:D.level,injury:D.injury||null,parq:D.parq,consent_at:now,rules_ok_at:now,onboarded:true};if(!ST.hasFx){up.presencial=true;up.freq=(D.days||[]).length}
   let {error}=await sb.from('profiles').update(up).eq('id',ST.user.id);
-  if(!error&&!ST.hasFx){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:(mens(D.days.length)||{}).m||null,note:D.note||null});error=r.error}
+  if(!error&&!ST.hasFx){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:(mens(D.days.length)||{}).m||null,note:D.note||null,plan_period:D.per||'Mensal',pay_amount:(()=>{const v=mens(D.days.length);if(!v)return null;const mo=D.per==='Trimestral'?3:D.per==='Semestral'?6:1,dc=D.per==='Trimestral'?(+PRICE.d3||0):D.per==='Semestral'?(+PRICE.d6||0):0;return Math.round(v.m*mo*(1-dc/100))})()});error=r.error}
   if(error){b.disabled=false;b.textContent='Enviar para o '+PN;err('Não deu para enviar agora. Tente de novo. ('+error.message+')');return}
   try{localStorage.removeItem('cc_draft')}catch(_){}ST.d={};home(true)}
 
 /* ---------- depois do pedido ---------- */
 const fmtSlot=s=>`${DOWN[s.dow]} ${s.time}`;
+/* ===== anamnese do personal (depois do horário fechado e do pagamento, antes do app) ===== */
+async function needAnam(){try{const [{data:t},{data:a}]=await Promise.all([sb.rpc('public_anm'),sb.from('anam_answers').select('id').eq('user_id',ST.user.id).limit(1)]);return t&&!(a&&a.length)?t:null}catch(_){return null}}
+function anamQs(t){const Q=[];
+  if(Array.isArray(t.sec)){const kind=q=>/Onde quer melhorar/.test(q)?'body':/médico|dor no peito|desmaiou|ósseo|medicação|Cirurgias/.test(q)?'yn':/Horas de sono|vezes por semana/.test(q)?'num':/Objetivo principal/.test(q)?'obj':/Melhor horário/.test(q)?'hor':'txt';
+    t.sec.forEach((sc,i)=>(sc[1]||[]).forEach((q,j)=>{if(!(t.off||[]).includes(i+':'+j))Q.push({s:sc[0],q,t:kind(q)})}))}
+  else (t.form||[]).forEach(x=>Q.push({s:'',q:x.q,t:x.t,o:x.opts||[],other:!!x.other}));
+  const O={body:['Glúteo','Pernas','Braços','Abdômen','Costas','Peito','Ombros'],obj:['Ganhar massa','Emagrecer','Saúde','Performance'],hor:['Manhã','Tarde','Noite'],yn:['Sim','Não']};
+  return Q.map(x=>{const t2=x.t;if(O[t2])return {...x,o:O[t2],t:t2==='body'?'check':t2==='yn'?'yn':'one'};if(t2==='multi')return {...x,t:'one'};if(t2==='check')return {...x,t:'check'};if(t2==='num')return {...x,t:'num'};if(t2==='par'||t2==='long')return {...x,t:'par'};return {...x,t:'txt'}})}
+async function anamFlow(tpl){const Q=anamQs(tpl),A=Q.map(q=>q.t==='check'?[]:'');let k=0;if(!Q.length){location.replace('/app/aluno/');return}
+  const pg=()=>{const q=Q[k],v=A[k];
+    R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk" ${k===0?'style="visibility:hidden"':''}>‹</button><span class="bar"><i style="width:${Math.round((k+1)/Q.length*100)}%"></i></span><span>${k+1}/${Q.length}</span><span></span></div>
+    <span class="lb" style="margin-top:6px">${esc(tpl.n||'Anamnese')}${q.s?' • '+esc(q.s):''}</span><p class="q" style="font-size:34px">${esc(q.q)}</p>
+    ${q.t==='one'||q.t==='yn'||q.t==='check'?`${q.t==='check'?'<p class="qs">Pode marcar mais de uma.</p>':''}<div class="seg" style="grid-template-columns:repeat(${q.o.length<=3?q.o.length:2},1fr)">${[...q.o,...(q.other?['Outro']:[])].map(o=>`<button data-o="${esc(o)}" class="${(q.t==='check'?v.includes(o):v===o)?'on':''}">${esc(o)}</button>`).join('')}</div>${q.other&&(q.t==='check'?v.includes('Outro'):v==='Outro')?'<input class="in" id="oth" placeholder="Escreva aqui" style="margin-top:10px">':''}`
+     :q.t==='num'?`<input class="in" id="ai" inputmode="decimal" value="${esc(v)}" placeholder="Digite um número">`
+     :q.t==='par'?`<textarea class="in" id="ai" placeholder="Escreva aqui">${esc(v)}</textarea>`:`<input class="in" id="ai" value="${esc(v)}" placeholder="Escreva aqui">`}
+    <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">${k===Q.length-1?'Enviar anamnese':'Continuar'}</button></div></div>`;
+    R.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const o=b.dataset.o;if(q.t==='check'){A[k]=v.includes(o)?v.filter(x=>x!==o):[...v,o]}else A[k]=o;pg()});
+    $('#bk').onclick=()=>{if(k>0){k--;pg()}};
+    $('#go').onclick=async()=>{const ai=$('#ai');if(ai)A[k]=ai.value.trim();const oth=$('#oth');
+      const val=A[k];if(q.t!=='txt'&&q.t!=='par'&&(Array.isArray(val)?!val.length:!String(val).trim()))return err('Responda para continuar.');
+      if(oth&&oth.value.trim()){A[k]=Array.isArray(val)?val.map(x=>x==='Outro'?'Outro: '+oth.value.trim():x):'Outro: '+oth.value.trim()}
+      if(k<Q.length-1){k++;pg();return}
+      $('#go').disabled=true;$('#go').textContent='Enviando…';
+      const {error}=await sb.from('anam_answers').insert({user_id:ST.user.id,template_id:String(tpl.id||''),template_name:tpl.n||'Anamnese',answers:Q.map((x,i)=>({s:x.s,q:x.q,a:A[i]}))});
+      if(error){$('#go').disabled=false;$('#go').textContent='Enviar anamnese';return err('Não enviou: '+error.message)}
+      R.innerHTML=`<div class="scr" style="text-align:center"><div class="okc">✓</div><p class="q" style="margin-top:0">Anamnese enviada!</p><p class="qs">O ${PN} usa suas respostas para montar seu treino.</p><div class="cta"><a class="b1" href="/app/aluno/" style="display:grid;place-items:center;text-decoration:none">Entrar no app</a></div></div>`};
+    window.scrollTo(0,0)};pg()}
 async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try{await sb.rpc('expire_reservations')}catch(_){}
   const [{data:rq},{data:cl}]=await Promise.all([sb.from('requests').select('*,proposals(*)').eq('student_id',ST.user.id).order('created_at',{ascending:false}).limit(1),
     sb.from('classes').select('*').eq('student_id',ST.user.id).gte('starts_at',new Date(Date.now()-36e5).toISOString()).order('starts_at').limit(12)]);
@@ -278,10 +310,11 @@ async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try
     R.innerHTML=`<div class="scr"><div class="okc" style="margin:24px auto 12px">✓</div><p class="q" style="text-align:center;margin-top:0">Horário fechado!</p>
     <p class="qs" style="text-align:center">${inf?`Você avisou que pagou. O ${PN} confere e libera suas aulas.`:'Agora é só o pagamento. Suas aulas entram na agenda quando ele for confirmado.'}</p>
     ${rs.slice(0,3).map((c,k)=>`<div class="cls"><span><b>${f2(c.starts_at)}</b><small>${esc(c.location||'')}${k===0?' • primeira aula':''}</small></span><span class="st">reservada</span></div>`).join('')}
-    <div class="plan" style="margin-top:12px"><span><small>${r.freq||r.days.length}x por semana • mensal</small><b>${r.pay_amount?brl(r.pay_amount):'valor a combinar'}</b></span>${due?`<span style="text-align:right;font-size:12px;color:var(--mu)">reserva até<br><b style="font-family:inherit;font-size:13px;color:var(--fg)">${due}</b></span>`:''}</div>
+    <div class="plan" style="margin-top:12px"><span><small>${r.freq||r.days.length}x por semana • ${(r.plan_period||'Mensal').toLowerCase()}</small><b>${r.pay_amount?brl(r.pay_amount):'valor a combinar'}</b></span>${due?`<span style="text-align:right;font-size:12px;color:var(--mu)">reserva até<br><b style="font-family:inherit;font-size:13px;color:var(--fg)">${due}</b></span>`:''}</div>
     ${pix&&!inf?`<span class="lb">PIX do ${PN}</span><div class="plan" style="margin-top:6px"><span style="word-break:break-all;font-size:13px;font-weight:700;min-width:0">${esc(pix)}</span><button id="cp" style="background:var(--fg);color:#1c1d20;flex:none;font-size:12.5px;font-weight:800;border-radius:9px;padding:9px 12px">Copiar</button></div>`:''}
     <label class="pf" id="pfl"><input type="file" id="pf" accept="image/*,application/pdf" hidden><span id="pft">${r.pay_proof?'✓ Comprovante enviado • trocar':'📎 Anexar comprovante <small>(opcional)</small>'}</span></label>
-    <div style="height:${inf?150:210}px"></div><div class="cta">${inf?'':`<button class="b1" id="pg">Já paguei</button>`}<a class="b2" href="/app/aluno/" style="display:grid;place-items:center;text-decoration:none">Entrar no app</a><a class="b2 nb" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Sobre o pagamento do meu plano:')}" target="_blank" rel="noopener">Falar com o ${PN}</a></div></div>`;
+    <div style="height:${inf?150:210}px"></div><div class="cta">${inf?'':`<button class="b1" id="pg">Já paguei</button>`}<button class="b2" id="cont">Continuar</button><a class="b2 nb" style="display:grid;place-items:center;text-decoration:none" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Sobre o pagamento do meu plano:')}" target="_blank" rel="noopener">Falar com o ${PN}</a></div></div>`;
+    $('#cont').onclick=async()=>{const t=await needAnam();if(t)return anamFlow(t);location.href='/app/aluno/'};
     const cp=$('#cp');if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(pix);toast('Chave PIX copiada')}catch(_){toast('Copie a chave: '+pix)}};
     let proof=null;$('#pf').onchange=async e=>{const fl=e.target.files[0];if(!fl)return;$('#pft').textContent='Enviando…';
       try{let blob=fl,ext=(fl.name.split('.').pop()||'jpg').toLowerCase();
@@ -290,7 +323,7 @@ async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try
         proof=path;if(inf){await sb.rpc('inform_payment',{p_proof:path});toast('Comprovante enviado')}$('#pft').textContent='✓ Comprovante anexado';$('#pfl').classList.add('ok')}
       catch(er){$('#pft').textContent='Não deu para enviar. Tente de novo.';console.error(er)}};
     const pg=$('#pg');if(pg)pg.onclick=async()=>{pg.disabled=true;const {error}=await sb.rpc('inform_payment',proof?{p_proof:proof}:{});if(error){pg.disabled=false;return toast('Não deu: '+error.message)}toast('Avisamos o '+PN);home()};return}
-  if(cl&&cl.length){location.replace('/app/aluno/');return;const f=t=>{const d=new Date(t);return `${DOWN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
+  if(cl&&cl.length){const t=await needAnam();if(t)return anamFlow(t);location.replace('/app/aluno/');return;const f=t=>{const d=new Date(t);return `${DOWN[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} • ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`};
     R.innerHTML=`<div class="scr"><span class="br" style="font-size:12px;letter-spacing:4px;font-weight:700;color:#cfcfc9">CHAMES CREW</span><p class="q">Suas aulas</p><p class="qs">${nm?esc(nm)+', seus':'Seus'} horários com o ${PN} estão marcados. A agenda completa do app chega na próxima atualização do teste.</p>
     ${(()=>{const nx=cl.find(c=>c.status!=='cancelada');return cl.map(c=>`<div class="cls"><span><b>${f(c.starts_at)}</b><small>${esc(c.location||'')}${c===nx?' • próxima aula':''}</small></span>${c.status==='confirmada'?'<span class="st ok">confirmada</span>':c.status==='cancelada'?'<span class="st">cancelada</span>':c===nx?`<button class="st" style="background:var(--fg);color:#1c1d20" data-cf="${c.id}">Confirmar</button>`:'<span class="st">marcada</span>'}</div>`).join('')})()}
     <div class="cta"><button class="b2 nb" id="out">Sair da conta</button></div></div>`;
