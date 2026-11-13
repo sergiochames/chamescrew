@@ -116,6 +116,17 @@ function toast(t){const d=document.createElement('div');d.className='toast';d.te
 const qp=new URLSearchParams(location.search);
 let ST={mode:qp.get('p')?'personal':'aluno',inv:null,code:(qp.get('c')||'').toUpperCase(),user:null,prof:null,d:{}};
 try{const s=JSON.parse(localStorage.getItem('cc_draft')||'null');if(s)ST.d=s}catch(_){}
+const REFQ=(qp.get('ref')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);try{if(REFQ)localStorage.setItem('cc_ref',REFQ)}catch(_){}
+const refGet=()=>{try{return localStorage.getItem('cc_ref')||''}catch(_){return ''}};
+async function linkRef(){const c=refGet();if(!c)return;try{await sb.rpc('set_referrer',{p_code:c})}catch(_){}try{localStorage.removeItem('cc_ref')}catch(_){}}
+let REFD=0;async function refDesc(){try{const {data}=await sb.rpc('my_ref');REFD=data&&data.mine&&!data.mine.paid_at?(+data.desc||0):0}catch(_){REFD=0}}
+async function refLanding(){R.innerHTML='<div class="ld">Abrindo…</div>';let r=null;try{const {data}=await sb.rpc('public_ref',{p_code:REFQ});r=data}catch(_){}
+  if(!r){welcome();return}
+  R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">INDICAÇÃO</span>
+  <h1 style="font-size:clamp(46px,15vw,66px)"><span>${esc(r.name)}</span><br>te chamou<br>para treinar.</h1>
+  <p class="qs" style="margin-top:14px">${r.desc?`Você ganha <b style="color:var(--fg)">${r.desc}% de desconto</b> no primeiro plano. `:''}Fale com o ${PN} para combinar seus horários. Ele te manda o convite do app.</p>
+  <div class="cta"><a class="b1" style="display:grid;place-items:center;text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi! Vim pela indicação do '+r.name+' (código '+REFQ+') e quero treinar.')}">Falar com o ${PN}</a><button class="b2 nb" id="w1">Já tenho o convite</button></div></div>`;
+  $('#w1').onclick=askCode}
 const saveDraft=()=>{try{localStorage.setItem('cc_draft',JSON.stringify(ST.d))}catch(_){}};
 
 /* ---------- entrada ---------- */
@@ -163,12 +174,14 @@ async function openInvite(){R.innerHTML='<div class="ld">Abrindo seu convite…<
   ${inv.email_hint?`<span class="lb">Sua conta</span><div class="in" style="opacity:.75">${esc(inv.email_hint)}</div><input id="em" type="hidden" value="__keep__">`:`<span class="lb">Seu e-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">`}
   <span class="lb">Crie uma senha</span><div class="pw"><input class="in" id="pw" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"><button id="sh" type="button">mostrar</button></div>
   <span class="lb">Confirme a senha</span><div class="pw"><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="Digite a mesma senha de novo"></div>
+  ${inv.email_hint?'':`<span class="lb">Alguém te indicou? (opcional)</span><input class="in" id="rf" autocapitalize="characters" placeholder="Código de quem te indicou" value="${esc(refGet())}">`}
   <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">${inv.email_hint?'Salvar senha nova':'Criar minha conta'}</button></div></div>`;
   $('#sh').onclick=()=>{const t=$('#pw').type==='password'?'text':'password';$('#pw').type=t;$('#pw2').type=t;$('#sh').textContent=t==='password'?'mostrar':'esconder'};
   $('#pw2').oninput=()=>{const a=$('#pw').value,b=$('#pw2').value;$('#er').textContent=b&&a.slice(0,b.length)!==b?'As senhas não estão iguais.':''};
   $('#go').onclick=async()=>{const em=$('#em').value.trim(),pw=$('#pw').value,pw2=$('#pw2').value;
     if(em!=='__keep__'&&!/^\S+@\S+\.\S+$/.test(em)){$('#er').textContent='Confira o e-mail.';return}if(pw.length<8){$('#er').textContent='A senha precisa ter pelo menos 8 caracteres.';return}
     if(pw!==pw2){$('#er').textContent='As senhas não estão iguais. Digite de novo.';$('#pw2').value='';$('#pw2').focus();return}
+    {const rf=document.getElementById('rf');const v=rf?rf.value.toUpperCase().replace(/[^A-Z0-9]/g,''):'';try{if(v)localStorage.setItem('cc_ref',v);else if(rf)localStorage.removeItem('cc_ref')}catch(_){}}
     $('#go').disabled=true;$('#go').textContent='Criando…';
     if(inv.claim){/* aluno cadastrado pelo personal: a conta já existe, ele só define e-mail e senha */
       let r;try{const x=await fetch(CFG.supabaseUrl+'/functions/v1/alunos',{method:'POST',headers:{'Content-Type':'application/json',apikey:CFG.supabaseKey,Authorization:"Bearer "+CFG.supabaseKey},body:JSON.stringify({action:'claim',code:ST.code,email:em,password:pw})});r=await x.json()}catch(e){r={error:'Sem conexão. Tente de novo.'}}
@@ -238,7 +251,7 @@ function step(i){if(i<0){return}const D=ST.d;ST.d.step=i;saveDraft();const k=STE
   ${offTxt?`<p class="qs" style="margin:8px 0 0;font-size:13px">${offTxt[0].toUpperCase()+offTxt.slice(1)}: o ${PN} não atende.</p>`:''}
   <span class="lb">Período</span><div class="seg" style="grid-template-columns:repeat(3,1fr)" id="prs"></div>
   <span class="lb">Horário ideal (opcional)</span><input class="in" id="ih" value="${esc(D.ideal||'')}" placeholder="Ex.: por volta das 11h">
-  <div id="spc"></div><div id="pl"></div>`);
+  <div id="spc"></div><div id="pl"></div>${REFD?`<p class="qs" style="margin:10px 0 0;font-size:13px">Indicação: <b style="color:var(--fg)">−${REFD}%</b> no seu primeiro plano. O desconto entra no valor final.</p>`:''}`);
   const pl=()=>{const n=D.days.length,v=mens(n);D.per=D.per||'Mensal';if(!n){$('#pl').innerHTML='';return}
     const P=[['Mensal',1,0],['Trimestral',3,+PRICE.d3||0],['Semestral',6,+PRICE.d6||0]];
     $('#pl').innerHTML=`<div class="plan"><span><small>${n}x por semana${v?' • '+brl(v.a)+' por aula':''}</small><b>${v?v.q:n*4} aulas por mês</b></span><span style="font-weight:800">${v?brl(v.m)+'/mês':'valor a combinar'}</span></div>
@@ -265,7 +278,7 @@ function cpfOk(v){const c=String(v).replace(/\D/g,'');if(c.length!==11||/^(\d)\1
 async function submit(){const D=ST.d,b=$('#go');b.disabled=true;b.textContent='Enviando…';const now=new Date().toISOString();
   const up={name:D.name,phone:D.phone,doc_type:D.foreign?'passaporte':'cpf',doc_num:D.doc,country:D.foreign?D.country:'Brasil',birth_date:D.birth,height_cm:D.height,weight_kg:D.weight,goal:D.goal,level:D.level,injury:D.injury||null,parq:D.parq,consent_at:now,rules_ok_at:now,onboarded:true};if(!ST.hasFx){up.presencial=true;up.freq=(D.days||[]).length}
   let {error}=await sb.from('profiles').update(up).eq('id',ST.user.id);
-  if(!error&&!ST.hasFx){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:(mens(D.days.length)||{}).m||null,note:D.note||null,plan_period:D.per||'Mensal',pay_amount:(()=>{const v=mens(D.days.length);if(!v)return null;const mo=D.per==='Trimestral'?3:D.per==='Semestral'?6:1,dc=D.per==='Trimestral'?(+PRICE.d3||0):D.per==='Semestral'?(+PRICE.d6||0):0;return Math.round(v.m*mo*(1-dc/100))})()});error=r.error}
+  if(!error&&!ST.hasFx){const r=await sb.from('requests').insert({student_id:ST.user.id,location:D.loc==='__outro'?null:D.loc,location_other:D.loc==='__outro'?D.locOther:null,days:D.days,period:D.period,ideal_time:D.ideal||null,freq:D.days.length,monthly_price:(mens(D.days.length)||{}).m||null,note:D.note||null,plan_period:D.per||'Mensal',pay_amount:(()=>{const v=mens(D.days.length);if(!v)return null;const mo=D.per==='Trimestral'?3:D.per==='Semestral'?6:1,dc=D.per==='Trimestral'?(+PRICE.d3||0):D.per==='Semestral'?(+PRICE.d6||0):0;return Math.round(v.m*mo*(1-dc/100)*(1-REFD/100))})()});error=r.error}
   if(error){b.disabled=false;b.textContent='Enviar para o '+PN;err('Não deu para enviar agora. Tente de novo. ('+error.message+')');return}
   try{localStorage.removeItem('cc_draft')}catch(_){}ST.d={};home(true)}
 
@@ -344,11 +357,12 @@ async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try
   $('#rf').onclick=()=>home();$('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()}}
 
 /* ---------- rota ---------- */
-async function route(){const {data:{session}}=await sb.auth.getSession();if(!session){ST.code?openInvite():welcome();return}
+async function route(){const {data:{session}}=await sb.auth.getSession();if(!session){ST.code?openInvite():REFQ?refLanding():welcome();return}
+  await linkRef();
   ST.user=session.user;const {data:p}=await sb.from('profiles').select('*').eq('id',ST.user.id).single();ST.prof=p||{};
   if(p&&p.role==='equipe'){location.replace('/app/personal/');return}
   if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}
-    const [{data:fx},{data:lc},{data:pz},{data:wh}]=await Promise.all([sb.from('fixed_slots').select('id').eq('student_id',ST.user.id).limit(1),sb.rpc('public_locs'),sb.rpc('public_prices'),sb.rpc('public_wh')]);PRICE=pz||{};WHD=wh||{};
+    const [{data:fx},{data:lc},{data:pz},{data:wh}]=await Promise.all([sb.from('fixed_slots').select('id').eq('student_id',ST.user.id).limit(1),sb.rpc('public_locs'),sb.rpc('public_prices'),sb.rpc('public_wh')]);PRICE=pz||{};WHD=wh||{};await refDesc();
     LOCS=(lc||[]).filter(Boolean);ST.hasFx=!!(fx&&fx.length);STEPS=ST.hasFx?STEPS0.filter(k=>k!=='local'&&k!=='dias'):STEPS0.slice();step(Math.min(ST.d.step||0,STEPS.length-1));return}
   home()}
 (async()=>{if(/[?&]sair\b/.test(location.search)){try{await sb.auth.signOut()}catch(_){}history.replaceState(null,'','/app/')}route()})();

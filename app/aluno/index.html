@@ -5068,7 +5068,7 @@ function renderDay(){const nut=window.DIETA_ON?window.DIETA_ON():true;const t=fi
 window.renderDay=renderDay;
 setInterval(renderDay,400);
 document.addEventListener('click',e=>{if(!e.target.closest('[data-invite]'))return;
-  const RCODE=window.__RD?(String(window.__RD.ME||'').normalize('NFD').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,6)+String(window.__RD.uid||'').replace(/\D/g,'').slice(0,2)):'ANA7',link=window.__RD?location.origin+'/app/?ref='+RCODE:'https://chamescrew.chamescrew.workers.dev/?ref=ANA7';
+  const RCODE=window.__REF&&window.__REF.code?window.__REF.code:window.__RD?(String(window.__RD.ME||'').normalize('NFD').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,6)+String(window.__RD.uid||'').replace(/\D/g,'').slice(0,2)):'ANA7',link=window.__RD?location.origin+'/app/?ref='+RCODE:'https://chamescrew.chamescrew.workers.dev/?ref=ANA7';
   sheet(`<div style="background:#000;color:#fff;border-radius:22px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
      <span class="d" style="font-size:22px">Chames Crew</span>
      ${rdisc(MED.recrutador,window.__RD?-1:1,120)}
@@ -5078,7 +5078,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('[data-invite]'))retu
        <span style="font-size:14px;line-height:1.35">Bora treinar comigo?<br>Escaneia e vem pra matilha.<br><b>Código ${RCODE}</b></span></div></div>
    <p class="meta" style="font-size:13px;text-align:center">Tire um print desta tela e poste no Stories, ou mande o link.</p>
    <div class="grid2"><button class="btn small" id="inv-copy" style="padding:12px">Copiar link</button>
-   <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
+   <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? '+(window.__REF&&window.__REF.desc?'Você ganha '+window.__REF.desc+'% no primeiro plano. ':'')+'Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
   $('#inv-copy').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject()).then(()=>toast('Link copiado'),()=>toast('Não deu para copiar aqui. Use o QR.'))}});
 renderCrew();
 document.addEventListener('click',e=>{const b=e.target.closest('[data-med]');if(!b)return;const id=b.dataset.med;let k,n,t,d,extra='';
@@ -6441,7 +6441,7 @@ const uid=session.user.id;const R1=window.__RL1,R2=window.__RL2;
 const GO=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
 const pGen=GO(sb.rpc('gen_my_classes')),pExp=GO(sb.rpc('expire_reservations'));
 const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise.all([GO(sb.rpc('public_anm')),GO(sb.from('anam_answers').select('id').eq('user_id',uid).limit(1))]),
-  cic:GO(sb.rpc('public_ci')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
+  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
   pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
   pq:pExp.then(()=>GO(sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1)))};
@@ -6517,7 +6517,19 @@ try{const F=R1.FREQ,PL3=R1.PLANS3;const {data:pr}=await PF.pr;if(pr&&F&&PL3){con
   PLN.f=Math.min(7,Math.max(1,freq));PLN.base=F[PLN.f].p;PLN.cur={Mensal:'mes',Trimestral:'tri',Semestral:'sem'}[P.plan_period]||'mes'}}catch(_){}
 try{const {data:ph}=await PF.ph;const MC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   window.__PAYH=(ph||[]).map(r=>{const d=new Date(r.created_at);return [`${MC[d.getMonth()]}/${d.getFullYear()}`,`${r.plan_period||'Mensal'} ${r.freq||''}x • Pix`,+r.pay_amount||0]})}catch(_){window.__PAYH=[]}
-AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Plano '+AG.planNome;const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
+AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);try{const {data:rf}=await PF.ref;window.__REF=rf||null;
+  if(rf&&R1.WAL){const F=R1.FREQ,mv=F&&F[Math.min(7,Math.max(1,freq))]?F[Math.min(7,Math.max(1,freq))].p:0,now=Date.now();
+    (rf.list||[]).forEach(x=>{const ok=x.paid_at&&now-new Date(x.paid_at).getTime()>=(+rf.dias||30)*864e5;R1.WAL.items.push({o:'Indicação • '+x.name,pct:+rf.rec||0,ok:ok?1:0,val:Math.round((+rf.rec||0)/100*mv*100)/100,info:x.paid_at?'libera '+(+rf.dias||30)+' dias depois do primeiro pagamento':'aguardando o primeiro pagamento'})})}
+  const mk=()=>{const R0=window.__REF,v=document.getElementById('v-hoje');if(!R0||!R0.on||!v||document.getElementById('ref9'))return;
+    const L=R0.list||[],ok=L.filter(x=>x.paid_at).length,wt=L.length-ok;
+    const el=document.createElement('section');el.id='ref9';el.className='block ref9';
+    el.innerHTML=`<div class="row"><span class="lbl">Indique e ganhe</span>${L.length?`<span class="pill">${ok} ${ok===1?'amigo':'amigos'}${wt?` • ${wt} aguardando`:''}</span>`:''}</div>
+      <p class="d" style="font-size:34px;margin:6px 0 4px">Traga um amigo</p>
+      <p class="meta" style="margin:0 0 12px">${R0.desc?`Ele ganha <b>${R0.desc}%</b> no primeiro plano. `:''}${R0.rec?`Você ganha <b>${R0.rec}%</b> na sua renovação quando ele completar ${R0.dias} dias de treino.`:''}</p>
+      <button class="btn solid wide" data-invite>Convidar com meu link</button><p class="meta" style="font-size:12px;margin:8px 0 0;text-align:center">Seu código: <b>${R0.code||''}</b></p>`;
+    const anchor=v.querySelector('.sday')||v.querySelector('#aula');(anchor&&anchor.closest('section,.block')||anchor||v.lastElementChild).after(el)};
+  mk();setTimeout(mk,800)}catch(_){window.__REF=null}
+const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Plano '+AG.planNome;const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
 document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês/.test(el.textContent))el.textContent=`${freq*4} aulas por mês`});
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
 
