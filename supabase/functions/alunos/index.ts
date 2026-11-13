@@ -20,14 +20,19 @@ Deno.serve(async (req) => {
     const act = body.action;
 
     if (act === "claim") {
-      const code = String(body.code || "").toUpperCase().trim(), email = String(body.email || "").trim().toLowerCase(), pw = String(body.password || "");
-      if (!code || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || pw.length < 6) return out({ error: "Confira o e-mail e a senha (mínimo 6 caracteres)." }, 400);
+      const code = String(body.code || "").toUpperCase().trim(), pw = String(body.password || "");
+      let email = String(body.email || "").trim().toLowerCase();
       const { data: inv } = await adm.from("invites").select("*").eq("code", code).is("used_by", null).maybeSingle();
       if (!inv || !inv.profile_id) return out({ error: "Esse link já foi usado ou não existe. Peça um novo ao seu personal." }, 400);
+      // conta que já tem e-mail de verdade: o link só troca a senha (o e-mail continua o mesmo)
+      const { data: cur } = await adm.auth.admin.getUserById(inv.profile_id);
+      const curEmail = (cur && cur.user && cur.user.email) || "";
+      if (curEmail && !curEmail.endsWith("@sem-email.chamescrew.app")) email = curEmail;
+      if (!code || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || pw.length < 6) return out({ error: "Confira o e-mail e a senha (mínimo 6 caracteres)." }, 400);
       const { error } = await adm.auth.admin.updateUserById(inv.profile_id, { email, password: pw, email_confirm: true });
       if (error) return out({ error: /already|registered|exists/i.test(error.message) ? "Esse e-mail já tem conta. Use outro ou entre com ele." : error.message }, 400);
       await adm.from("invites").update({ used_by: inv.profile_id }).eq("code", code);
-      return out({ ok: true });
+      return out({ ok: true, email });
     }
 
     // daqui pra baixo: só a equipe

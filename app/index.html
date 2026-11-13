@@ -159,21 +159,21 @@ async function openInvite(){R.innerHTML='<div class="ld">Abrindo seu convite…<
   ST.inv=inv;const nm=(inv.name||'').split(' ')[0];
   R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">CONVITE DO ${PN.toUpperCase()}</span>
   <h1 style="font-size:clamp(50px,16vw,70px)">${nm?`Bem-vindo(a),<br><span>${esc(nm)}</span>`:'Bem-vindo(a)'}</h1>
-  <p class="qs" style="margin-top:14px">Crie seu acesso. Depois são perguntas rápidas, uma por tela.</p>
-  <span class="lb">Seu e-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+  <p class="qs" style="margin-top:14px">${inv.email_hint?'Crie uma senha nova para a sua conta.':'Crie seu acesso. Depois são perguntas rápidas, uma por tela.'}</p>
+  ${inv.email_hint?`<span class="lb">Sua conta</span><div class="in" style="opacity:.75">${esc(inv.email_hint)}</div><input id="em" type="hidden" value="__keep__">`:`<span class="lb">Seu e-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">`}
   <span class="lb">Crie uma senha</span><div class="pw"><input class="in" id="pw" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"><button id="sh" type="button">mostrar</button></div>
   <span class="lb">Confirme a senha</span><div class="pw"><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="Digite a mesma senha de novo"></div>
-  <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">Criar minha conta</button></div></div>`;
+  <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">${inv.email_hint?'Salvar senha nova':'Criar minha conta'}</button></div></div>`;
   $('#sh').onclick=()=>{const t=$('#pw').type==='password'?'text':'password';$('#pw').type=t;$('#pw2').type=t;$('#sh').textContent=t==='password'?'mostrar':'esconder'};
   $('#pw2').oninput=()=>{const a=$('#pw').value,b=$('#pw2').value;$('#er').textContent=b&&a.slice(0,b.length)!==b?'As senhas não estão iguais.':''};
   $('#go').onclick=async()=>{const em=$('#em').value.trim(),pw=$('#pw').value,pw2=$('#pw2').value;
-    if(!/^\S+@\S+\.\S+$/.test(em)){$('#er').textContent='Confira o e-mail.';return}if(pw.length<8){$('#er').textContent='A senha precisa ter pelo menos 8 caracteres.';return}
+    if(em!=='__keep__'&&!/^\S+@\S+\.\S+$/.test(em)){$('#er').textContent='Confira o e-mail.';return}if(pw.length<8){$('#er').textContent='A senha precisa ter pelo menos 8 caracteres.';return}
     if(pw!==pw2){$('#er').textContent='As senhas não estão iguais. Digite de novo.';$('#pw2').value='';$('#pw2').focus();return}
     $('#go').disabled=true;$('#go').textContent='Criando…';
     if(inv.claim){/* aluno cadastrado pelo personal: a conta já existe, ele só define e-mail e senha */
       let r;try{const x=await fetch(CFG.supabaseUrl+'/functions/v1/alunos',{method:'POST',headers:{'Content-Type':'application/json',apikey:CFG.supabaseKey,Authorization:"Bearer "+CFG.supabaseKey},body:JSON.stringify({action:'claim',code:ST.code,email:em,password:pw})});r=await x.json()}catch(e){r={error:'Sem conexão. Tente de novo.'}}
       if(r.error){$('#go').disabled=false;$('#go').textContent='Criar minha conta';$('#er').textContent=r.error;return}
-      const {error}=await sb.auth.signInWithPassword({email:em,password:pw});$('#go').disabled=false;$('#go').textContent='Criar minha conta';
+      const {error}=await sb.auth.signInWithPassword({email:r.email||em,password:pw});$('#go').disabled=false;$('#go').textContent='Criar minha conta';
       if(error){$('#er').textContent='Conta criada. Toque em voltar e entre com seu e-mail e senha.';return}
       ST.d={name:inv.name||'',phone:inv.phone||''};saveDraft();route();return}
     const {data,error}=await sb.auth.signUp({email:em,password:pw,options:{data:{invite:ST.code,name:inv.name||''}}});$('#go').disabled=false;$('#go').textContent='Criar minha conta';
