@@ -4001,7 +4001,7 @@ const _rc10=renderCal;renderCal=function(){_rc10();const el=$('#ag-free');if(!el
   const n=AGV.sel,k=keyOf(n),C=AG.canc.filter(c=>c.d===k),list=el.querySelector('.agl');
   if(list&&C.length&&AGV.v==='sem'){const emp=list.querySelector('.agemp');if(emp)emp.remove();
     C.forEach(c=>{[...list.querySelectorAll('.agr')].forEach(r=>{if(!r.classList.contains('mine')&&r.querySelector('b')&&r.querySelector('b').textContent===hh2(c.h))r.remove()});
-      list.insertAdjacentHTML('beforeend',`<div class="agr canc"><b>${hh2(c.h)}</b><span>${c.why==='perdida'?'Aula perdida':'Cancelada'}<small>${c.why==='perdida'?'Sem resposta no prazo: contou como feita':c.ok?'Virou crédito':'Contou como feita'}</small></span>${window.UNC_OK&&window.UNC_OK(c)?`<button class="btn small line" data-unc="${c.d}|${c.h}">Desfazer</button>`:''}</div>`)});
+      list.insertAdjacentHTML('beforeend',`<div class="agr canc"><b>${hh2(c.h)}</b><span>${c.why==='perdida'?'Aula perdida':'Cancelada'}<small>${c.why==='perdida'?'Sem resposta no prazo: contou como feita':c.ok?'Virou crédito':'Contou como feita'}</small></span>${window.UNC_OK&&window.UNC_OK(c)?`<button class="btn small line" data-unc="${c.d}|${c.h}">Desfazer</button>`:''}${c.ok&&c.why!=='perdida'?'<button class="btn small" data-usecr style="margin-left:6px">Remarcar</button>':''}</div>`)});
     [...list.children].sort((a,b)=>(a.querySelector('b')||{}).textContent>(b.querySelector('b')||{}).textContent?1:-1).forEach(c=>list.appendChild(c))}
   const lg=el.querySelector('.agleg');if(lg)lg.innerHTML='<span><em class="m"></em>sua aula</span><span><em class="g"></em>confirmada</span><span><em class="y"></em>aguardando</span><span><em class="r"></em>cancelada</span><span><em class="f"></em>livre</span>'};
 /* recusa do personal: manter, pedir outro ou perder */
@@ -6352,6 +6352,13 @@ const freq=P.freq||(FX||[]).length||2,endD=P.access_until?new Date(P.access_unti
 /* ---- limpa a demonstração ---- */
 const AG=R1.AG,keyOf=R1.keyOf;if(R1.HIST)Object.keys(R1.HIST).forEach(k=>delete R1.HIST[k]);if(R1.OCC)Object.keys(R1.OCC).forEach(k=>delete R1.OCC[k]);
 R2.NOT.length=0;try{R2.bd()}catch(_){}
+const relT=t=>{const d=new Date(t),m=Math.round((Date.now()-d)/6e4);if(m<1)return 'agora';if(m<60)return 'há '+m+' min';const h=Math.round(m/60);if(h<24)return 'há '+h+' h';const dd=Math.round(h/24);return dd===1?'ontem':String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')};
+let NSEEN=new Set();async function loadNotes(first){try{const {data}=await sb.from('notifications').select('*').eq('user_id',uid).order('created_at',{ascending:false}).limit(40);if(!data)return;const N=R2.NOT;
+  const fresh=data.filter(n=>!n.read_at&&!NSEEN.has(n.id));N.length=0;data.forEach(n=>{NSEEN.add(n.id);N.push({k:n.kind,t:n.title,s:n.body||'',w:relT(n.created_at),new:n.read_at?0:1,_id:n.id})});try{R2.bd()}catch(_){}
+  if(!first&&fresh.length)toast('🔔 '+fresh[0].title)}catch(_){}}
+loadNotes(true);setInterval(()=>loadNotes(false),45000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadNotes(false)});
+document.addEventListener('click',e=>{if(!e.target.closest('#h-bell'))return;setTimeout(async()=>{const ids=R2.NOT.filter(x=>x.new&&x._id).map(x=>x._id);if(!ids.length)return;await sb.from('notifications').update({read_at:new Date().toISOString()}).in('id',ids);R2.NOT.forEach(x=>x.new=0);try{R2.bd()}catch(_){}},1500)},true);
+
 R1.RECUR.length=0;(FX||[]).forEach(f=>{const [h,mi]=f.at_time.split(':').map(Number);R1.RECUR.push([f.dow,h+mi/60])});
 Object.assign(AG,{slots:[],free:[],canc:[],dadas:[],creds:[],credit:0,done:0,wdone:0,rem:0,remM:{},xcob:[],xcr:0,quota:freq*4,week:freq,planEnd:Math.min(dayN(endD),75)});
 try{AG.chgLim=freq<=1?1:freq===2?2:3}catch(_){}
@@ -6389,6 +6396,22 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-go],[data-
 const me=document.getElementById('h-me');
 const avH=()=>P.avatar_url?`<img src="${P.avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`:ini;
 async function shrinkA(f){const url=URL.createObjectURL(f);try{const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});const z=Math.min(im.width,im.height),c=document.createElement('canvas');c.width=c.height=400;c.getContext('2d').drawImage(im,(im.width-z)/2,(im.height-z)/2,z,z,0,0,400,400);return await new Promise(ok=>c.toBlob(ok,'image/jpeg',.8))}finally{URL.revokeObjectURL(url)}}
+
+function cropA(file){return new Promise(res=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{const W=Math.min(320,innerWidth-48);let z=1,x=0,y=0;const base=W/Math.min(im.width,im.height);
+  const o=document.createElement('div');o.style.cssText='position:fixed;inset:0;z-index:10000;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;color:#f1f0eb;font-family:inherit;touch-action:none';
+  o.innerHTML=`<b style="font-size:17px">Ajuste sua foto</b><div id="cw" style="position:relative;width:${W}px;height:${W}px;overflow:hidden;border-radius:50%;box-shadow:0 0 0 3px rgba(255,255,255,.85),0 0 0 9999px rgba(0,0,0,.55);touch-action:none;cursor:grab"><img id="ci" src="${url}" style="position:absolute;left:50%;top:50%;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none"></div>
+   <small style="opacity:.7">Arraste para posicionar • use a barra para aproximar</small><input id="cz" type="range" min="1" max="3" step="0.01" value="1" style="width:${W}px">
+   <div style="display:flex;gap:10px;width:${W}px"><button id="cx" style="flex:1;padding:13px;border-radius:12px;border:1px solid #4a4b50;background:none;color:inherit;font-weight:800">Cancelar</button><button id="ck" style="flex:1;padding:13px;border-radius:12px;border:0;background:#f1f0eb;color:#111;font-weight:800">Usar foto</button></div>`;
+  document.body.appendChild(o);const ci=o.querySelector('#ci'),cw=o.querySelector('#cw');
+  const clamp=()=>{const s2=base*z,mw=(im.width*s2-W)/2,mh=(im.height*s2-W)/2;x=Math.max(-mw,Math.min(mw,x));y=Math.max(-mh,Math.min(mh,y))};
+  const up=()=>{clamp();const s2=base*z;ci.style.width=im.width*s2+'px';ci.style.height=im.height*s2+'px';ci.style.transform=`translate(calc(-50% + ${x}px),calc(-50% + ${y}px))`};up();
+  let d=null,pts=new Map(),pd=0;cw.addEventListener('pointerdown',e=>{cw.setPointerCapture(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);d={x:e.clientX,y:e.clientY,ox:x,oy:y};if(pts.size===2){const [a,b]=[...pts.values()];pd=Math.hypot(a[0]-b[0],a[1]-b[1])}});
+  cw.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,[e.clientX,e.clientY]);if(pts.size===2){const [a,b]=[...pts.values()],nd=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pd){z=Math.max(1,Math.min(3,z*nd/pd));o.querySelector('#cz').value=z}pd=nd;up();return}if(d){x=d.ox+e.clientX-d.x;y=d.oy+e.clientY-d.y;up()}});
+  const rel=e=>{pts.delete(e.pointerId);if(pts.size<2)pd=0;if(!pts.size)d=null;else{const [p]=[...pts.values()];d={x:p[0],y:p[1],ox:x,oy:y}}};cw.addEventListener('pointerup',rel);cw.addEventListener('pointercancel',rel);
+  o.querySelector('#cz').oninput=e=>{z=+e.target.value;up()};
+  const done=v=>{o.remove();URL.revokeObjectURL(url);res(v)};o.querySelector('#cx').onclick=()=>done(null);
+  o.querySelector('#ck').onclick=()=>{const c=document.createElement('canvas');c.width=c.height=400;const g=c.getContext('2d'),s2=base*z,k=400/W;const iw=im.width*s2*k,ih=im.height*s2*k;g.drawImage(im,(400-iw)/2+x*k,(400-ih)/2+y*k,iw,ih);c.toBlob(b=>done(b),'image/jpeg',.85)}};
+ im.onerror=()=>{URL.revokeObjectURL(url);toast('Não deu para abrir essa imagem');res(null)};im.src=url})}
 if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{const E=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   sheet(`<span class="lbl">Minha conta</span>
   <div style="display:flex;align-items:center;gap:14px;margin:8px 0 14px"><label style="width:72px;height:72px;border-radius:50%;overflow:hidden;flex:none;display:grid;place-items:center;background:var(--sec,rgba(127,127,127,.15));font-weight:800;font-size:24px;cursor:pointer;position:relative" id="rl-avl">${avH()}<input type="file" accept="image/*" id="rl-av" hidden></label>
@@ -6398,14 +6421,53 @@ if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{c
   <div class="field"><label>WhatsApp</label><input class="inp" id="rl-ph" inputmode="tel" value="${E(P.phone)}"></div>
   <div class="field"><label>Instagram</label><input class="inp" id="rl-ig" placeholder="@seuperfil" value="${E(P.instagram)}"></div>
   <p class="meta" style="font-size:12.5px;margin:4px 0 12px">E-mail: ${E(session.user.email)}${P.doc_num?' • CPF só o personal altera':''}</p>
-  <button class="btn solid wide" id="rl-sv">Salvar</button><button class="btn wide" style="margin-top:8px" id="rl-out">Sair da conta</button><button class="btn wide" style="margin-top:8px;border:0" data-close>Fechar</button>`,s=>{
-   s.querySelector('#rl-av').onchange=async e=>{const fl=e.target.files[0];if(!fl)return;toast('Enviando foto…');try{const b=await shrinkA(fl),path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(error)throw error;
+  <button class="btn solid wide" id="rl-sv">Salvar</button><button class="btn wide" style="margin-top:8px" id="rl-out">Sair da conta</button>`,s=>{
+   s.querySelector('#rl-av').onchange=async e=>{const fl=e.target.files[0];if(!fl)return;const b=await cropA(fl);e.target.value='';if(!b)return;toast('Enviando foto…');try{const path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(error)throw error;
      const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;const r=await sb.from('profiles').update({avatar_url:url}).eq('id',uid);if(r.error)throw r.error;P.avatar_url=url;s.querySelector('#rl-avl').firstChild.replaceWith(document.createRange().createContextualFragment(avH()));me.innerHTML=avH();me.style.padding='0';toast('Foto atualizada')}catch(er){toast('Não deu para enviar a foto')}};
    s.querySelector('#rl-sv').onclick=async()=>{const nm=s.querySelector('#rl-nm').value.trim();if(nm.split(' ').filter(Boolean).length<2)return toast('Coloque nome e sobrenome');
      let ig=s.querySelector('#rl-ig').value.trim().replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/\/.*$/,'');if(ig&&!ig.startsWith('@'))ig='@'+ig;
      const up={name:nm,birth_date:s.querySelector('#rl-bd').value||null,phone:s.querySelector('#rl-ph').value.trim()||null,instagram:ig||null};
      const {error}=await sb.from('profiles').update(up).eq('id',uid);if(error)return toast('Não salvou: '+error.message);Object.assign(P,up);s.remove();toast('Perfil atualizado')};
    s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}}
+
+/* usar crédito: escolher um horário livre do personal */
+document.addEventListener('click',async e=>{if(!e.target.closest('[data-usecr]'))return;e.stopImmediatePropagation();
+  const [{data:cr},{data:fs}]=await Promise.all([sb.rpc('my_credits'),sb.rpc('free_slots',{p_days:14})]);
+  if(!cr){toast('Você não tem crédito disponível');return}
+  const D=['dom','seg','ter','qua','qui','sex','sáb'],by={};(fs||[]).forEach(x=>{const d=new Date(x.starts_at),k=d.toDateString();(by[k]=by[k]||{d,h:[]}).h.push(d)});
+  const days=Object.values(by).slice(0,10);
+  sheet(`<span class="lbl">Remarcar com crédito</span><p class="d" style="font-size:36px;margin:6px 0 4px">Escolha o horário</p><p class="meta" style="margin:0 0 12px">Você tem ${cr} ${cr===1?'crédito':'créditos'}. Só aparecem os horários livres do seu personal.</p>
+   ${days.length?days.map(g=>`<div style="margin:10px 0 4px;font-weight:800;font-size:13px">${D[g.d.getDay()]}, ${String(g.d.getDate()).padStart(2,'0')}/${String(g.d.getMonth()+1).padStart(2,'0')}</div><div class="chips" style="display:flex;flex-wrap:wrap;gap:6px">${g.h.map(t=>`<button class="chip" data-crt="${t.toISOString()}">${t.getHours()}h${t.getMinutes()?String(t.getMinutes()).padStart(2,'0'):''}</button>`).join('')}</div>`).join(''):'<p class="meta">Nenhum horário livre nos próximos dias. Fale com o personal.</p>'}
+`,s=>s.addEventListener('click',async ev=>{const b=ev.target.closest('[data-crt]');if(!b)return;const t=new Date(b.dataset.crt);
+     if(!confirm2)return;b.disabled=true;const {error}=await sb.rpc('use_credit',{p_at:t.toISOString()});if(error){b.disabled=false;toast(error.message);return}
+     toast('Aula marcada: '+D[t.getDay()]+' '+t.getHours()+'h. O personal recebeu o aviso.');s.closest('.scrim')?s.closest('.scrim').remove():s.remove();setTimeout(()=>location.reload(),1200)}))},true);
+const confirm2=true;
+
+/* ===== Dieta: PDF do nutricionista (layout novo) ===== */
+const DE=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function dietView(){const v=document.getElementById('v-dieta');if(!v||v.hidden)return;if(v.dataset.rl==='1'&&v.querySelector('#rl-diet'))return;v.dataset.rl='1';const D=P.diet;
+  v.innerHTML=`<div id="rl-diet"><div class="hero"><span class="motto">Dieta</span><h2 class="d">${D?'Sua dieta':'Sua dieta aqui'}</h2><p class="sub">${D?'Sempre à mão, no celular.':'Guarde o PDF da dieta que o seu nutricionista fez. Fica sempre à mão.'}</p></div>
+   ${D?`<div class="block" style="display:flex;flex-direction:column;gap:12px"><div style="display:flex;align-items:center;gap:14px"><span style="width:52px;height:52px;border-radius:14px;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-weight:900;font-size:13px;flex:none">PDF</span><span style="min-width:0"><b style="display:block;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${DE(D.name||'Dieta')}</b><small class="meta">${DE(D.nutri)} • CRN-${DE(D.reg)} ${DE(D.num)}${D.at?' • enviada '+DE(D.at):''}</small></span></div>
+     <div class="grid2"><button class="btn solid" id="dt-open">Abrir</button><button class="btn" id="dt-new">Trocar</button></div></div>`
+    :`<button class="block" id="dt-new" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:inherit"><span style="width:52px;height:52px;border-radius:14px;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-weight:900;font-size:13px;flex:none">PDF</span><span style="flex:1;min-width:0"><b style="display:block;font-size:16px">Enviar a dieta em PDF</b><small class="meta">O arquivo que o nutricionista te entregou</small></span><span style="font-size:20px;opacity:.6">›</span></button>`}
+   <p class="meta" style="font-size:12px;margin:14px 2px 0;line-height:1.45">A dieta é responsabilidade do nutricionista que assinou. O app e o seu personal só guardam o arquivo para você.</p></div>`;
+  const op=v.querySelector('#dt-open');if(op)op.onclick=async()=>{const {data,error}=await sb.storage.from('diets').createSignedUrl(D.path,600);if(error||!data)return toast('Não abriu a dieta');window.open(data.signedUrl,'_blank')};
+  v.querySelector('#dt-new').onclick=dietSheet}
+function dietSheet(){let file=null;sheet(`<span class="lbl">Dieta</span><p class="d" style="font-size:34px;margin:6px 0 10px">Enviar dieta</p>
+  <label class="btn wide" style="display:flex;align-items:center;justify-content:center;gap:8px"><input type="file" id="df" accept="application/pdf" hidden><span id="dfl">📎 Escolher o PDF</span></label>
+  <div class="field" style="margin-top:12px"><label>Nome do nutricionista</label><input class="inp" id="dn" placeholder="Como está no CRN"></div>
+  <div style="display:grid;grid-template-columns:90px 1fr;gap:8px"><div class="field"><label>CRN</label><select class="inp" id="dr">${[1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option ${n===4?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Número</label><input class="inp" id="dnum" inputmode="numeric" placeholder="Ex.: 12345"></div></div>
+  <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;margin:6px 0 12px"><input type="checkbox" id="dok" style="margin-top:3px"><span>Declaro que a dieta foi feita por um nutricionista com CRN ativo.</span></label>
+  <button class="btn solid wide" id="dsv">Salvar dieta</button>`,s=>{
+   s.querySelector('#df').onchange=e=>{file=e.target.files[0]||null;if(file&&file.size>10485760){file=null;toast('PDF muito grande (máx. 10 MB)')}s.querySelector('#dfl').textContent=file?'✓ '+file.name:'📎 Escolher o PDF'};
+   s.querySelector('#dsv').onclick=async()=>{const nm=s.querySelector('#dn').value.trim(),num=s.querySelector('#dnum').value.trim();
+     if(!file)return toast('Escolha o PDF');if(!nm||!num)return toast('Preencha o nome e o CRN do nutricionista');if(!s.querySelector('#dok').checked)return toast('Marque a declaração');
+     const b=s.querySelector('#dsv');b.disabled=true;b.textContent='Enviando…';const path=uid+'/'+Date.now()+'.pdf';
+     const {error}=await sb.storage.from('diets').upload(path,file,{contentType:'application/pdf'});if(error){b.disabled=false;b.textContent='Salvar dieta';return toast('Não enviou: '+error.message)}
+     const d=new Date(),diet={path,name:file.name.replace(/\.pdf$/i,''),nutri:nm,reg:s.querySelector('#dr').value,num,at:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')};
+     const r=await sb.from('profiles').update({diet}).eq('id',uid);if(r.error){b.disabled=false;b.textContent='Salvar dieta';return toast('Não salvou: '+r.error.message)}
+     P.diet=diet;s.remove();const v=document.getElementById('v-dieta');if(v)v.dataset.rl='';dietView();toast('Dieta salva')}})}
+setInterval(()=>{try{dietView()}catch(_){}},400);document.addEventListener('click',()=>setTimeout(()=>{try{dietView()}catch(_){}},60),true);
 const CIC=await (async()=>{try{const r=await sb.rpc('public_ci');return r.data||{}}catch(_){return {}}})();
 const CISTD=[['treinou','Treinou hoje?',['Sim','Não','Dia de descanso'],'limite'],['intens','Como foi o treino?',['Leve','Moderado','Pesado','No limite'],null],['energia','Como está sua energia?',['Baixa','Ok','Alta'],null],['cardio','Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min'],'resist'],['livre','Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food'],'zero'],['doce','Comeu doce fora do plano?',['Não','Um pouco','Sim'],'doce'],['agua','Bateu sua meta de água hoje?',['Não','Quase','Bati a meta'],'agua'],['sono','Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais'],'sono']];
 const WSTD=[['carga','Como sentiu os treinos da semana?',['Leves demais','No ponto','Pesados demais']],['chegou','Como você chegou no fim da semana?',['Cansado','Normal','Bem disposto']],['dor','Sentiu alguma dor ou desconforto?',['Nenhuma','Leve','Moderada','Forte']],['rotina','Como foi sua rotina na semana?',['Tranquila','Normal','Puxada']],['nota','Que nota você dá para a sua semana?',['0','1','2','3','4','5','6','7','8','9','10']]];
@@ -6574,8 +6636,7 @@ setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&wi
     else if(cs&&R.SENT.semana&&!cs.dataset.rl){cs.dataset.rl=1;cs.innerHTML=`<div class="row"><div><span class="lbl">${esc2(R.WCLBL)}</span><p class="d" style="font-size:34px;margin:6px 0 2px">Semana fechada ✓</p><p class="meta" style="margin:0">A próxima abre ${esc2(R.WOPEN||'sexta às 6h')}.</p></div></div>`;cs.classList.add('meal','ok')}}
  }catch(e){console.error('paint',e)}};
  paint();setTimeout(paint,300);document.addEventListener('click',()=>setTimeout(paint,80),true);
- /* dieta em PDF ainda não é guardada: não libera um cardápio de exemplo */
- document.addEventListener('click',e=>{if(e.target.closest('#dsend')){e.stopImmediatePropagation();e.preventDefault();toast('A dieta em PDF entra na próxima etapa do app. Por enquanto, fale com o Sérgio.')}},true);
+
  /* perguntas abertas e "Outro" */
  document.addEventListener('input',e=>{const x=e.target.closest('[data-qi]');if(!x||!window.__CI)return;const [k,i]=x.dataset.qi.split('-');window.__CI.ans[k][+i]=x.value.trim()?x.value.trim():null});
  document.addEventListener('click',e=>{const c=e.target.closest('[data-q]');if(!c)return;const [k,i,j]=c.dataset.q.split('-'),oi=document.querySelector(`[data-qo="${k}-${i}"]`);if(oi)oi.hidden=oi.hasAttribute('data-where')?+j<2:c.textContent.trim()!=='Outro'});
