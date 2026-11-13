@@ -6528,7 +6528,7 @@ AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);
       <p class="meta" style="margin:0 0 12px">${R0.desc?`Ele ganha <b>${R0.desc}%</b> no primeiro plano. `:''}${R0.rec?`Você ganha <b>${R0.rec}%</b> na sua renovação quando ele completar ${R0.dias} dias de treino.`:''}</p>
       <button class="btn solid wide" data-invite>Convidar com meu link</button><p class="meta" style="font-size:12px;margin:8px 0 0;text-align:center">Seu código: <b>${R0.code||''}</b></p>`;
     const anchor=v.querySelector('.sday')||v.querySelector('#aula');(anchor&&anchor.closest('section,.block')||anchor||v.lastElementChild).after(el)};
-  mk();setTimeout(mk,800)}catch(_){window.__REF=null}
+  mk();setTimeout(mk,800);try{const vh=document.getElementById('v-hoje');if(vh)new MutationObserver(()=>{if(!document.getElementById('ref9'))mk()}).observe(vh,{childList:true})}catch(_){}}catch(e){console.warn('ref',e);window.__REF=window.__REF||null}
 const rb=document.getElementById('rn-ban');if(rb){rb.querySelector('b').textContent='Vence em '+ends;rb.querySelector('small').textContent='Plano '+AG.planNome;const c=rb.querySelector('.rn-cta');if(c)c.textContent='Renovar'}
 document.querySelectorAll('#v-agenda .aplan .d').forEach(el=>{if(/aulas por mês/.test(el.textContent))el.textContent=`${freq*4} aulas por mês`});
 document.querySelectorAll('#v-agenda .aplan .meta').forEach(el=>{if(/por semana/.test(el.textContent))el.textContent=`${freq}x por semana • ${freq*4} aulas no mês`});
