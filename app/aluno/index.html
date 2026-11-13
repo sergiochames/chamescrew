@@ -3801,7 +3801,7 @@ window.trRefresh=()=>{if(CFG.semTreino&&TR.on)stopTr();renderTrHome()};
 
 /* ===== agenda: semanas, mês, horários quebrados, remarcação automática ===== */
 const MES={10:'outubro',11:'novembro',12:'dezembro',1:'janeiro'},MESC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],WDN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-const AVU=170;
+var AVU=170;
 function TDN(){return Math.floor(NOWH/24)}
 function dDate(n){return new Date(2026,9,28+n)}
 function keyOf(n){if(n===0)return'Hoje';if(n===1)return'Amanhã';if(n===2)return'Sex';if(n===3)return'Sáb';const dt=new Date(2026,9,28+n),W=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];const k=W[dt.getDay()]+' '+dt.getDate()+'/'+(dt.getMonth()+1);
@@ -3892,7 +3892,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-ag-move],[
   if(d.agBook!==undefined){e.stopImmediatePropagation();const i=+d.agBook,f=AG.free[i];if(!f)return;const [dd,h]=f,des=f[2]==='des';
     if(AG.moving){const m=AG.moving,mo=monOf(m.d),used=remOf(mo),over=false;
       const head=`<span class="lbl">Remarcar${des?' • vaga de desistência':''}</span><p class="d" style="font-size:32px;margin:6px 0">${dlab(m.d)} ${hh2(m.h)} → ${dlab(dd)} ${hh2(h)}</p>`;
-      if(!over)sheet(head+`<p class="meta" style="margin:0">Sem custo. O ${PERS_NOME()} precisa confirmar o novo horário; até lá, sua aula atual continua garantida. Conta como 1 mudança${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}.</p>${whyHTML('remarcação')}<button class="btn solid wide" id="rm-ok">Pedir remarcação</button>`,sh=>{sh.querySelector('#rm-ok').onclick=()=>{const w=readWhy(sh);sh.remove();doMove(i,false,w)}});
+      if(!over)sheet(head+`<p class="meta" style="margin:0">Sem custo. O ${PERS_NOME()} recebe o aviso na hora. Conta como 1 mudança${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}.</p>${whyHTML('remarcação')}<button class="btn solid wide" id="rm-ok">Remarcar</button>`,sh=>{sh.querySelector('#rm-ok').onclick=()=>{const w=readWhy(sh);sh.remove();doMove(i,false,w)}});
       else{AG.moving=null;agAll();limSheet(m)}
       return}
     const q=quotaFor(dd),useCredit=credFor(dd),extra=!useCredit&&(q.full||q.wfull);
@@ -3944,8 +3944,8 @@ agAll();
 /* ===== v8: pedido de horário precisa da confirmação do personal ===== */
 const PN=()=>PERS_NOME();
 const remDec=m=>{if(m===10)AG.rem=Math.max(0,AG.rem-1);else AG.remM[m]=Math.max(0,(AG.remM[m]||1)-1)};
-function pendSheet(kind,dd,h){sheet(`<div class="pdok"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><span class="lbl">Pedido enviado</span><p class="d" style="font-size:40px;margin:6px 0 4px">${dlab(dd)} • ${hh2(h)}</p>
-  <div class="avb"><b>Esse horário ainda vai ser confirmado pelo ${PN()}.</b><span>Até lá, ele aparece como "aguardando" na sua agenda. Quando o ${PN()} responder, você recebe um aviso aqui no app.</span></div>
+function pendSheet(kind,dd,h){sheet(`<div class="pdok"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><span class="lbl">${kind==='remarcação'?'Aula remarcada':'Aula marcada'}</span><p class="d" style="font-size:40px;margin:6px 0 4px">${dlab(dd)} • ${hh2(h)}</p>
+  <div class="avb"><b>Pronto, já está na sua agenda.</b><span>O ${PN()} recebeu o aviso. Se ele precisar mudar, você recebe uma notificação aqui no app.</span></div>
   <button class="btn solid wide" data-close2>Entendi</button>`,s=>s.querySelector('[data-close2]').onclick=()=>s.remove())}
 function resolvePend(x,ok,quiet){const p=x.pend;if(!p)return;delete x.pend;
   if(p.novo){if(ok){}else{if(x.extra&&x.paid)AG.xcr=(AG.xcr||0)+1;AG.slots=AG.slots.filter(y=>y!==x);AG.free.push([x.d,x.h]);if(p.credit)addCred(x.d)}}
@@ -4001,7 +4001,7 @@ const _rc10=renderCal;renderCal=function(){_rc10();const el=$('#ag-free');if(!el
   const n=AGV.sel,k=keyOf(n),C=AG.canc.filter(c=>c.d===k),list=el.querySelector('.agl');
   if(list&&C.length&&AGV.v==='sem'){const emp=list.querySelector('.agemp');if(emp)emp.remove();
     C.forEach(c=>{[...list.querySelectorAll('.agr')].forEach(r=>{if(!r.classList.contains('mine')&&r.querySelector('b')&&r.querySelector('b').textContent===hh2(c.h))r.remove()});
-      list.insertAdjacentHTML('beforeend',`<div class="agr canc"><b>${hh2(c.h)}</b><span>${c.why==='perdida'?'Aula perdida':'Cancelada'}<small>${c.why==='perdida'?'Sem resposta no prazo: contou como feita':c.ok?'Virou crédito':'Contou como feita'}</small></span>${window.UNC_OK&&window.UNC_OK(c)?`<button class="btn small line" data-unc="${c.d}|${c.h}">Desfazer</button>`:''}${c.ok&&c.why!=='perdida'?'<button class="btn small" data-usecr style="margin-left:6px">Remarcar</button>':''}</div>`)});
+      list.insertAdjacentHTML('beforeend',`<div class="agr canc"><b>${hh2(c.h)}</b><span>${c.why==='perdida'?'Aula perdida':'Cancelada'}<small>${c.why==='perdida'?'Sem resposta no prazo: contou como feita':c.ok?'Virou crédito':'Contou como feita'}</small></span>${window.UNC_OK&&window.UNC_OK(c)?`<button class="btn small line" data-unc="${c.d}|${c.h}">Desfazer</button>`:''}</div>`)});
     [...list.children].sort((a,b)=>(a.querySelector('b')||{}).textContent>(b.querySelector('b')||{}).textContent?1:-1).forEach(c=>list.appendChild(c))}
   const lg=el.querySelector('.agleg');if(lg)lg.innerHTML='<span><em class="m"></em>sua aula</span><span><em class="g"></em>confirmada</span><span><em class="y"></em>aguardando</span><span><em class="r"></em>cancelada</span><span><em class="f"></em>livre</span>'};
 /* recusa do personal: manter, pedir outro ou perder */
@@ -4113,7 +4113,7 @@ function outSheet(x){const ok=inTime(x),mo=monOf(x.d),u=chgOf(mo),lim=AG.chgLim,
   if(!ok||!cap){sheet(head+`<div class="avb red"><b>A aula conta como dada.</b><span>${!ok?`O prazo para mudar sem perder era ${agDl(x).txt}.`:`Você já usou suas ${lim} mudanças de ${MES[mo]}.`} Se liberar o horário, ele fica para outra pessoa.</span></div>${whyHTML('falta')}<button class="btn solid wide" id="o-x">Liberar o horário mesmo assim</button><button class="btn wide" style="margin-top:8px" data-close3>Manter minha aula</button>`,
     s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-x').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'dada',w)}});return}
   sheet(head+`<p class="meta" style="margin:0 0 12px">Mudança ${u+1} de ${lim}${(window.__CYA||1)>1?' no seu mês':' em '+MES[mo]}. Sem custo. Escolha:</p>
-    <button class="opt3" id="o-now"><b>Escolher outro horário agora</b><small>Sua aula fica garantida até o ${PN()} confirmar o novo.</small></button>
+    <button class="opt3" id="o-now"><b>Escolher outro horário agora</b><small>Você escolhe um horário livre e a aula muda na hora.</small></button>
     <button class="opt3" id="o-later"><b>Guardar para depois</b><small>Vira 1 crédito, vale até ${fmtDM(Math.min(nOf(x.d)+AG.credVal,AG.planEnd))}. O horário fica livre para outra pessoa.</small></button>
     ${whyHTML('mudança')}<button class="btn wide" data-close3>Manter minha aula</button>`,
     s=>{s.querySelector('[data-close3]').onclick=()=>s.remove();s.querySelector('#o-now').onclick=()=>{s.remove();startMove(x)};s.querySelector('#o-later').onclick=()=>{const w=readWhy(s);s.remove();freeX(x,'credito',w)}})}
@@ -4442,11 +4442,11 @@ function bookSheet(i){const f=AG.free[i];if(!f)return;const [dd,h]=f,des=f[2]===
   const why=D.why==='semana'?`Sua semana já tem as ${AG.week} aulas do plano.`:`Suas ${AG.quota} aulas de ${MES[m]} já estão marcadas.`;
   const T={plano:['Aula do plano',`Conta como aula ${D.pw+1} de ${AG.week} da semana e ${D.pm+1} de ${AG.quota} de ${MES[m]}.`,'Pedir esse horário','pl'],
     credito:['Usar 1 crédito',`${why} Esse horário usa 1 dos seus créditos (você tem ${AG.creds.length}). Não é cobrado.`,'Pedir e usar crédito','cr'],
-    extra:['Aula extra',`${why} Esse horário é uma aula extra de R$ ${AVU}${nX<XLIM?'. Você só paga se o '+PN()+' aprovar, na cobrança do fim do mês':` paga agora (você já tem ${XLIM} extras no mês). Se o ${PN()} recusar, o valor volta`}.`,nX<XLIM?`Aceito, pedir aula extra de R$ ${AVU}`:`Pagar R$ ${AVU} e pedir`,'ex']}[D.t];
+    extra:['Aula extra',`${why} Esse horário é uma aula extra de R$ ${AVU}. O valor vai para a sua cobrança com o ${PN()} (Pix).`,`Marcar aula extra de R$ ${AVU}`,'ex']}[D.t];
   sheet(`<span class="bkt ${T[3]}">${T[0]}</span><p class="d" style="font-size:36px;margin:10px 0 4px">${dlab(dd)} • ${hh2(h)}</p>${des?'<p class="meta" style="margin:0">Vaga de desistência</p>':''}
-    <p class="meta" style="margin:8px 0 4px">${T[1]}</p><p class="meta" style="font-size:12.5px;margin:0 0 12px">O ${PN()} precisa confirmar o horário. Você recebe um aviso.</p><button class="btn solid wide" id="bk-go">${T[2]}</button>`,
+    <p class="meta" style="margin:8px 0 4px">${T[1]}</p><p class="meta" style="font-size:12.5px;margin:0 0 12px">O ${PN()} recebe um aviso na hora.</p><button class="btn solid wide" id="bk-go">${T[2]}</button>`,
     s=>s.querySelector('#bk-go').onclick=()=>{s.remove();const D2=ENG.decide(liveSt(),dd);const j=AG.free.indexOf(f);if(j<0)return;AG.free.splice(j,1);
-      const x={d:dd,h,conf:false,pend:{novo:true}};if(D2.t==='credito'){useCred(dd);x.rep='cr';x.pend.credit=true}if(D2.t==='extra'){x.extra=true;x.paid=nX>=XLIM;if(x.paid)toast('Pix confirmado')}
+      const x={d:dd,h,conf:false,pend:{novo:true}};if(D2.t==='credito'){useCred(dd);x.rep='cr';x.pend.credit=true}if(D2.t==='extra'){x.extra=true;x.paid=false}
       AG.slots.push(x);AGV.sel=nOf(dd);agAll();pendSheet('aula',dd,h)})}
 window.NB=true;
 window.addEventListener('click',e=>{const k=e.target.closest('[data-ag-book]');if(!k||AG.moving)return;e.stopImmediatePropagation();e.preventDefault();bookSheet(+k.getAttribute('data-ag-book'))},true);
@@ -4504,11 +4504,12 @@ AG.xcr=AG.xcr||0;window.CARD94=window.CARD94||{b:'VISA',n:'4821'};
   sheet(`<div class="pay94"><span class="lbl">Aula extra</span><p class="d" style="font-size:36px;margin:4px 0 2px">${dlab(dd)} • ${hh2(h)}</p><p class="meta" style="margin:0 0 14px">${why}</p>
     <div class="tot"><span>Aula extra</span><span>R$ ${AVU},00</span></div><p class="meta" style="font-size:12.5px;margin:2px 0 0">À parte do plano. Não usa aula do mês.</p>
     ${AG.xcr?`<button class="btn solid wide" id="p94-cr" style="min-height:48px;margin-top:14px">Usar meu crédito de extra</button><p class="meta" style="font-size:12.5px;margin:6px 0 0">Você tem ${AG.xcr} crédito${AG.xcr>1?'s':''} de aula extra. Não cobra nada.</p>`:
-    `<div class="cc"><i>${CARD94.b}</i><span>Cartão final ${CARD94.n}</span><button id="p94-tr">Trocar</button></div><button class="btn solid wide" id="p94-go" style="min-height:48px">Confirmar e pagar R$ ${AVU},00</button><button class="btn wide" id="p94-pix" style="margin-top:8px">Pagar com Pix</button>`}
-    <p class="meta" style="font-size:12.5px;margin:10px 0 0">O horário fica reservado por 30 minutos. Cancelou até ${XCAN}h antes, ou o ${PN()} não pôde? O valor vira crédito para outra extra.</p></div>`,s=>{
+    `${window.__PIX?`<div class="cc"><i>PIX</i><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${window.__PIX}</span><button id="p94-cp">Copiar</button></div>`:''}<button class="btn solid wide" id="p94-go" style="min-height:48px">Marcar aula extra • R$ ${AVU},00</button><p class="meta" style="font-size:12.5px;margin:8px 0 0">Pague pelo Pix do ${PN()}. Ele confirma o pagamento no app.</p>`}
+    <p class="meta" style="font-size:12.5px;margin:10px 0 0">Cancelou até ${XCAN}h antes, ou o ${PN()} não pôde? O valor vira crédito para outra extra.</p></div>`,s=>{
     const q=k=>s.querySelector(k);
     if(q('#p94-cr'))q('#p94-cr').onclick=()=>{s.remove();AG.xcr--;const j=AG.free.indexOf(f);if(j<0)return;AG.free.splice(j,1);AG.slots.push({d:dd,h,conf:false,extra:true,paid:true,pend:{novo:true}});AGV.sel=nOf(dd);agAll();pendSheet('aula',dd,h)};
-    if(q('#p94-go'))q('#p94-go').onclick=()=>{s.remove();toast('Pagamento aprovado no cartão');book('cartão final '+CARD94.n)};
+    if(q('#p94-go'))q('#p94-go').onclick=()=>{s.remove();book('Pix')};
+    if(q('#p94-cp'))q('#p94-cp').onclick=async()=>{try{await navigator.clipboard.writeText(window.__PIX);toast('Chave Pix copiada')}catch(_){toast('Chave: '+window.__PIX)}};
     if(q('#p94-tr'))q('#p94-tr').onclick=()=>toast('No app real, abre a troca de cartão.');
     if(q('#p94-pix'))q('#p94-pix').onclick=()=>{s.remove();sheet(`<span class="lbl">Pix • aula extra</span><p class="d" style="font-size:40px;margin:6px 0">R$ ${AVU},00</p><p class="meta">Copie o código e pague no app do seu banco. O horário fica reservado por 30 minutos.</p><button class="btn wide" id="px-cp">Copiar código Pix</button><button class="btn solid wide" id="px-ok" style="margin-top:8px">Simular pagamento (protótipo)</button>`,t=>{t.querySelector('#px-cp').onclick=()=>toast('Código Pix copiado');t.querySelector('#px-ok').onclick=()=>{t.remove();toast('Pix confirmado');book('Pix')}})}})}}
 /* só aulas do mês atual no carrossel */
@@ -6350,7 +6351,7 @@ R1.setNow(Math.round((Date.now()-BASE.getTime())/36e5*4)/4);
 const freq=P.freq||(FX||[]).length||2,endD=P.access_until?new Date(P.access_until+'T12:00:00'):new Date(now.getTime()+90*864e5);
 
 /* ---- limpa a demonstração ---- */
-const AG=R1.AG,keyOf=R1.keyOf;if(R1.HIST)Object.keys(R1.HIST).forEach(k=>delete R1.HIST[k]);if(R1.OCC)Object.keys(R1.OCC).forEach(k=>delete R1.OCC[k]);
+const AG=R1.AG,KN={},keyOf=n=>{const k=R1.keyOf(n);KN[k]=n;return k};if(R1.HIST)Object.keys(R1.HIST).forEach(k=>delete R1.HIST[k]);if(R1.OCC)Object.keys(R1.OCC).forEach(k=>delete R1.OCC[k]);
 R2.NOT.length=0;try{R2.bd()}catch(_){}
 const relT=t=>{const d=new Date(t),m=Math.round((Date.now()-d)/6e4);if(m<1)return 'agora';if(m<60)return 'há '+m+' min';const h=Math.round(m/60);if(h<24)return 'há '+h+' h';const dd=Math.round(h/24);return dd===1?'ontem':String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')};
 let NSEEN=new Set();async function loadNotes(first){try{const {data}=await sb.from('notifications').select('*').eq('user_id',uid).order('created_at',{ascending:false}).limit(40);if(!data)return;const N=R2.NOT;
@@ -6365,10 +6366,11 @@ try{AG.chgLim=freq<=1?1:freq===2?2:3}catch(_){}
 
 /* ---- aulas reais ---- */
 const DB={};
-(CL||[]).forEach(c=>{const d=new Date(c.starts_at),n=dayN(d),k=keyOf(n),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:c.status,note:c.note};
+(CL||[]).forEach(c=>{const d=new Date(c.starts_at),n=dayN(d),k=keyOf(n),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:c.status,note:c.note,k,h,kind:c.kind};
   if(c.status==='cancelada'){const cr=c.note==='credito';AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr)AG.dadas.push({d:k,h});return}
   AG.slots.push({d:k,h,conf:c.status==='confirmada',fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||window.__LOC0||undefined})});
+{let used=(CL||[]).filter(c=>c.kind==='credito'&&c.status!=='cancelada').length;AG.creds.sort((a,b)=>a.exp-b.exp);while(used-->0&&AG.creds.length)AG.creds.shift()}
 try{R1.syncCred&&R1.syncCred()}catch(_){}
 {const fc=(CL||[]).find(c=>c.status!=='cancelada');if(fc){const d=new Date(fc.starts_at),A=window.__CYA;window.__CYM0=d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}}
 /* semana e dia de hoje na agenda */
@@ -6430,18 +6432,7 @@ if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{c
      const {error}=await sb.from('profiles').update(up).eq('id',uid);if(error)return toast('Não salvou: '+error.message);Object.assign(P,up);s.remove();toast('Perfil atualizado')};
    s.querySelector('#rl-out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}})}}
 
-/* usar crédito: escolher um horário livre do personal */
-document.addEventListener('click',async e=>{if(!e.target.closest('[data-usecr]'))return;e.stopImmediatePropagation();
-  const [{data:cr},{data:fs}]=await Promise.all([sb.rpc('my_credits'),sb.rpc('free_slots',{p_days:14})]);
-  if(!cr){toast('Você não tem crédito disponível');return}
-  const D=['dom','seg','ter','qua','qui','sex','sáb'],by={};(fs||[]).forEach(x=>{const d=new Date(x.starts_at),k=d.toDateString();(by[k]=by[k]||{d,h:[]}).h.push(d)});
-  const days=Object.values(by).slice(0,10);
-  sheet(`<span class="lbl">Remarcar com crédito</span><p class="d" style="font-size:36px;margin:6px 0 4px">Escolha o horário</p><p class="meta" style="margin:0 0 12px">Você tem ${cr} ${cr===1?'crédito':'créditos'}. Só aparecem os horários livres do seu personal.</p>
-   ${days.length?days.map(g=>`<div style="margin:10px 0 4px;font-weight:800;font-size:13px">${D[g.d.getDay()]}, ${String(g.d.getDate()).padStart(2,'0')}/${String(g.d.getMonth()+1).padStart(2,'0')}</div><div class="chips" style="display:flex;flex-wrap:wrap;gap:6px">${g.h.map(t=>`<button class="chip" data-crt="${t.toISOString()}">${t.getHours()}h${t.getMinutes()?String(t.getMinutes()).padStart(2,'0'):''}</button>`).join('')}</div>`).join(''):'<p class="meta">Nenhum horário livre nos próximos dias. Fale com o personal.</p>'}
-`,s=>s.addEventListener('click',async ev=>{const b=ev.target.closest('[data-crt]');if(!b)return;const t=new Date(b.dataset.crt);
-     if(!confirm2)return;b.disabled=true;const {error}=await sb.rpc('use_credit',{p_at:t.toISOString()});if(error){b.disabled=false;toast(error.message);return}
-     toast('Aula marcada: '+D[t.getDay()]+' '+t.getHours()+'h. O personal recebeu o aviso.');s.closest('.scrim')?s.closest('.scrim').remove():s.remove();setTimeout(()=>location.reload(),1200)}))},true);
-const confirm2=true;
+
 
 /* ===== Dieta: PDF do nutricionista (layout novo) ===== */
 const DE=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -6724,8 +6715,23 @@ async function sync(){if(busy)return;busy=true;try{
     if(!to)continue;const {error}=await sb.from('classes').update({status:to,note}).eq('id',id);
     if(error){toast(/próxima/.test(error.message)?'Só dá para confirmar a próxima aula':'Não salvou: '+error.message);if(x&&to==='confirmada')x.conf=false;continue}
     db.st=to;db.note=note}
-  if(AG.slots.some(x=>!x._id&&!x._warn)){AG.slots.filter(x=>!x._id).forEach(x=>x._warn=1);toast('Pedir horário novo pelo app chega na próxima etapa. Fale com o Sérgio.')}
+  /* horário novo (marcar, crédito, extra) e remarcação: salva no banco e já fica confirmado */
+  const at=(k,h)=>{const n=KN[k];if(n==null)return null;return new Date(BASE.getFullYear(),BASE.getMonth(),BASE.getDate()+n,Math.floor(h),Math.round((h%1)*60))};let ch=false;
+  for(const x of AG.slots.filter(x=>!x._id&&!x._saving)){const t=at(x.d,x.h);if(!t)continue;x._saving=1;const kind=x.extra?'extra':x.rep==='cr'?'credito':'plano';
+    const {data,error}=await sb.from('classes').insert({student_id:uid,starts_at:t.toISOString(),location:x.loc||window.__LOC0||null,status:'marcada',kind}).select().single();
+    if(error){delete x._saving;toast('Não marcou: '+error.message);continue}x._id=data.id;delete x.pend;DB[data.id]={st:'marcada',note:null,k:x.d,h:x.h,kind};ch=true}
+  for(const x of AG.slots.filter(x=>x._id&&DB[x._id])){const db=DB[x._id];if(db.k===x.d&&Math.abs(db.h-x.h)<.01)continue;const t=at(x.d,x.h);if(!t)continue;
+    const up={starts_at:t.toISOString(),status:'marcada'};if(x.extra&&db.kind!=='extra')up.kind='extra';
+    const {error}=await sb.from('classes').update(up).eq('id',x._id);if(error){toast('Não remarcou: '+error.message);continue}
+    db.k=x.d;db.h=x.h;db.st='marcada';if(up.kind)db.kind=up.kind;delete x.pend;x.conf=false;ch=true}
+  if(ch){try{R1.agAll()}catch(_){}loadFree()}
 }finally{busy=false}}
+async function loadFree(){try{const {data}=await sb.rpc('free_slots',{p_days:21});if(!data)return;const mine=new Set(AG.slots.map(x=>x.d+'|'+x.h));
+  const L=data.map(r=>{const d=new Date(r.starts_at);return [keyOf(dayN(d)),d.getHours()+d.getMinutes()/60]}).filter(f=>!mine.has(f[0]+'|'+f[1]));
+  const keep=AG.free.filter(f=>!L.some(g=>g[0]===f[0]&&g[1]===f[1])&&AG.canc.some(c=>c.d===f[0]&&Math.abs(c.h-f[1])<.01));AG.free.length=0;[...L,...keep].forEach(f=>AG.free.push(f));try{R1.agAll()}catch(_){}}catch(_){}}
+loadFree();
+try{sb.rpc('public_pix').then(({data})=>{if(data)window.__PIX=data})}catch(_){}
+try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=+data.avulsa;try{AVU=+data.avulsa}catch(_){}}})}catch(_){}
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 

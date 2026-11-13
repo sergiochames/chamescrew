@@ -4290,6 +4290,9 @@ function finCheck(){let ch=false;
   STU.forEach(X=>{const rq=X._rq;if(!rq)return;const c=CHG.find(c=>c.ref==='pl:'+X._id);if(!c)return;const v=planVal(X),pn=plName(X);if(c.v!==v||c.pl!==pn){c.v=v;c.pl=pn;ch=true}
     if(rq.pay_status==='pago'&&c.st!=='pago'){c.st='pago';c.d='pago em '+ddmm(new Date());c._ok=1;ch=true}
     if(c.st==='pago'&&(rq.pay_status==='pendente'||rq.pay_status==='informado')&&!c._cf){c._cf=1;rq.pay_status='pago';sb.rpc('confirm_payment',{p_student:X._id,p_method:'manual'}).then(({error})=>{if(error)return toast('Não liberou: '+error.message);RSV=RSV.filter(r=>r.student_id!==X._id);sync().catch(()=>{})});ch=true}});
+  CLS.forEach(c=>{if(c.kind!=='extra')return;const X=stuById(c.student_id);if(!X)return;const ref='ex:'+c.id,cur=CHG.find(z=>z.ref===ref);
+    if(c.status==='cancelada'){if(cur&&cur.st!=='pago'){CHG.splice(CHG.indexOf(cur),1);ch=true}return}
+    if(!cur){const d=new Date(c.starts_at);CHG.unshift({n:X.n,pl:'Aula extra • '+ddmm(d)+' '+pad(d.getHours())+'h',v:+PRICE.avulsa||0,st:'aberto',d:'vence '+ddmm(d),ref});ch=true}});
   CHG.forEach(c=>{if(!c.ref||c.st!=='pago'||c._ok)return;c._ok=1;ch=true;if(!c.ref.startsWith('ren:'))return;const [,id,au]=c.ref.split(':'),X=stuById(id);if(!X)return;
     const d=new Date(au+'T12:00:00'),nd=new Date(d.getFullYear(),d.getMonth()+MON(X),d.getDate());
     sb.from('profiles').update({access_until:iso(nd)}).eq('id',id).then(async({error})=>{if(error)return toast('Não renovou: '+error.message);await sb.rpc('gen_classes',{p_student:id,p_weeks:9});toast(X.n.split(' ')[0]+' renovado até '+ddmm(nd));redraw()})});
