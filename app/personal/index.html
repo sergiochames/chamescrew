@@ -11,7 +11,7 @@
 for(var i=0;i<D.length;i++)if(D[i].test(m))return true;return false}</script><style id="tone9">
 :root[data-theme="dark"][data-tone="preto"]{--bg:#0e0f11;--fg:#efede8;--muted:#9c9a94;--line:#2a2b30;--frost:#222328;--sec:#16171a;--soft:#16171a;--card:#1a1b1f;--paper:#1a1b1f;--bz1:#2c2d33;--bz2:#16171a;--glass:rgba(14,15,17,.86);--on-ink:#0e0f11}
 :root[data-theme="dark"][data-tone="chumbo"]{--bg:#262624;--fg:#efede8;--muted:#a3a097;--line:#42413d;--frost:#393936;--sec:#2b2b29;--soft:#2b2b29;--card:#30302e;--paper:#30302e;--bz1:#3a3936;--bz2:#22221f;--glass:rgba(38,38,36,.86);--on-ink:#262624}
-html[data-tone] body{background:var(--bg)}
+html[data-tone] body{background:var(--bg)}[data-mic],#rpdf,[data-pexp],[data-gical],[data-subpix],[data-subcard],[data-subfail],#pvt{display:none!important}header.top{box-shadow:0 -50px 0 50px var(--bg)}
 :root[data-theme="dark"][data-tone="chumbo"]{--frost:#30302e;--line:#3d3c39}:root[data-theme="dark"][data-tone="chumbo"] .ink{--ink:#30302e;--on-ink:#efede8;--on-ink-muted:#a3a097;--ink-line:#45443f;border:1px solid #3d3c39}
 :root[data-theme="dark"][data-tone="preto"] .ink{--ink:#1a1b1f;--on-ink:#efede8;--on-ink-muted:#9c9a94;--ink-line:#2e2f35;border:1px solid #2a2b30}
 #tone9t{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);z-index:2147483600;background:var(--fg);color:var(--bg);font:700 13.5px system-ui,-apple-system,sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;transition:opacity .25s}
@@ -34,6 +34,17 @@ document.addEventListener('DOMContentLoaded',function(){paint();new MutationObse
 })();
 </script>
 </head><body>
+<div id="rl-cover"><div class="lg9"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46"/></svg><span>CC</span></div></div>
+<style>#rl-cover{position:fixed;inset:0;z-index:2147483000;background:var(--bg,#262624);display:grid;place-items:center;transition:opacity .28s ease}
+#rl-cover .lg9{position:relative;width:84px;height:84px;display:grid;place-items:center;animation:lg9in .45s cubic-bezier(.2,.8,.2,1) both}
+#rl-cover svg{position:absolute;inset:0;width:100%;height:100%;animation:lg9rot 2.2s linear infinite}
+#rl-cover circle{fill:none;stroke:var(--fg,#efede8);stroke-width:3;stroke-dasharray:7 7;stroke-linecap:round;opacity:.9}
+#rl-cover span{width:62px;height:62px;border-radius:50%;background:var(--fg,#efede8);color:var(--bg,#262624);display:grid;place-items:center;font:900 22px/1 system-ui,-apple-system,sans-serif;letter-spacing:-.5px;animation:lg9pulse 1.6s ease-in-out .45s infinite}
+#rl-cover.out{opacity:0}#rl-cover.out .lg9{transform:scale(1.12);transition:transform .28s ease}
+@keyframes lg9rot{to{transform:rotate(360deg)}}@keyframes lg9in{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}@keyframes lg9pulse{50%{transform:scale(.94)}}
+</style>
+<script>window.__unCover=function(){var c=document.getElementById("rl-cover");if(!c||c.classList.contains("out"))return;c.classList.add("out");setTimeout(function(){c.remove()},300)};setTimeout(function(){window.__unCover()},12000)</script>
+
 <meta charset="utf-8">
 <title>App do personal</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -4061,7 +4072,7 @@ body.rl .proto{display:none!important}
 .rl-qr{width:132px;height:132px;flex:none;background:#fff;border-radius:10px;padding:6px;display:grid;place-items:center}.rl-qr svg{width:100%;height:100%}
 .rl-sync{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 96px);background:#16171a;color:#fff;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px;z-index:9998;opacity:0;transition:opacity .2s;pointer-events:none}.rl-sync.on{opacity:.92}
 </style>
-<div id="rl-ld">Carregando…</div>
+<div id="rl-ld"></div>
 <script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
@@ -4074,7 +4085,7 @@ body.rl .proto{display:none!important}
 document.body.classList.add('rl-wait');
 (async()=>{
 const CF=window.CC_CONFIG,sb=supabase.createClient(CF.supabaseUrl,CF.supabaseKey);
-const ld=document.getElementById('rl-ld'),fail=t=>{ld.innerHTML=`<div style="text-align:center;padding:24px">${t}<br><br><a href="/app/?sair" style="color:inherit">Sair e entrar de novo</a></div>`};
+const ld=document.getElementById('rl-ld'),fail=t=>{try{window.__unCover&&window.__unCover()}catch(_){}ld.innerHTML=`<div style="text-align:center;padding:24px">${t}<br><br><a href="/app/?sair" style="color:inherit">Sair e entrar de novo</a></div>`};
 const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('/app/?p=1');return}
 const {data:ME}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
 if(!ME||ME.role!=='equipe'){location.replace('/app/');return}
@@ -4085,7 +4096,10 @@ const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const APP=location.origin+'/app/';
 let STUD=[],RQ=[],CLS=[],FXS=[],WKS=[],PS=null,INV=[],LGA=[],DCA=[],WCA=[];
 let RSV=[],ANA=[],RQC=[];
-async function fetchAll(){try{const [{data:a1},{data:r1}]=await Promise.all([sb.from('anam_answers').select('*').order('created_at',{ascending:false}),sb.from('requests').select('student_id,plan_period,pay_amount,monthly_price,pay_status,freq,closed_at').eq('status','aceito').order('closed_at',{ascending:false})]);ANA=a1||[];RQC=r1||[]}catch(_){}try{await sb.rpc('expire_reservations')}catch(_){}try{const {data}=await sb.from('requests').select('*').in('pay_status',['pendente','informado']).order('pay_due');RSV=data||[]}catch(_){RSV=[]}const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
+async function fetchAll(){const G=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
+  const pA=Promise.all([G(sb.from('anam_answers').select('*').order('created_at',{ascending:false})),G(sb.from('requests').select('student_id,plan_period,pay_amount,monthly_price,pay_status,freq,closed_at').eq('status','aceito').order('closed_at',{ascending:false}))]);
+  const pR=G(sb.rpc('expire_reservations')).then(()=>G(sb.from('requests').select('*').in('pay_status',['pendente','informado']).order('pay_due')));
+  const pAR=Promise.all([pA,pR]).then(([[{data:a1},{data:r1}],{data:rv}])=>{ANA=a1||[];RQC=r1||[];RSV=rv||[]}).catch(()=>{RSV=RSV||[]});const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
   const [st,cl,rq,fx,wo,ps,iv,lg,dc,wc]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).eq('archived',false).order('created_at',{ascending:false}),
@@ -4094,7 +4108,7 @@ async function fetchAll(){try{const [{data:a1},{data:r1}]=await Promise.all([sb.
     sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
     sb.from('daily_checkins').select('user_id,day,answers').gte('day',iso(new Date(Date.now()-42*864e5))),
     sb.from('week_closes').select('*').gte('week_start',iso(new Date(Date.now()-70*864e5))).order('week_start',{ascending:false})]);
-  const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[]}
+  const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[];await pAR}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
 
 /* ---------- 1) estado do protótipo salvo no banco ---------- */
@@ -4698,6 +4712,12 @@ document.addEventListener('click',async e=>{const b=e.target.closest('[data-ped]
   if(b.dataset.pedwa){window.open(pedWa(c),'_blank');return}
   b.disabled=true;const {error}=await sb.rpc('answer_request',{p_id:c.id,p_ok:true});if(error){b.disabled=false;return toast('Não deu: '+error.message)}
   toast('Confirmado. O aluno recebeu o aviso.');try{const wo=S.wo,w3=S.w3,dd=S.day;await fetchAll();apply();S.wo=wo;S.w3=w3;S.day=dd;draw()}catch(_){location.reload()}},true);
+window.addEventListener('click',e=>{const b=e.target.closest('[data-fwa],[data-mwa],[data-remind]');if(!b)return;e.stopPropagation();e.preventDefault();
+  let nm='',msg='';try{if(b.dataset.remind){nm=b.dataset.remind;msg='Oi, '+nm.split(' ')[0]+'! Passando para lembrar do pagamento do seu plano. Qualquer dúvida, me chama.'}
+    else if(b.dataset.mwa!==undefined){nm=b.dataset.who;const x=stu(nm),m=x&&x.msgs&&x.msgs[+b.dataset.mwa];msg='Oi, '+nm.split(' ')[0]+'! Sobre '+((m&&m.ex)||'seu recado')+': '}
+    else{nm=A2.open||'';msg='Oi, '+nm.split(' ')[0]+'! '}}catch(_){}
+  const X=STU.find(z=>z.n===nm),p=X&&STUD.find(z=>z.id===X._id);if(!p||!p.phone)return toast('Esse aluno não tem WhatsApp cadastrado');
+  window.open(`https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(msg)}`,'_blank')},true);
 /* ---------- desenho ---------- */
 const _draw=draw;
 draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
@@ -4706,8 +4726,8 @@ const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atua
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
 lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
 S.tab='agenda';draw();if(!PS||!PS.data||PS.data.v!==2)saveNow();
-document.body.classList.remove('rl-wait');document.body.classList.add('rl');ld.remove();
-})().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
+document.body.classList.remove('rl-wait');document.body.classList.add('rl');ld.remove();try{window.__unCover&&window.__unCover()}catch(_){}
+})().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);try{window.__unCover&&window.__unCover()}catch(_){}const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 
 </script>
 
