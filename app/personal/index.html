@@ -1759,21 +1759,26 @@ function daySheet2(i,asFree){const w=CUR(),k=w.plans.findIndex(p=>p.days.include
 const naD=i=>(i>=5?'no ':'na ')+DLL[i].toLowerCase();
 const BODY={'Perna':['Quadríceps','Posterior','Panturrilha','Adutores'],'Glúteo':['Glúteo','Abdutores'],'Peito':['Peito'],'Costas':['Costas','Trapézio'],'Ombro':['Ombro'],'Braços':['Bíceps','Tríceps','Antebraço'],'Core':['Abdômen','Oblíquos','Lombar']};
 const bodyOf=ex=>Object.keys(BODY).filter(k=>ex.some(e=>BODY[k].includes(musOf(e.n))));
-function tplPick(title,done){let niv='',bd='',q='';const items=FAVW.filter(f=>f.kind!=='semana'&&f.p.ex.length).map(f=>({name:f.p.name||f.name,sub:f.name,ex:f.p.ex,niv:NIV.find(n=>f.tags.includes(n))||'',body:bodyOf(f.p.ex)}));
-  const list=()=>{const L=items.map((x,k)=>({x,k})).filter(({x})=>(!niv||x.niv===niv)&&(!bd||x.body.includes(bd))&&(!q||(x.name+' '+x.sub+' '+x.ex.map(e=>e.n).join(' ')).toLowerCase().includes(q)));
-    return L.map(({x,k})=>`<button class="who" data-tp="${k}"><span class="av0">★</span><span style="min-width:0"><b>${esc(x.name)}</b><small>${x.niv?esc(x.niv)+' • ':''}${x.ex.length} exercícios: ${esc(x.ex.slice(0,3).map(e=>e.n).join(', '))}${x.ex.length>3?'…':''}</small></span><span class="quota">usar ›</span></button>`).join('')||`<p class="note">${items.length?'Nenhum treino com esse filtro.':'Você ainda não tem treinos prontos. Crie em Treinos › Treinos prontos.'}</p>`};
-  const bodies=Object.keys(BODY).filter(k=>items.some(x=>x.body.includes(k)));
-  sheet(`<span class="lbl">Treinos prontos • só de um dia</span><h3 class="d">${esc(title)}</h3>
+function tplPick(title,done){let q='',P=[];
+  const items=[...FAVW.filter(f=>f.kind!=='semana'&&f.p&&f.p.ex.length).map(f=>({name:f.p.name||f.name,sub:f.name!==(f.p.name||f.name)?f.name:'Treino',ex:f.p.ex,tags:f.tags||[]})),
+    ...FAVW.filter(f=>f.kind==='semana').flatMap(f=>f.plans.map((p,i)=>({p,i})).filter(({p})=>p.ex.length).map(({p,i})=>({name:p.name||('Treino '+L8[i]),sub:'Do programa '+f.name+' • '+L8[i],ex:p.ex,tags:f.tags||[]})))];
+  const inP=(L,path)=>L.filter(x=>path.every(v=>x.tags.includes(v)));
+  const list=()=>{let L,head='';
+    if(q){L=items.filter(x=>(x.name+' '+x.sub+' '+x.ex.map(e=>e.n).join(' ')).toLowerCase().includes(q))}
+    else{L=inP(items,P);const lv=Math.min(P.length,PFOLD.length-1),g=PFOLD[P.length];
+      head=`<div class="fcrumb"><button data-tcr="0" class="${P.length?'':'on'}">Todos</button>${P.map((v,k)=>`<i>›</i><button data-tcr="${k+1}" class="${k===P.length-1?'on':''}">${esc(v)}</button>`).join('')}</div>`;
+      if(g){const op=g.o.filter(v=>inP(L,[v]).length);if(op.length)head+=`<span class="lbl" style="margin-top:4px">${esc(g.n)}</span><div class="chips">${op.map(v=>`<button class="chip" data-tgo="${esc(v)}">${esc(v)} <small style="opacity:.6">${inP(L,[v]).length}</small></button>`).join('')}</div>`}}
+    return head+(L.map(x=>`<button class="who" data-tp="${items.indexOf(x)}"><span class="av0">★</span><span style="min-width:0"><b>${esc(x.name)}</b><small>${esc(x.sub)} • ${x.ex.length} exercícios: ${esc(x.ex.slice(0,3).map(e=>e.n).join(', '))}${x.ex.length>3?'…':''}</small></span><span class="quota">usar ›</span></button>`).join('')
+      ||`<p class="note">${items.length?'Nenhum treino aqui.':'Você ainda não tem treinos salvos. Salve um treino ou um programa na Biblioteca (aba Treinos).'}</p>`)};
+  sheet(`<span class="lbl">Biblioteca • um treino só</span><h3 class="d">${esc(title)}</h3>
     <input class="inp srch" id="tpq" type="search" placeholder="Buscar treino ou exercício" autocomplete="off">
-    <div class="chips"><button class="chip" data-tn="" aria-pressed="true">Todos</button>${NIV.map(n=>`<button class="chip" data-tn="${n}" aria-pressed="false">${n}</button>`).join('')}</div>
-    <div class="chips"><button class="chip" data-tb="" aria-pressed="true">Corpo todo</button>${bodies.map(k=>`<button class="chip" data-tb="${k}" aria-pressed="false">${k}</button>`).join('')}</div>
     <div id="tpl" style="display:flex;flex-direction:column;gap:8px">${list()}</div>
-    <p class="note" style="margin:0">Entra só um treino, sem cargas. Os outros treinos do aluno não mudam.</p>
+    <p class="note" style="margin:0">Entra só esse treino, sem cargas. Os outros treinos do aluno não mudam. Vale também pegar um treino de dentro de um programa.</p>
     <button class="btn" data-close>Fechar</button>`,sh=>{const re=()=>sh.querySelector('#tpl').innerHTML=list();
     sh.querySelector('#tpq').oninput=e=>{q=e.target.value.trim().toLowerCase();re()};
-    sh.addEventListener('click',e=>{const n=e.target.closest('[data-tn]'),c=e.target.closest('[data-tb]'),b=e.target.closest('[data-tp]');
-      if(n){niv=n.dataset.tn;sh.querySelectorAll('[data-tn]').forEach(x=>x.setAttribute('aria-pressed',x===n));re();return}
-      if(c){bd=c.dataset.tb;sh.querySelectorAll('[data-tb]').forEach(x=>x.setAttribute('aria-pressed',x===c));re();return}
+    sh.addEventListener('click',e=>{const g=e.target.closest('[data-tgo]'),c=e.target.closest('[data-tcr]'),b=e.target.closest('[data-tp]');
+      if(g){P.push(g.dataset.tgo);re();return}
+      if(c){P=P.slice(0,+c.dataset.tcr);re();return}
       if(b){const x=items[+b.dataset.tp];sh.remove();done(x.name,x.ex)}})})}
 function cardioSheet2(i){const w=CUR(),c={...cdOf(w,i)};
   const CT=['Corrida de rua','Caminhada','Esteira','Esteira inclinada','Bicicleta ergométrica','Bike na rua','Spinning','Elíptico','Escada','Remo','Transport','Natação','Pular corda','Jump','Circuito funcional'],CMIN=[10,15,20,30,45,60],CINT=['Leve','Moderado','Intenso','HIIT'];
@@ -2266,10 +2271,10 @@ function indCard(x){const f=x.n.split(' ')[0],sl=f.toLowerCase().normalize('NFD'
   return `<section class="card"><span class="lbl">Indicação</span>${tg}
     <div class="indr">${fakeQR(sl)}<span><b>${PERS.slug}.app/i/${sl}</b><small>Quem entrar por aqui ganha ${IND.desc}% no primeiro plano. ${esc(f)} ganha ${IND.rec}% quando o indicado fica ${IND.dias} dias ativo.</small></span></div>
     <div class="kpi3"><div><b>${ind.n}</b><small>indicou</small></div><div><b>${ind.ok}</b><small>viraram alunos</small></div><div><b class="${ind.ok?'up':''}">${ind.ok?IND.rec+'%':'–'}</b><small>desconto ganho</small></div></div></section>`}
-function remCard(x){const lim=remLim(x),used=x.remu||0,f=x.n.split(' ')[0];
+function remCard(x){const lim=x._ci&&x._ci.lim!=null?x._ci.lim:remLim(x),used=x.remu||0,f=x.n.split(' ')[0],cyc=x._ci&&x._ci.cycle_start?(d=>d.split('-').reverse().slice(0,2).join('/'))(x._ci.cycle_start)+' a '+(d=>d.split('-').reverse().slice(0,2).join('/'))(x._ci.cycle_end):'nov';
   return `<section class="card"><div class="row"><span class="lbl">Remarcações e créditos</span></div>
-    <div class="kpi3"><div><b class="${lim!==null&&used>=lim?'bad':''}">${lim===null?'Livre':used+'/'+lim}</b><small>remarcações em nov</small></div><div><b>${x.cred||0}</b><small>${(x.cred||0)===1?'crédito':'créditos'} no banco</small></div><div><b>${freqOf(x)}x</b><small>por semana</small></div></div>
-    ${lim!==null&&used>=lim?`<div class="info warn">${esc(f)} usou todas as remarcações de novembro. Remarcar e cancelar estão travados: se faltar, conta como dada.</div>`:''}
+    <div class="kpi3"><div><b class="${lim!==null&&used>=lim?'bad':''}">${lim===null?'Livre':used+'/'+lim}</b><small>mudanças • ${cyc}</small></div><div><b>${x.cred||0}</b><small>${(x.cred||0)===1?'crédito':'créditos'} no banco</small></div><div><b>${freqOf(x)}x</b><small>por semana</small></div></div>
+    ${lim!==null&&used>=lim?`<div class="info warn">${esc(f)} usou todas as mudanças deste ciclo (${cyc}). Se faltar, conta como dada.</div>`:''}
     ${x.remx?`<p class="note" style="margin:0">Inclui ${x.remx} remarcação extra dada por você.</p>`:''}<div class="row2"><button class="btn" data-gcred="${esc(x.n)}">+ Dar crédito de aula</button><button class="btn" data-fgift>Dar presente</button></div></section>`}
 const ANM=[{id:1,n:'Anamnese Chames',pronta:true,fav:true,st:'visual',sec:[['Objetivo',['Objetivo principal','Onde quer melhorar o corpo','Prazo que tem em mente']],['Histórico de treino',['Já treinou? Quanto tempo','Modalidades que pratica','Quantas vezes por semana pode treinar']],['Saúde',['Lesões ou dores atuais','Cirurgias','Doenças diagnosticadas','Usa medicação contínua']],['Triagem (PAR-Q)',['Algum médico disse que você tem problema de coração?','Sente dor no peito com esforço?','Já desmaiou ou teve tontura forte?','Tem problema ósseo ou articular que piora com exercício?']],['Rotina',['Horas de sono','Profissão e nível de estresse','Como é a alimentação hoje']],['Preferências',['Exercícios que ama','Exercícios que odeia','Melhor horário para treinar']]]},{id:2,n:'Anamnese corrida',fav:true,form:[{q:'Onde você treina?',t:'multi',opts:['Academia','Em casa','Na praia']},{q:'Quantas vezes por semana você corre?',t:'num',opts:[]},{q:'Pace atual em 5 km',t:'short',opts:[]},{q:'Já teve canelite ou fascite?',t:'yn',opts:[]}]}];
 let ANMdef=1;
@@ -4095,7 +4100,7 @@ const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0
 const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const APP=location.origin+'/app/';
 let STUD=[],RQ=[],CLS=[],FXS=[],WKS=[],PS=null,INV=[],LGA=[],DCA=[],WCA=[];
-let RSV=[],ANA=[],RQC=[];
+let RSV=[],ANA=[],RQC=[],CYC={};
 async function fetchAll(){const G=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
   const pA=Promise.all([G(sb.from('anam_answers').select('*').order('created_at',{ascending:false})),G(sb.from('requests').select('student_id,plan_period,pay_amount,monthly_price,pay_status,freq,closed_at').eq('status','aceito').order('closed_at',{ascending:false}))]);
   const pR=G(sb.rpc('expire_reservations')).then(()=>G(sb.from('requests').select('*').in('pay_status',['pendente','informado']).order('pay_due')));
@@ -4108,7 +4113,8 @@ async function fetchAll(){const G=q=>Promise.resolve(q).then(r=>r,e=>({data:null
     sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
     sb.from('daily_checkins').select('user_id,day,answers').gte('day',iso(new Date(Date.now()-42*864e5))),
     sb.from('week_closes').select('*').gte('week_start',iso(new Date(Date.now()-70*864e5))).order('week_start',{ascending:false})]);
-  const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[];await pAR}
+  const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[];await pAR;
+  try{const ids=(STUD||[]).filter(p=>p.role!=='equipe').map(p=>p.id);const R2=await Promise.all(ids.map(id=>sb.rpc('cycle_info',{p_student:id}).then(r=>[id,r.data],()=>[id,null])));CYC={};R2.forEach(([i,d])=>{if(d)CYC[i]=d})}catch(_){}}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
 
 /* ---------- 1) estado do protótipo salvo no banco ---------- */
@@ -4204,7 +4210,7 @@ function apply(){
     if(WKS.some(w=>w.user_id===X._id))X.wk=wkFromDB(X._id);
     if(p.plan_period)X.per=p.plan_period;{const rq=RQC.find(r=>r.student_id===X._id);if(rq){X._rq=rq;if(rq.freq&&!(X.fixo||[]).length)X._freq=rq.freq}}
     {const an=ANA.find(a=>a.user_id===X._id);for(let i=ANSW.length-1;i>=0;i--)if(ANSW[i].n===X.n&&ANSW[i]._real)ANSW.splice(i,1);if(an){const d=new Date(an.created_at);ANSW.push({n:X.n,a:+an.template_id||an.template_id,st:'ok',d:pad(d.getDate())+'/'+pad(d.getMonth()+1),_real:an})}}
-    X.foto=p.avatar_url||null;X.diet=p.diet||null;X.ig=p.instagram?String(p.instagram).replace(/^@+/,''):null;X.cred=Math.max(0,CLS.filter(c=>c.student_id===X._id&&c.status==='cancelada'&&c.note==='credito').length-CLS.filter(c=>c.student_id===X._id&&c.kind==='credito'&&c.status!=='cancelada').length);
+    X.foto=p.avatar_url||null;X.diet=p.diet||null;X.ig=p.instagram?String(p.instagram).replace(/^@+/,''):null;X._ci=CYC[X._id]||null;X.remu=X._ci?X._ci.used:(X.remu||0);X.cred=X._ci?X._ci.credits:Math.max(0,CLS.filter(c=>c.student_id===X._id&&c.status==='cancelada'&&c.note==='credito').length-CLS.filter(c=>c.student_id===X._id&&c.kind==='credito'&&c.status!=='cancelada').length);
     X._on=!!p.onboarded;X._email=INV.some(i=>i.profile_id===X._id&&i.used_by)||!INV.some(i=>i.profile_id===X._id);const ui=INV.find(i=>i.profile_id===X._id&&!i.used_by);if(ui)X._code=ui.code});
   STU.forEach(X=>{if(X._id)KNOWN.add(X._id)});try{realWC()}catch(_){}
   S.ev={};S.sp={};const now=new Date();
@@ -4691,8 +4697,8 @@ function avFill(){const W=STU.filter(x=>x.foto);if(!W.length)return;document.que
 const relT=t=>{const d=new Date(t),m=Math.round((Date.now()-d)/6e4);if(m<1)return 'agora';if(m<60)return 'há '+m+' min';const h=Math.round(m/60);if(h<24)return 'há '+h+' h';const dd=Math.round(h/24);return dd===1?'ontem':String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')};
 const NIC={cancel:'❌',move:'🔁',conf:'✅',undo:'↩️',book:'📅',req:'🙋',pay:'💰',exp:'⏰',closed:'🤝',talk:'💬',anam:'📋'};let PNSEEN=new Set();
 async function loadPN(first){try{const {data}=await sb.from('notifications').select('*').eq('user_id',ME.id).order('created_at',{ascending:false}).limit(40);if(!data)return;
-  const fresh=data.filter(n=>!n.read_at&&!PNSEEN.has(n.id));PNOT.length=0;data.forEach(n=>{PNSEEN.add(n.id);PNOT.push({k:n.kind,ic:NIC[n.kind]||'🔔',t:n.title,s:n.body||'',w:relT(n.created_at),new:n.read_at?0:1,go:n.go||'agenda',_id:n.id})});
-  if(!first&&fresh.length){toast('🔔 '+fresh[0].title);try{await sync0()}catch(_){}}try{const b=document.querySelector('.pbell');if(b){const n=PNOT.filter(x=>x.new).length;let i=b.querySelector('i');if(n){if(!i){i=document.createElement('i');b.appendChild(i)}i.textContent=n}else if(i)i.remove()}}catch(_){}}catch(_){}}
+  const fresh=data.filter(n=>!n.read_at&&!PNSEEN.has(n.id));PNOT.length=0;data.forEach(n=>{PNSEEN.add(n.id);PNOT.push({k:n.kind,ic:NIC[n.kind]||'🔔',t:n.title,s:n.body||'',w:relT(n.created_at),new:n.read_at?0:1,go:n.go||'agenda',_id:n.id,_ref:n.ref})});
+  if(!first&&fresh.length){toast('🔔 '+fresh[0].title);try{const wo=S.wo,w3=S.w3,dd=S.day;await fetchAll();apply();S.wo=wo;S.w3=w3;S.day=dd;if(!document.querySelector('.scrim'))draw()}catch(_){try{await sync0()}catch(__){}}}try{const b=document.querySelector('.pbell');if(b){const n=PNOT.filter(x=>x.new).length;let i=b.querySelector('i');if(n){if(!i){i=document.createElement('i');b.appendChild(i)}i.textContent=n}else if(i)i.remove()}}catch(_){}}catch(_){}}
 async function sync0(){try{await fetchAll();apply();draw()}catch(_){}}
 loadPN(true);setInterval(()=>loadPN(false),45000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadPN(false)});
 document.addEventListener('click',e=>{if(!e.target.closest('[data-pnot]'))return;setTimeout(async()=>{const ids=PNOT.filter(x=>x.new&&x._id).map(x=>x._id);if(!ids.length)return;await sb.from('notifications').update({read_at:new Date().toISOString()}).in('id',ids);PNOT.forEach(x=>x.new=0);try{draw()}catch(_){}},1500)},true);
@@ -4721,6 +4727,12 @@ window.addEventListener('click',e=>{const b=e.target.closest('[data-fwa],[data-m
     else{nm=A2.open||'';msg='Oi, '+nm.split(' ')[0]+'! '}}catch(_){}
   const X=STU.find(z=>z.n===nm),p=X&&STUD.find(z=>z.id===X._id);if(!p||!p.phone)return toast('Esse aluno não tem WhatsApp cadastrado');
   window.open(`https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(msg)}`,'_blank')},true);
+window.addEventListener('click',e=>{const b=e.target.closest('[data-pgo]');if(!b)return;const n=PNOT[+b.dataset.pgo];if(!n||!n._ref)return;
+  const c=CLS.find(z=>z.id===n._ref&&z.status==='pedido');if(!c)return;e.stopPropagation();e.preventDefault();document.querySelectorAll('.scrim').forEach(x=>x.remove());pedList(c.id)},true);
+window.addEventListener('click',async e=>{const b=e.target.closest('#gc-ok');if(!b)return;e.stopPropagation();e.preventDefault();const sh=b.closest('.scrim')||document;const nm=(sh.querySelector('.lbl')||{}).textContent||'';const X=STU.find(z=>z.n===nm);
+  if(!X||!X._id)return toast('Aluno não encontrado');const mo=(sh.querySelector('[data-gcm][aria-pressed="true"]')||{}).dataset;b.disabled=true;
+  const {data,error}=await sb.rpc('give_credit',{p_student:X._id,p_note:mo&&mo.gcm||null});if(error){b.disabled=false;return toast('Não deu: '+error.message)}
+  document.querySelectorAll('.scrim').forEach(x=>x.remove());toast(X.n.split(' ')[0]+' ganhou 1 crédito e recebeu o aviso.');try{await fetchAll();apply();draw()}catch(_){location.reload()}},true);
 /* ---------- desenho ---------- */
 const _draw=draw;
 draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}

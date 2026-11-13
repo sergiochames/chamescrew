@@ -4309,10 +4309,10 @@ function monthHTML(){const RM=window.__RD&&window.__RD.MONTH;const base=RM?RM.cn
   const skips=RM?RM.skips:1+[0,1,2,3,4,5,6].filter(j=>items(j).some(x=>x.skip)).length;
   return `<div class="sec-h"><span class="d">Seu ${RM?RM.mname:'outubro'}</span></div><div class="block frost mres">
    <div class="mk3"><div><b>${tot}</b><small>treinos</small></div><div><b>${cses}</b><small>cardios • ${cmin} min</small></div><div><b>${skips}</b><small>dias sem treinar</small></div></div>
-   <div class="mrow"><span>Ficha que mais fez</span><b>${PLANS[most].title} • ${cnt[most]}x</b></div>
-   <div class="mrow"><span>Ficha que mais pulou</span><b>${PLANS[least].title} • ${cnt[least]} de ${pl}</b></div>
+   ${tot?`<div class="mrow"><span>Ficha que mais fez</span><b>${PLANS[most].title} • ${cnt[most]}x</b></div>
+   <div class="mrow"><span>Ficha que mais pulou</span><b>${PLANS[least].title} • ${cnt[least]} de ${pl}</b></div>`:''}
    <p class="lbl" style="margin:14px 0 8px">Fichas cumpridas</p>${ORD.map(k=>`<div class="mbar"><span>${PLANS[k].title}</span><i><u style="width:${Math.round(Math.min(cnt[k],pl)/pl*100)}%"></u></i><b>${Math.min(cnt[k],pl)}/${pl}</b></div>`).join('')}
-   <p class="meta" style="font-size:12.5px;margin:10px 0 0">${cnt[least]<pl-2?`Você pulou mais o ${PLANS[least].title}. Na próxima semana, tenta não deixar ele de lado.`:'Você cumpriu as fichas com constância. Continue assim.'}</p></div>`}
+   <p class="meta" style="font-size:12.5px;margin:10px 0 0">${!tot?'Seu primeiro treino do mês vai aparecer aqui. Bora começar!':cnt[least]<pl-2?`Você pulou mais o ${PLANS[least].title}. Na próxima semana, tenta não deixar ele de lado.`:'Você cumpriu as fichas com constância. Continue assim.'}</p></div>`}
 /* sair do treino: ao finalizar volta sozinho para a semana; barra de voltar fixa */
 renderTrHome();
 /* ===== v20: extra na mensalidade, desconfirmar visível, histórico do mês passado ===== */
@@ -5023,31 +5023,36 @@ function wkDots(w){const f=w.f??(window.WEEK.el-w.d);const a=[];for(let i=0;i<7;
   return `<div class="wkd" aria-label="${w.d} de ${w.t} na semana">${a.map((c,i)=>`<i class="${c}${i===w.t-1?' t':''}"></i>`).join('')}</div>`}
 window.medalRun=medalRun;window.__MEDI=MED;window.__LVUP=lvUp;window.RMEDV=()=>RMED_V;
 async function storyPNG(d){
-  try{await Promise.all([document.fonts.load('900 120px "Big Shoulders Display"'),document.fonts.load('800 40px Manrope')])}catch(_){}
+  try{await Promise.all([document.fonts.load('900 120px "Big Shoulders Display"'),document.fonts.load('700 40px Manrope')])}catch(_){}
   const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
-  x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=18;x.fillStyle='#fff';x.textAlign='center';
   const D='"Big Shoulders Display",Impact,sans-serif',B='Manrope,system-ui,sans-serif';
-  const wolf=RA.wolfSVG(5).replace(/var\(--eye\)/g,'#000').replace(/currentColor/g,'#fff').replace('<svg','<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"');
-  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 100 100"><path d="M50 4 90 27v46L50 96 10 73V27Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><g transform="translate(21 21) scale(.58)">${RA.wolfSVG(5).replace(/^<svg[^>]*>/,'').replace('</svg>','').replace(/var\(--eye\)/g,'#000').replace(/currentColor/g,'#fff')}</g></svg>`;
-  const img=new Image();await new Promise(r=>{img.onload=r;img.onerror=r;img.src=window.LOGO_SRC?window.LOGO_SRC():'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
-  try{x.save();x.beginPath();x.arc(W/2,330,80,0,Math.PI*2);x.clip();x.drawImage(img,W/2-80,250,160,160);x.restore()}catch(_){}
-  const B2='Archivo,Manrope,system-ui,sans-serif';try{await document.fonts.load('600 40px Archivo')}catch(_){}
-  x.font=`600 36px ${B2}`;x.globalAlpha=.9;x.fillText('Treino concluído',W/2,486);x.globalAlpha=1;
-  x.font=`900 210px ${D}`;x.fillText('TREINO A',W/2,690);
-  x.font=`600 40px ${B2}`;x.fillText('Inferiores • 28/10',W/2,760);
-  const mx=(d.cmp||[]).reduce((m,r)=>(+r.b>(m?+m.b:-1)?r:m),null);
-  const st=[['Tempo',d.dur,'de treino'],['Séries',String(d.total||0),'concluídas'],['Carga total',(d.vol||0).toLocaleString('pt-BR')+' kg','no treino']];
-  st.forEach((v,i)=>{const cx=W/2+(i-1)*330;x.font=`600 30px ${B2}`;x.globalAlpha=.85;x.fillText(v[0],cx,900);x.globalAlpha=1;x.font=`900 96px ${D}`;x.fillText(v[1],cx,995);x.font=`600 30px ${B2}`;x.globalAlpha=.85;x.fillText(v[2],cx,1042);x.globalAlpha=1});
-  x.fillRect(240,1112,W-480,2);
-  const LV=['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'];let lvN='Atleta';try{const t=(document.querySelector('.crew .d')||{}).textContent||'';const m=LV.find(n=>t.toLowerCase().includes(n.toLowerCase()));if(m)lvN=m}catch(_){}
+  let k=null;try{k=(typeof doneToday==='function'&&doneToday())||(typeof __TK!=='undefined'&&__TK)||null}catch(_){}
+  const P0=(k&&PLANS[k])||null,title=(P0?P0.title:'Treino').toUpperCase(),foc=P0&&P0.focus?P0.focus.split(' • ')[0]:'',now=new Date(),dt=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0');
+  /* painel compacto e horizontal na parte de baixo; o resto fica transparente para a foto */
+  const px=48,pw=W-96,ph=470,py=H-ph-230,r=44;
+  x.save();x.beginPath();x.moveTo(px+r,py);x.arcTo(px+pw,py,px+pw,py+ph,r);x.arcTo(px+pw,py+ph,px,py+ph,r);x.arcTo(px,py+ph,px,py,r);x.arcTo(px,py,px+pw,py,r);x.closePath();
+  x.fillStyle='rgba(12,12,12,.46)';x.fill();x.lineWidth=2;x.strokeStyle='rgba(255,255,255,.22)';x.stroke();x.restore();
+  x.fillStyle='#fff';x.textBaseline='alphabetic';
+  /* topo: logo + treino + data */
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#fff"/><text x="50" y="62" text-anchor="middle" font-family="Arial Black,Arial" font-weight="900" font-size="34" fill="#111">CC</text></svg>`;
+  const img=new Image();await new Promise(rs=>{img.onload=rs;img.onerror=rs;img.src=window.LOGO_SRC?window.LOGO_SRC():'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)});
+  try{x.save();x.beginPath();x.arc(px+90,py+92,46,0,Math.PI*2);x.clip();x.drawImage(img,px+44,py+46,92,92);x.restore()}catch(_){}
+  x.textAlign='left';x.font=`900 92px ${D}`;let fs=92;while(x.measureText(title).width>pw-420&&fs>56){fs-=6;x.font=`900 ${fs}px ${D}`}x.fillText(title,px+160,py+118);
+  x.font=`600 30px ${B}`;x.globalAlpha=.8;x.fillText((foc?foc+' • ':'')+dt,px+162,py+160);x.globalAlpha=1;
+  x.textAlign='right';x.font=`800 26px ${B}`;x.globalAlpha=.8;x.letterSpacing='4px';x.fillText(((window.CFG&&CFG.marca)||'Chames Crew').toUpperCase(),px+pw-44,py+70);x.letterSpacing='0px';x.globalAlpha=1;
+  /* números lado a lado */
+  x.fillStyle='rgba(255,255,255,.18)';x.fillRect(px+44,py+196,pw-88,2);x.fillStyle='#fff';
+  const st=[['Tempo',d.dur||'—'],['Séries',String(d.total||0)],['Carga total',(d.vol||0).toLocaleString('pt-BR')+' kg']],cw=(pw-88)/3;
+  st.forEach((v,i)=>{const cx=px+44+cw*i+cw/2;x.textAlign='center';x.font=`600 26px ${B}`;x.globalAlpha=.75;x.fillText(v[0],cx,py+248);x.globalAlpha=1;x.font=`900 80px ${D}`;let f2=80;while(x.measureText(v[1]).width>cw-20&&f2>44){f2-=6;x.font=`900 ${f2}px ${D}`}x.fillText(v[1],cx,py+330)});
+  /* rodapé: level */
+  const LV=['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'];let lvN='Recruta';try{const t=(document.querySelector('.crew .d')||{}).textContent||'';const m=LV.find(n=>t.toLowerCase().includes(n.toLowerCase()));if(m)lvN=m}catch(_){}
   const li=Math.max(0,LV.indexOf(lvN));
-  const hx=`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 100 100"><path d="M50 4 90 27v46L50 96 10 73V27Z" fill="rgba(255,255,255,.12)" stroke="#fff" stroke-width="4" stroke-linejoin="round"/><g transform="translate(22 22) scale(.56)">${RA.wolfSVG(li).replace(/^<svg[^>]*>/,'').replace('</svg>','').replace(/var\(--eye\)/g,'#000').replace(/currentColor/g,'#fff').replace(/class="[^"]*"/g,'')}</g></svg>`;
-  const hi=new Image();await new Promise(r=>{hi.onload=r;hi.onerror=r;hi.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(hx)});
-  try{x.drawImage(hi,W/2-70,1170,140,140)}catch(_){}
-  x.font=`900 64px ${D}`;x.fillText('LEVEL '+lvN.toUpperCase(),W/2,1390);
-  x.font=`600 36px ${B2}`;x.globalAlpha=.9;x.fillText('treinando com '+(typeof PERS_NOME==='function'?PERS_NOME():typeof PERS!=='undefined'?PERS.nome:'Sérgio'),W/2,1446);x.globalAlpha=1;
-  x.font=`900 40px ${D}`;x.globalAlpha=.75;x.letterSpacing='3px';x.fillText(((window.CFG&&CFG.marca)||'Chames Crew').toUpperCase(),W/2,H-200);x.letterSpacing='0px';x.globalAlpha=1;
-  window.shareCard(c,'treino-a-chames-crew.png','Card do treino','Card do treino A com tempo, séries, carga total e level')}
+  const hx=`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 100 100"><path d="M50 4 90 27v46L50 96 10 73V27Z" fill="rgba(255,255,255,.12)" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><g transform="translate(22 22) scale(.56)">${RA.wolfSVG(li).replace(/^<svg[^>]*>/,'').replace('</svg>','').replace(/var\(--eye\)/g,'#000').replace(/currentColor/g,'#fff').replace(/class="[^"]*"/g,'')}</g></svg>`;
+  const hi=new Image();await new Promise(rs=>{hi.onload=rs;hi.onerror=rs;hi.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(hx)});
+  try{x.drawImage(hi,px+44,py+366,72,72)}catch(_){}
+  x.textAlign='left';x.font=`900 44px ${D}`;x.fillText('LEVEL '+lvN.toUpperCase(),px+132,py+412);
+  x.textAlign='right';x.font=`600 28px ${B}`;x.globalAlpha=.8;x.fillText('treinando com '+(typeof PERS_NOME==='function'?PERS_NOME():typeof PERS!=='undefined'?PERS.nome:'Sérgio'),px+pw-44,py+412);x.globalAlpha=1;
+  window.shareCard(c,(title.toLowerCase().replace(/\s+/g,'-')||'treino')+'-chames-crew.png','Card do treino','Card do '+(P0?P0.title:'treino')+' com tempo, séries, carga total e level')}
 window.storyPNG=storyPNG;
 }
 renderMedals();
@@ -6415,7 +6420,7 @@ body.rl-wait>*:not(#rl-ld){visibility:hidden}
 #rl-ld{position:fixed;inset:0;display:grid;place-items:center;font-weight:700;color:var(--muted,#888);z-index:9999;background:var(--bg,#262624)}
 body.rl #v-hoje>.prev,body.rl #v-hoje .prev:not(span),body.rl #h-mot,body.rl #h-next,body.rl #h-macros{display:none!important}
 .rl-empty{padding:8px 0}.rl-empty .d{font-size:44px;line-height:.95;margin:4px 0 12px}.rl-empty .box{border:1px dashed var(--line);border-radius:12px;padding:18px 16px;font-size:14px;line-height:1.5;color:var(--muted)}.rl-empty .box b{display:block;color:var(--fg);font-size:16px;margin-bottom:4px}
-body.rl #o-now{display:none!important}
+
 body::before{z-index:2147483000!important}
 header.top{top:0!important;padding-top:calc(env(safe-area-inset-top,0px) + 12px)!important;margin-top:calc(-1 * env(safe-area-inset-top,0px))}
 body.rl #v-painel{display:none!important}
@@ -6587,7 +6592,7 @@ let DVK='';function dietView(force){const v=document.getElementById('v-dieta');i
    <p class="meta" style="font-size:12px;margin:14px 2px 0;line-height:1.45">A dieta é responsabilidade do nutricionista que assinou. O app e o seu personal só guardam o arquivo para você.</p></div>`;
   const op=box.querySelector('#dt-open');if(op)op.onclick=async()=>{const {data,error}=await sb.storage.from('diets').createSignedUrl(D.path,600);if(error||!data)return toast('Não abriu a dieta');window.open(data.signedUrl,'_blank')};
   box.querySelector('#dt-new').onclick=dietSheet}
-{const st=document.createElement('style');st.textContent='#v-dieta>:not(#rl-diet){display:none!important}html body #v-dieta>#rl-diet#rl-diet{display:block!important}';document.head.appendChild(st)}
+{const st=document.createElement('style');st.textContent='body.rl .twmode{display:none!important}#v-dieta>:not(#rl-diet){display:none!important}html body #v-dieta>#rl-diet#rl-diet{display:block!important}';document.head.appendChild(st)}
 function dietSheet(){let file=null;sheet(`<span class="lbl">Dieta</span><p class="d" style="font-size:34px;margin:6px 0 10px">Enviar dieta</p>
   <label class="btn wide" style="display:flex;align-items:center;justify-content:center;gap:8px"><input type="file" id="df" accept="application/pdf" hidden><span id="dfl">📎 Escolher o PDF</span></label>
   <div class="field" style="margin-top:12px"><label>Nome do nutricionista</label><input class="inp" id="dn" placeholder="Como está no CRN"></div>
@@ -6703,7 +6708,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   const f2=d=>d.getDate()+'/'+(d.getMonth()+1);
   const m0=ymd(new Date(now.getFullYear(),now.getMonth(),1)),LM=LOGS.filter(l=>l.day>=m0&&ORD.includes(l.letter)),cnt={};ORD.forEach(k=>cnt[k]=LM.filter(l=>l.letter===k).length);
   const CM=DCS.filter(c=>c.day>=m0&&c.answers&&c.answers.cardio>0),pd=WKP.filter(x=>x.k).length||ORD.length,wks=Math.max(1,Math.ceil(now.getDate()/7));
-  const trD=new Set(LM.map(l=>l.day)),skips=[...Array(now.getDate()).keys()].map(k=>ymd(new Date(now.getFullYear(),now.getMonth(),k+1))).filter(d=>d<TODAY&&!trD.has(d)).length;
+  const ST0=((FX||[]).map(f=>f.start_date).filter(Boolean).sort()[0])||String(P.created_at||'').slice(0,10)||TODAY;const trD=new Set(LM.map(l=>l.day)),skips=[...Array(now.getDate()).keys()].map(k=>ymd(new Date(now.getFullYear(),now.getMonth(),k+1))).filter(d=>d<TODAY&&d>=ST0&&!trD.has(d)).length;
   const MONTH={cnt,pl:Math.max(1,Math.round(wks*pd/ORD.length)),cmin:CM.reduce((a,c)=>a+(c.answers.cardio===2?30:20),0),cses:CM.length,skips,mname:['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][now.getMonth()]};
   return {uid,v:3,PLANS,ORD,MUS,FIXN,TR:{done,last,on:false},TRLOG,WKP,TK,CFG:{modo,semTreino:false},WKTXT:`Semana de ${f2(ws)} a ${f2(we)}`,MONTH}}
 const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
