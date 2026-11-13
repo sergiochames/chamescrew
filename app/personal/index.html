@@ -4209,7 +4209,7 @@ function apply(){
   STUD.forEach(p=>{if(stuById(p.id))return;const has=FXS.some(f=>f.student_id===p.id)||CLS.some(c=>c.student_id===p.id);if(!p.onboarded||!has)return;
     STU.push({n:p.name||'Aluno',q:[0,(p.freq||2)*(PRICE.wk||4)],ph:String(p.phone||'').replace(/^\+\d+\s*/,'').replace(/\D/g,''),mode:p.presencial===false?'Online':'Presencial',mod:[...PRE.tudo],due:30,_id:p.id,via:'Convite'})});
   STU.forEach(X=>{const p=STUD.find(s=>s.id===X._id);if(!p)return;
-    if(p.access_until)X.due=Math.ceil((new Date(p.access_until+'T12:00:00')-new Date())/864e5);
+    if(p.access_until){X.due=Math.ceil((new Date(p.access_until+'T12:00:00')-new Date())/864e5);const ad=new Date(p.access_until+'T12:00:00');X.until=pad(ad.getDate())+'/'+pad(ad.getMonth()+1)}else if(!X.until)X.until='fim do plano';
     if(!X.nasc&&p.birth_date)X.nasc=p.birth_date.split('-').reverse().join('/');if(!X.cpf&&p.doc_num)X.cpf=p.doc_num;if(!X.obj&&p.goal)X.obj=p.goal;if(!X.niv&&p.level)X.niv=p.level;if(!X.rest&&p.injury)X.rest=p.injury;
     if(WKS.some(w=>w.user_id===X._id))X.wk=wkFromDB(X._id);
     if(p.plan_period)X.per=p.plan_period;{const rq=RQC.find(r=>r.student_id===X._id);if(rq){X._rq=rq;if(rq.freq&&!(X.fixo||[]).length)X._freq=rq.freq}}
@@ -5119,6 +5119,16 @@ function ag2wm(){let v=null;try{if(S.tab==='agenda'&&!NEWP.on&&(S.view==='semana
   H.innerHTML=`<div class="d1"><div><small>${lab}${pill?` <em>${pill}</em>`:''}</small><h1>${ttl}</h1></div><div class="arw"><button class="a2g" data-${nav}="-1" aria-label="Anterior">${a2i('l')}</button><button class="a2g" data-${nav}="1" aria-label="Próximo">${a2i('r')}</button></div></div>
    <div class="d2"><div class="stl"><span class="a2dot"></span><span>${n} ${n===1?'aula':'aulas'}${np?` • <b data-a2pd role="button">${np} ${np===1?'pedido':'pedidos'}</b>`:''}</span></div><button class="a2add a2g" data-a2bk="">${a2i('plus')}Marcar</button></div>`;
   top.after(H);if(v==='semana'){const h1=H.querySelector('h1');if(h1)h1.style.fontSize='21px'}}
+
+/* horário fixo de verdade: troca os horários no banco e refaz as aulas futuras */
+window.addEventListener('click',async e=>{const b=e.target.closest('#fxok');if(!b)return;const s=b.closest('.scrim');if(!s)return;
+  const nm=((s.querySelector('.sheet>.lbl')||{}).textContent||'').trim(),X=STU.find(z=>z.n===nm);if(!X||!X._id)return;e.stopImmediatePropagation();e.preventDefault();
+  const st=s._fl||{same:true,l:[],def:X.loc||1},rows=[...s.querySelectorAll('.fxr')];
+  const slots=rows.map((r,k)=>{const d=+(r.querySelector('[data-fd]')||{}).value,t=(r.querySelector('[data-fht]')||{}).value||'';const lid=st.same?st.def:(st.l[k]||st.def);return {dow:(d+1)%7,time:t.length===5?t+':00':t,location:locName(lid)||''}}).filter(z=>!isNaN(z.dow)&&/^\d\d:\d\d/.test(z.time));
+  if(!slots.length)return toast('Escolha o dia e o horário');b.disabled=true;
+  const {data,error}=await sb.rpc('change_fixed',{p_student:X._id,p_slots:slots});if(error){b.disabled=false;return toast('Não mudou: '+error.message)}
+  document.querySelectorAll('.scrim').forEach(x=>x.remove());toast(`Horário de ${X.n.split(' ')[0]} atualizado. ${data||0} aulas refeitas e ${X.n.split(' ')[0]} recebeu o aviso.`);
+  try{await fetchAll();apply();const F=FXS.filter(f=>f.student_id===X._id);if(F.length)X.fixo=F.map(f=>{const [H,M]=String(f.at_time).split(':').map(Number);return {d:(f.dow+6)%7,h:H+(M||0)/60,l:((LOCS||[]).find(l=>String(l.n).trim().toLowerCase()===String(f.location||'').trim().toLowerCase())||{}).id||X.loc||1}});draw();saveNow&&saveNow()}catch(_){location.reload()}},true);
 /* ---------- desenho ---------- */
 const _draw=draw;
 draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{ag2()}catch(e){console.error(e)}try{ag2wm()}catch(e){console.error(e)}try{pkApply()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
