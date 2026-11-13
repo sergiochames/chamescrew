@@ -4087,14 +4087,15 @@ function confirmTr(k,done){const ex=PLANS[k].ex;let tot=0,dn=0;ex.forEach((e,i)=
    <button class="btn solid wide" id="ctok" disabled style="opacity:.4">Confirmar e finalizar</button>`,s=>{const c=s.querySelector('#ctk'),b=s.querySelector('#ctok');c.onchange=()=>{b.disabled=!c.checked;b.style.opacity=c.checked?1:.4};b.onclick=()=>{s.remove();done()}})}
 {const f=$('#finish'),_f1=f.onclick;f.onclick=function(ev){if(finishedToday){_f1.call(this,ev);return}confirmTr(curPlan,()=>_f1.call(this,ev))};
  const g=$('#finish2'),_f2=g.onclick;g.onclick=function(ev){confirmTr(curPlan,()=>_f2.call(this,ev))}}
-const _rau12=renderAula;renderAula=function(){_rau12();const x=AG.slots.find(y=>agLeft(y)>-1.5);const el=$('#aula');if(!x||x.d!=='Hoje')return;
-  const left=agLeft(x),open=left<=.25&&left>-1,fill=el.querySelector('.tl .f');
+const _rau12=renderAula;renderAula=function(){_rau12();const x=AG.slots.find(y=>agLeft(y)>-1.5);const el=$('#aula');if(!x||x.pend||x._req||agLeft(x)>12)return;
+  const left=(new Date(2026,9,28).getTime()+(DOFF[x.d]+x.h)*36e5-Date.now())/36e5,open=left<=.25&&left>-1,fill=el.querySelector('.tl .f');
   if(x.here||(x.conf&&left<=0)){if(fill)fill.style.background='var(--ok)';el.classList.add('cf')}
   const tg=el.querySelector('.row .tag.t-conf, .t-conf');
   if(x.here){const t=el.querySelector('.t-conf');if(t)t.textContent=`Presente ✓ • chegou ${x.here}`}
   else if(open){const cb=el.querySelector('[data-ag-conf]');if(cb)cb.remove();const ref=el.querySelector('.row:has([data-ag-move])')||el.querySelector('[data-go="agenda"]');if(ref)ref.insertAdjacentHTML('beforebegin',`<button class="btn solid wide here" data-here="${AG.slots.indexOf(x)}">📍 Cheguei • avisar o ${PN()}</button>`)}
   else if(left>.25&&left<12){const m=el.querySelector('.msg');if(m&&!el.querySelector('.hrn'))m.insertAdjacentHTML('afterend',`<p class="hrn">O botão "Cheguei" libera às ${hh2(x.h-.25)}, 15 min antes da aula.</p>`)}};
-document.addEventListener('click',e=>{const b=e.target.closest('[data-here]');if(!b)return;const x=AG.slots[+b.dataset.here];if(!x)return;x.here=hh2(NOWH);x.conf=true;agAll();toast(`${PN()} foi avisado que você chegou. Bom treino!`)});
+document.addEventListener('click',async e=>{const b=e.target.closest('[data-here]');if(!b)return;const x=AG.slots[+b.dataset.here];if(!x)return;
+  if(window.__arrived&&x._id){b.disabled=true;const r=await window.__arrived(x._id);if(r.error){b.disabled=false;toast(r.error);return}x.here=r.t}else x.here=hh2(NOWH);x.conf=true;agAll();toast(`${PN()} foi avisado que você chegou. Bom treino!`)});
 agAll();
 /* ===== v13: limites que o personal configura (remarcação, créditos e validade) ===== */
 AG.remLim=2;AG.credCap=2;AG.credVal=30;AG.credM={};AG.credExp=null;
@@ -4363,7 +4364,8 @@ const _au20=renderAula;renderAula=function(){_au20();const x=AG.slots.find(y=>ag
   const mv=el.querySelector('[data-ag-move]'),ag=el.querySelector('[data-go="agenda"]');
   if(ag)ag.textContent='Ver agenda';
   if(mv&&ag&&!el.querySelector('.bt9')){const old=mv.parentElement;const r=document.createElement('div');r.className='bt9';old.after(r);const cf=old.querySelector('[data-ag-conf]');if(cf){cf.classList.add('cf9');r.append(cf)}r.append(mv,ag);mv.style.gridColumn='';mv.style.flex='';if(old!==el&&!old.children.length)old.remove()}
-  el.querySelectorAll('.unc').forEach(n=>n.remove())};
+  el.querySelectorAll('.unc').forEach(n=>n.remove());
+  if(x.here){el.querySelectorAll('.msg,[data-ag-move],.hrn').forEach(n=>n.remove());const a2=el.querySelector('[data-go="agenda"]');if(a2&&a2.parentElement.classList.contains('bt9'))a2.parentElement.style.gridTemplateColumns='1fr'}};
  renderAula=function(){_rz.apply(this,arguments);try{heroFix()}catch(e){console.warn('hero',e)}};
  setInterval(()=>{try{const v=document.getElementById('v-hoje');if(v&&!v.hidden&&!document.querySelector('.scrim'))renderAula()}catch(_){}},60000);
  const st=document.createElement('style');st.textContent=`
@@ -6439,7 +6441,7 @@ body.rl #v-painel{display:none!important}
 document.body.classList.add('rl-wait');
 (async()=>{
 const CFG2=window.CC_CONFIG,sb=supabase.createClient(CFG2.supabaseUrl,CFG2.supabaseKey);window.SB=sb;
-window.__signOut=async()=>{try{await sb.auth.signOut()}catch(_){}location.replace('/app/')};const _uc0=window.__unCover;const unCover=()=>{try{_uc0&&_uc0()}catch(_){}};
+window.__arrived=async id=>{const {data,error}=await sb.rpc('student_arrived',{p_id:id});if(!error&&DB[id]){DB[id].st='feita';DB[id].note='chegou '+data}return error?{error:error.message}:{t:data}};window.__signOut=async()=>{try{await sb.auth.signOut()}catch(_){}location.replace('/app/')};const _uc0=window.__unCover;const unCover=()=>{try{_uc0&&_uc0()}catch(_){}};
 const fail=t=>{unCover();document.getElementById('rl-ld').innerHTML=`<div style="text-align:center;padding:24px">${t}<br><br><a href="/app/" style="color:inherit">Voltar</a></div>`};
 const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('/app/');return}
 const uid=session.user.id;const R1=window.__RL1,R2=window.__RL2;
@@ -6492,7 +6494,7 @@ const DB={};
 (CL||[]).forEach(c=>{if(c.status==='pedido')return;const d=new Date(c.starts_at),n=dayN(d),k=keyOf(n),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:c.status,note:c.note,k,h,kind:c.kind};
   if(c.status==='cancelada'){const cr=c.note==='credito';AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr)AG.dadas.push({d:k,h});return}
-  AG.slots.push({d:k,h,conf:c.status==='confirmada',fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||window.__LOC0||undefined})});
+  AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||window.__LOC0||undefined})});
 /* créditos e mudanças pela regra do personal (ciclo do plano) */
 {const okC=AG.canc.filter(c=>c.ok).sort((a,b)=>(KN[b.d]||0)-(KN[a.d]||0));AG.creds.length=0;for(let i=0;i<(CI.credits||0);i++){const c=okC[i];AG.creds.push({from:c?c.d:keyOf(dayN(now)),exp:dayN(endD),_id:c&&c.slot?c.slot._id:undefined})}
  const A=window.__CYA||1,m=now.getDate()>=A?now.getMonth()+1:(now.getMonth()||12),cc=AG.canc.filter(c=>c.ok).length;AG.remM[m]=Math.max(0,(CI.used||0)-Math.min(cc,CI.used||0));if(m===10)AG.rem=AG.remM[m]}
@@ -6861,7 +6863,7 @@ let busy=false;
 async function sync(){if(busy)return;busy=true;try{
   const live=new Map(AG.slots.filter(x=>x._id).map(x=>[x._id,x]));
   for(const id in DB){const x=live.get(id),db=DB[id];if(db.st==='pedido')continue;let to=null,note=db.note;
-    if(x){if(db.st==='cancelada')to=x.conf?'confirmada':'marcada';else if(x.conf&&db.st!=='confirmada')to='confirmada'}
+    if(x){if(db.st==='cancelada')to=x.conf?'confirmada':'marcada';else if(x.conf&&db.st!=='confirmada'&&db.st!=='feita')to='confirmada'}
     else if(db.st!=='cancelada'){const c=AG.canc.find(c=>c.slot&&c.slot._id===id);if(c){to='cancelada';note=c.kind==='credito'||c.ok?'credito':'dada'}}
     if(!to)continue;const {error}=await sb.from('classes').update({status:to,note}).eq('id',id);
     if(error){toast(/próxima/.test(error.message)?'Só dá para confirmar a próxima aula':'Não salvou: '+error.message);if(x&&to==='confirmada')x.conf=false;continue}

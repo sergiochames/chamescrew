@@ -11,7 +11,7 @@
 for(var i=0;i<D.length;i++)if(D[i].test(m))return true;return false}</script><style id="tone9">
 :root[data-theme="dark"][data-tone="preto"]{--bg:#0e0f11;--fg:#efede8;--muted:#9c9a94;--line:#2a2b30;--frost:#222328;--sec:#16171a;--soft:#16171a;--card:#1a1b1f;--paper:#1a1b1f;--bz1:#2c2d33;--bz2:#16171a;--glass:rgba(14,15,17,.86);--on-ink:#0e0f11}
 :root[data-theme="dark"][data-tone="chumbo"]{--bg:#262624;--fg:#efede8;--muted:#a3a097;--line:#42413d;--frost:#393936;--sec:#2b2b29;--soft:#2b2b29;--card:#30302e;--paper:#30302e;--bz1:#3a3936;--bz2:#22221f;--glass:rgba(38,38,36,.86);--on-ink:#262624}
-html[data-tone] body{background:var(--bg)}[data-mic],#rpdf,[data-pexp],[data-gical],[data-subpix],[data-subcard],[data-subfail],#pvt{display:none!important}header.top{box-shadow:0 -50px 0 50px var(--bg)}
+html[data-tone] body{background:var(--bg)}:root[data-theme="dark"] #app .card.next.nxempty{--paper:#f3f2ee;--ink:#141414;--fg:#141414;--muted:#6d6a63;--line:#d6d3cb;--card:#ffffff;--sec:#ebe9e3;--frost:#e7e5df;background:#f3f2ee!important;color:#141414!important;border-color:#f3f2ee!important}:root[data-theme="dark"] #app .card.next.nxempty *{border-color:#d6d3cb}[data-mic],#rpdf,[data-pexp],[data-gical],[data-subpix],[data-subcard],[data-subfail],#pvt{display:none!important}header.top{box-shadow:0 -50px 0 50px var(--bg)}
 :root[data-theme="dark"][data-tone="chumbo"]{--frost:#30302e;--line:#3d3c39}:root[data-theme="dark"][data-tone="chumbo"] .ink{--ink:#30302e;--on-ink:#efede8;--on-ink-muted:#a3a097;--ink-line:#45443f;border:1px solid #3d3c39}
 :root[data-theme="dark"][data-tone="preto"] .ink{--ink:#1a1b1f;--on-ink:#efede8;--on-ink-muted:#9c9a94;--ink-line:#2e2f35;border:1px solid #2a2b30}
 #tone9t{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 14px);transform:translateX(-50%);z-index:2147483600;background:var(--fg);color:var(--bg);font:700 13.5px system-ui,-apple-system,sans-serif;padding:9px 16px;border-radius:999px;box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none;transition:opacity .25s}
@@ -1193,7 +1193,7 @@ p,small,.note,.info,.sub,li,label,.tag,.opt2 small,.who small{text-wrap:pretty}
 
 <script>
 // exemplo fixo: hoje é quarta, 28/out/2026, 14:45
-const NOW=(()=>{const d=new Date();return d.getHours()+d.getMinutes()/60})();
+let NOW=(()=>{const d=new Date();return d.getHours()+d.getMinutes()/60})();
 const WD=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],DATES=(()=>{const t=new Date(),m=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7));return [0,1,2,3,4,5,6].map(i=>new Date(m.getFullYear(),m.getMonth(),m.getDate()+i).getDate())})(),TODAY=(new Date().getDay()+6)%7;
 const STU=[{n:'Ana Souza',q:[5,8],ph:'21987654321'},{n:'Bruno Reis',q:[7,8]},{n:'Carla Mota',q:[8,8]},{n:'Duda Alves',q:[3,8]},{n:'João Prado',q:[2,4]},{n:'Pedro Lima',q:[9,12]},{n:'Lia Torres',q:[4,8]},{n:'Rafa Costa',q:[6,8]}];
 const S={tab:'agenda',view:'dia',day:TODAY,
@@ -1221,7 +1221,10 @@ const ini=n=>String(n||'').split(' ').map(x=>x[0]).join('').slice(0,2);
 let stu=n=>STU.find(s=>s.n===n);
 const ST={conf:['conf','Confirmado'],ok:['ok','Aula dada ✓'],wait:['wait','Falta confirmar'],can:['can','Cancelou']};
 function dayLbl(i){return i===TODAY?'Hoje':i===TODAY+1?'Amanhã':WD[i]+' '+DATES[i]}
-function upList(){if(S.day!==TODAY)return [];return (S.ev[TODAY]||[]).filter(e=>!e.gc&&(e.st!=='can'||(spOf(TODAY,Math.floor(e.h))&&!spOf(TODAY,Math.floor(e.h)).lock))&&(e.h>=NOW-.5||e.keep)).sort((a,b)=>a.h-b.h)}
+function emptyNext(){const N=window.__NXT;let t='Nenhuma outra aula hoje.';if(N&&N.at){const d=new Date(N.at),td=new Date();td.setHours(0,0,0,0);const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-td)/864e5);
+  const dl=dd===0?'hoje':dd===1?'amanhã':['dom','seg','ter','qua','qui','sex','sáb'][d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1);t=`Próxima: <b>${esc(N.n.split(' ')[0])}</b> ${dl} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
+  return `<section class="card next nxempty"><div class="row"><span class="lbl">Próximo aluno</span></div><h2 class="d" style="margin:6px 0 4px">Sem aulas agora</h2><p class="note" style="margin:0">${t}</p></section>`}
+function upList(){if(S.day!==TODAY)return [];return (S.ev[TODAY]||[]).filter(e=>!e.gc&&(e.st!=='can'||(spOf(TODAY,Math.floor(e.h))&&!spOf(TODAY,Math.floor(e.h)).lock))&&(e.h>=NOW-1||e.keep)).sort((a,b)=>a.h-b.h)}
 const canInfo=e=>{const sp=spOf(S.day,Math.floor(e.h))||{};return `<div class="nxb"><span class="stb can">Cancelou</span><span>${esc(e.why||'sem motivo')}</span></div>${sp.req?`<div class="nreq"><b>${esc(sp.req.n)} quer este horário ${RQT(sp.req)}</b><small>pedido ${sp.req.when} • ${RQS(sp.req)}</small></div>`:'<div class="nreq"><b>Horário liberado</b><small>Aberto para os alunos marcarem</small></div>'}`};
 const canActs=e=>{const h=Math.floor(e.h),sp=spOf(S.day,h)||{};return sp.req?`<div class="acts2c"><button class="go1" data-ok="${S.day}:${h}">Deixar ${esc(sp.req.n.split(' ')[0])} entrar${sp.req.tp==='extra'?' • +'+brl(PRICE.avulsa):''}</button><button data-lock="${h}">Travar</button></div>`:`<div class="acts2c"><button data-lock="${h}">Travar</button><button class="go1" data-free="${h}">+ Marcar alguém</button></div>`};
 function nextUp(){const L=upList();if(!L.length)return null;S.nxi=Math.max(0,Math.min(L.length-1,S.nxi||0));return L[S.nxi]}
@@ -1284,10 +1287,10 @@ function drawAgenda(){
   <div class="vseg" role="group" aria-label="Visualização"><button data-view="dia" aria-pressed="${S.view==='dia'}">Dia</button><button data-view="semana" aria-pressed="${S.view==='semana'}">Semana</button></div>
   ${S.view==='semana'?weekView(nb,R,pend):`<div class="days" role="group" aria-label="Dias da semana">${WD.map((d,i)=>`<button class="dy" data-day="${i}" aria-pressed="${i===S.day}"><small>${i===TODAY?'Hoje':d}</small><b>${DATES[i]}</b><i class="${(S.ev[i]||[]).some(e=>!e.gc&&e.st!=='can')?'':'no'}"></i></button>`).join('')}</div>
   ${nx?(()=>{const UL=upList(),x0=stu(nx.n),dt=nx.h-NOW;return `<section class="card next${nx.st==='can'?' nxcan'+((spOf(S.day,Math.floor(nx.h))||{}).req?' nxrq':''):nx.st==='ok'?' nxok':''}"><div class="row"><span class="lbl">${S.nxi?'Depois':'Próximo aluno'} • ${S.nxi+1} de ${UL.length}</span><span class="nxnav"><button data-nx="-1" aria-label="Aluno anterior" ${S.nxi?'':'disabled'}>‹</button><button data-nx="1" aria-label="Próximo aluno" ${S.nxi<UL.length-1?'':'disabled'}>›</button></span></div>
-    <div class="nxm"><div style="min-width:0"><h2 class="d">${esc(nx.n)}</h2><span class="when">${hh(nx.h)} • 📍 ${esc(locOf(nx).n)}</span></div><span class="cnt">em ${Math.floor(dt)}h${String(Math.round((dt%1)*60)).padStart(2,'0')}</span></div>
+    <div class="nxm"><div style="min-width:0"><h2 class="d">${esc(nx.n)}</h2><span class="when">${hh(nx.h)} • 📍 ${esc(locOf(nx).n)}</span></div><span class="cnt">${dt<=0?(nx.st==='ok'?'presente':'em aula • há '+Math.max(1,Math.round(-dt*60))+' min'):dt<1?'em '+Math.max(1,Math.round(dt*60))+' min':'em '+Math.floor(dt)+'h'+String(Math.round((dt%1)*60)).padStart(2,'0')}</span></div>
     ${nx.st==='can'?canInfo(nx)+canActs(nx):`<div class="nxb"><span class="stb ${nx.st}">${ST[nx.st][1]}</span><span>${x0.exp?'Aula experimental • grátis':x0.q[0]+' de '+x0.q[1]+' aulas no mês • plano '+freqOf(x0)+'x por semana'}</span></div>`}`})():''}
     ${nx?`
-    <div class="acts"><button class="pres" data-pres="${E.indexOf(nx)}">${nx.st==='ok'?'Desfazer':'Presente'}</button><button data-ev="${E.indexOf(nx)}">Remarcar</button><button data-cancel="${E.indexOf(nx)}">Cancelar</button></div></section>`:''}
+    <div class="acts"><button class="pres" data-pres="${E.indexOf(nx)}">${nx.st==='ok'?'Desfazer':'Presente'}</button><button data-ev="${E.indexOf(nx)}">Remarcar</button><button data-cancel="${E.indexOf(nx)}">Cancelar</button></div></section>`:(S.day===TODAY?emptyNext():'')}
   ${S.day===TODAY?ACT().filter(x=>isBday(x.nasc)&&!BDSENT.has(x.n)).map(x=>`<div class="bday"><span class="bdi">🎂</span><span style="min-width:0"><b>Aniversário hoje: ${esc(x.ap||x.n.split(' ')[0])}</b><small>${ageOf(x.nasc)} anos${przTxt(BDAY.gift)!=='Nada'?' • presente: '+esc(przTxt(BDAY.gift)):''}</small></span><span class="bdb"><a class="mini solid" data-bdsend="${esc(x.n)}" href="https://wa.me/55${x.ph||''}?text=${encodeURIComponent(BDAY.msg.replace('{nome}',x.ap||x.n.split(' ')[0]).replace('{personal}',PERS.name))}" target="_blank" rel="noopener" style="text-decoration:none">Parabenizar</a><button class="lnk" data-bdsend="${esc(x.n)}" data-bdx>Dispensar</button></span></div>`).join(''):''}
   ${needsWrap(R,pend,nb)}
   <button class="whbar" data-wh><span><small>Você atende ${['segunda','terça','quarta','quinta','sexta','sábado','domingo'][S.day]}</small><b>${whTxt(S.day)}</b></span><span class="go">editar</span></button>
@@ -4215,17 +4218,18 @@ function apply(){
   STU.forEach(X=>{if(X._id)KNOWN.add(X._id)});try{realWC()}catch(_){}
   S.ev={};S.sp={};const now=new Date();
   CLS.forEach(c=>{if(c.status==='pedido')return;const d=new Date(c.starts_at),wi=wiOf(d),h=d.getHours()+d.getMinutes()/60,past=d<now;if(wi<0||wi>6)return;
-    const st=c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'||past?'ok':c.status==='confirmada'?'conf':'wait';
+    const st=c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'?'ok':c.status==='confirmada'?'conf':'wait';
     const lid=(()=>{const nl=v=>String(v||'').trim().toLowerCase(),l=(LOCS||[]).find(z=>nl(z.n)===nl(c.location));return l?l.id:undefined})();
     (S.ev[wi]=S.ev[wi]||[]).push(Object.assign({h,n:nameOf(c.student_id),st,_res:c.status==='reservada',_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined},lid?{loc:lid}:{}))});
   XEV.forEach(x=>{const d=new Date(x.date+'T12:00:00'),wi=wiOf(d);if(wi<0||wi>6)return;(S.ev[wi]=S.ev[wi]||[]).push(dec(x.e))});
   /* aulas usadas no ciclo */
   STU.forEach(X=>{if(!X._id)return;X.q[0]=CLS.filter(c=>c.student_id===X._id&&c.status!=='cancelada'&&new Date(c.starts_at)<=now).length});
+  {const nn=CLS.filter(c=>['marcada','confirmada','reservada'].includes(c.status)&&new Date(c.starts_at)>now).sort((a,b)=>a.starts_at.localeCompare(b.starts_at))[0];window.__NXT=nn?{n:nameOf(nn.student_id),at:nn.starts_at}:null}
   window.__PEDS=CLS.filter(c=>c.status==='pedido'&&new Date(c.starts_at)>now).map(c=>{const o=c.note&&c.note.startsWith('mv:')?CLS.find(z=>z.id===c.note.slice(3)):null;
     return {id:c.id,at:new Date(c.starts_at),n:nameOf(c.student_id),sid:c.student_id,tp:o?'mv':c.kind==='credito'?'rep':c.kind==='extra'?'extra':'plano',fromId:o?o.id:null,from:o?new Date(o.starts_at):null,loc:c.location||''}})}
 apply();
 try{evOn=function(dt){const s=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()),e=new Date(s.getTime()+864e5),now=new Date();
-  return CLS.filter(c=>{const d=new Date(c.starts_at);return d>=s&&d<e&&c.status!=='pedido'}).map(c=>{const d=new Date(c.starts_at);return {n:nameOf(c.student_id),h:d.getHours()+d.getMinutes()/60,_cid:c.id,ln:c.location||'',st:c.status==='reservada'?'wait':c.status==='cancelada'?'can':d<now||c.status==='feita'?'ok':c.status==='confirmada'?'conf':'wait'}})}}catch(_){}
+  return CLS.filter(c=>{const d=new Date(c.starts_at);return d>=s&&d<e&&c.status!=='pedido'}).map(c=>{const d=new Date(c.starts_at);return {n:nameOf(c.student_id),h:d.getHours()+d.getMinutes()/60,_cid:c.id,ln:c.location||'',st:c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'?'ok':c.status==='confirmada'?'conf':'wait'}})}}catch(_){}
 
 
 /* ---------- ficha do aluno com dados reais (no lugar dos geradores de exemplo) ---------- */
@@ -4733,6 +4737,8 @@ window.addEventListener('click',async e=>{const b=e.target.closest('#gc-ok');if(
   if(!X||!X._id)return toast('Aluno não encontrado');const mo=(sh.querySelector('[data-gcm][aria-pressed="true"]')||{}).dataset;b.disabled=true;
   const {data,error}=await sb.rpc('give_credit',{p_student:X._id,p_note:mo&&mo.gcm||null});if(error){b.disabled=false;return toast('Não deu: '+error.message)}
   document.querySelectorAll('.scrim').forEach(x=>x.remove());toast(X.n.split(' ')[0]+' ganhou 1 crédito e recebeu o aviso.');try{await fetchAll();apply();draw()}catch(_){location.reload()}},true);
+const tick=()=>{try{const d=new Date();NOW=d.getHours()+d.getMinutes()/60;if(S.tab==='agenda'&&!document.querySelector('.scrim,.cbox')&&!document.activeElement.matches('input,textarea,select')){const y=window.scrollY;draw();window.scrollTo(0,y)}}catch(_){}};
+setInterval(tick,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick()});
 /* ---------- desenho ---------- */
 const _draw=draw;
 draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
