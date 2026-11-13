@@ -6328,10 +6328,11 @@ if(!P.onboarded){location.replace('/app/');return}
 window.__CYA=Math.min(28,Math.max(1,P.cycle_day||1));try{await sb.rpc('gen_my_classes')}catch(_){}
 const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth()-1,window.__CYA);
 const [{data:CL,error:e2},{data:FX}]=await Promise.all([
-  sb.from('classes').select('*').eq('student_id',uid).gte('starts_at',m0.toISOString()).order('starts_at'),
+  sb.from('classes').select('*').eq('student_id',uid).neq('status','reservada').gte('starts_at',m0.toISOString()).order('starts_at'),
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
 if(e2)return fail('Não deu para carregar suas aulas.');window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
-if(!(CL||[]).length){location.replace('/app/');return}
+let PAYR=null;try{await sb.rpc('expire_reservations');const {data:pq}=await sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1);PAYR=(pq||[])[0]||null}catch(_){}window.__PAYR=PAYR;
+if(!(CL||[]).length&&!PAYR){location.replace('/app/');return}
 
 /* ---- tempo: o protótipo conta dias a partir de 28/10/2026 ---- */
 const BASE=new Date(2026,9,28),dayN=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-BASE)/864e5);
@@ -6505,7 +6506,9 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
 {const R=window.__RD,$q=s=>document.querySelector(s),esc2=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const LVN=['Recruta','Consistente','Atleta','Casca Grossa','Elite'],CYC=[0,3,6,12,24],PERK=['Entrada na matilha','10% de desconto','10% + brinde surpresa','Kit Chames Crew','1 mês grátis + kit'];
  document.body.classList.add('dlock');if(!Object.values(R.RMV||{}).some(v=>v>0))document.body.classList.add('rl-noql');/* sem plano de dieta: o protótipo mostra o estado sem dieta */
- const paint=()=>{try{
+ const payBan=()=>{const P=window.__PAYR,v=document.getElementById('v-hoje');if(!P||!v||v.querySelector('#rl-pay'))return;const inf=P.pay_status==='informado';
+  v.insertAdjacentHTML('afterbegin',`<a id="rl-pay" href="/app/" style="display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit;margin:4px 0 12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(226,194,126,.45);background:rgba(226,194,126,.12)"><span style="flex:1"><b style="display:block;font-size:14px">${inf?'Pagamento em conferência':'Pagamento pendente'}</b><small style="display:block;font-size:12px;opacity:.8;margin-top:2px">${inf?'O personal confere e libera suas aulas.':'Suas aulas entram na agenda quando o pagamento for confirmado.'}</small></span><b style="font-size:13px">${inf?'Ver':'Pagar'} ›</b></a>`)};
+ const paint=()=>{try{payBan()}catch(_){}try{
   /* Hoje: subtítulo, ciclo, treino do dia */
   const sub=$q('#v-hoje .hero .sub');if(sub){const wk=Math.max(1,Math.ceil((now-new Date(P.created_at||now))/(7*864e5)));const W=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],M=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];sub.textContent=`${W[now.getDay()]}, ${now.getDate()} de ${M[now.getMonth()]} • semana ${wk} na matilha`}
   const cy=$q('#v-hoje .cycle .lbl');if(cy&&R.CY)cy.textContent=`Seu ciclo • ${R.CY.left} ${R.CY.left===1?'dia':'dias'} para fechar`;

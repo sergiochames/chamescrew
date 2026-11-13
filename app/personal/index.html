@@ -3980,10 +3980,11 @@ const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0
 const iso=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 const APP=location.origin+'/app/';
 let STUD=[],RQ=[],CLS=[],FXS=[],WKS=[],PS=null,INV=[],LGA=[],DCA=[],WCA=[];
-async function fetchAll(){const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
+let RSV=[];
+async function fetchAll(){try{await sb.rpc('expire_reservations')}catch(_){}try{const {data}=await sb.from('requests').select('*').in('pay_status',['pendente','informado']).order('pay_due');RSV=data||[]}catch(_){RSV=[]}const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
   const [st,cl,rq,fx,wo,ps,iv,lg,dc,wc]=await Promise.all([sb.from('profiles').select('*').eq('role','aluno').order('name'),
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
-    sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).order('created_at',{ascending:false}),
+    sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).eq('archived',false).order('created_at',{ascending:false}),
     sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position'),
     sb.from('pstate').select('*').eq('owner',ME.id).maybeSingle(),sb.from('invites').select('code,profile_id,used_by,created_at').not('profile_id','is',null),
     sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
@@ -4087,9 +4088,9 @@ function apply(){
   STU.forEach(X=>{if(X._id)KNOWN.add(X._id)});try{realWC()}catch(_){}
   S.ev={};S.sp={};const now=new Date();
   CLS.forEach(c=>{const d=new Date(c.starts_at),wi=wiOf(d),h=d.getHours()+d.getMinutes()/60,past=d<now;if(wi<0||wi>6)return;
-    const st=c.status==='cancelada'?'can':c.status==='feita'||past?'ok':c.status==='confirmada'?'conf':(d-now<36*36e5?'wait':'conf');
+    const st=c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'||past?'ok':c.status==='confirmada'?'conf':(d-now<36*36e5?'wait':'conf');
     const lid=(()=>{const l=(LOCS||[]).find(z=>z.n===c.location);return l?l.id:undefined})();
-    (S.ev[wi]=S.ev[wi]||[]).push(Object.assign({h,n:nameOf(c.student_id),st,_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined},lid?{loc:lid}:{}))});
+    (S.ev[wi]=S.ev[wi]||[]).push(Object.assign({h,n:nameOf(c.student_id),st,_res:c.status==='reservada',_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined},lid?{loc:lid}:{}))});
   XEV.forEach(x=>{const d=new Date(x.date+'T12:00:00'),wi=wiOf(d);if(wi<0||wi>6)return;(S.ev[wi]=S.ev[wi]||[]).push(dec(x.e))});
   /* aulas usadas no ciclo */
   STU.forEach(X=>{if(!X._id)return;X.q[0]=CLS.filter(c=>c.student_id===X._id&&c.status!=='cancelada'&&new Date(c.starts_at)<=now).length})}
@@ -4181,25 +4182,77 @@ function suggest(dow,period,ideal){const day=nextDate(dow),per=PERI[period]||[''
   const show=CLS.filter(c=>new Date(c.starts_at).toDateString()===day.toDateString()&&c.status!=='cancelada');
   return {t:pad(Math.floor(best/60))+':'+pad(best%60),why,day,show}}
 const waN=p=>{const t=String(p||'');let d=t.replace(/\D/g,'');if(!t.trim().startsWith('+')&&d.length<=11)d='55'+d;return d};
-function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Object.values(p.parq||{}).filter(Boolean).length;const SG=r.days.map(dw=>({dow:dw,...suggest(dw,r.period,r.ideal_time)}));
-  const first=SG.map(x=>x.day).sort((a,b)=>a-b)[0],LL=[...new Set([...(LOCS||[]).map(l=>l.n),...(r.location?[r.location]:[]),...(r.location_other?[r.location_other]:[])])];
-  sheet(`<div class="rq9"><span class="lbl">${r.status==='proposta'?'Proposta enviada • mudar':'Novo aluno • pedido'}</span><h3 class="d">${esc(p.name||'Aluno')}</h3>
-  <div class="tg"><span>${r.freq||r.days.length}x por semana</span><span>${r.days.map(d=>DOW[d]).join(' e ')}</span><span>${(PERI[r.period]||[''])[0]}${r.ideal_time?' • ideal '+esc(r.ideal_time):''}</span><span>${esc(r.location||('Outro: '+(r.location_other||'')))}</span>${p.injury?'<span class="w">lesão/dor</span>':''}${yes?`<span class="w">PAR-Q: ${yes} sim</span>`:''}</div>
-  <p class="mini">${esc([p.goal,p.level].filter(Boolean).join(' • '))}${p.injury?'<br>Lesão/dor: '+esc(p.injury):''}</p>
-  ${SG.map((x,k)=>`<div class="dayb"><div class="dt"><b>${DOW[x.dow]}</b><input type="time" step="900" value="${x.t}" data-k="${k}"></div><div class="sug">Encaixe sugerido: ${x.t} • ${x.why}</div><p class="mini">${DOW[x.dow]} ${pad(x.day.getDate())}/${pad(x.day.getMonth()+1)}: ${x.show.length?x.show.map(c=>{const d=new Date(c.starts_at);return pad(d.getHours())+':'+pad(d.getMinutes())+' '+esc(nameOf(c.student_id).split(' ')[0])}).join(' • '):'nenhuma aula ainda'}</p></div>`).join('')}
-  <label>Local</label><select id="lc">${LL.map(l=>`<option ${l===(r.location||r.location_other)?'selected':''}>${esc(l)}</option>`).join('')}</select>
-  <label>Começa em</label><input id="sd" type="date" value="${iso(first)}"><label>Mensagem (opcional)</label><textarea id="ms" rows="2" placeholder="Ex.: Esses horários encaixam certinho na minha agenda. Fica bom pra você?"></textarea>
-  <button class="btn solid wide" id="sn" style="margin-top:14px">Enviar proposta</button>${p.phone?`<a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}">WhatsApp</a>`:''}
-  <button class="btn wide" id="rc" style="margin-top:8px;border:0">Recusar pedido</button></div>`,s=>{
-   s.querySelector('#sn').onclick=async()=>{const slots=[...s.querySelectorAll('[data-k]')].map(i=>({dow:SG[+i.dataset.k].dow,time:i.value,location:s.querySelector('#lc').value}));if(slots.some(x=>!x.time))return toast('Preencha os horários');
-    s.querySelector('#sn').disabled=true;await sb.from('proposals').update({status:'recusada'}).eq('request_id',r.id).eq('status','enviada');
-    const {error}=await sb.from('proposals').insert({request_id:r.id,slots,message:s.querySelector('#ms').value.trim()||null,start_date:s.querySelector('#sd').value||null,created_by:ME.id});
-    if(error){s.querySelector('#sn').disabled=false;return toast('Não enviou: '+error.message)}await sb.from('requests').update({status:'proposta',updated_at:new Date().toISOString()}).eq('id',r.id);
-    s.remove();toast('Proposta enviada');r.status='proposta';const nm=(p.name||'').split(' ')[0];
-    if(p.phone)sheet(`<span class="lbl">Proposta enviada</span><h3 class="d">Avisar ${esc(nm)}?</h3><p class="note">A proposta já está no app. Se quiser, mande um aviso no WhatsApp.</p><a class="btn solid" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Mandei sua proposta de horário no app: ${APP}`)}">Avisar no WhatsApp</a>`);
-    redraw()};
-   s.querySelector('#rc').onclick=async()=>{const {error}=await sb.from('requests').update({status:'recusado',updated_at:new Date().toISOString()}).eq('id',r.id);if(error)return toast(error.message);RQ=RQ.filter(x=>x!==r);s.remove();toast('Pedido recusado');redraw()}})}
+const hm=m=>`${Math.floor(m/60)}h${m%60?pad(m%60):''}`,t2m=t=>{const[h,m]=String(t).split(':').map(Number);return h*60+(m||0)},m2t=m=>pad(Math.floor(m/60))+':'+pad(m%60);
+function whOf(dow){const L=(typeof WH!=='undefined'&&WH&&WH[dow])||[];return L.length?L:[[6,22]]}
+function busyAt(dow,m,sid){const fx=(FXS||[]).some(f=>f.active!==false&&f.student_id!==sid&&f.dow===dow&&Math.abs(t2m(f.at_time)-m)<60);if(fx)return (STUD.find(x=>x.id===(FXS.find(f=>f.student_id!==sid&&f.dow===dow&&Math.abs(t2m(f.at_time)-m)<60)||{}).student_id)||{}).name||'outro aluno';
+  const c=CLS.find(c=>{const d=new Date(c.starts_at);return c.student_id!==sid&&c.status!=='cancelada'&&d>new Date()&&d.getDay()===dow&&Math.abs(d.getHours()*60+d.getMinutes()-m)<60});return c?nameOf(c.student_id):null}
+const inWH=(dow,m)=>whOf(dow).some(([a,b])=>m>=a*60&&m+60<=b*60);
+function plan(dow,period,ideal,sid){const per=PERI[period]||['',6,22],w=(()=>{const x=String(ideal||'').match(/(\d{1,2})(?:[:h](\d{2}))?/);return x?(+x[1])*60+(+(x[2]||0)):null})();
+  const cands=[];whOf(dow).forEach(([a,b])=>{for(let m=a*60;m+60<=b*60;m+=30)cands.push(m)});const U=[...new Set(cands)];
+  const inP=m=>m>=per[1]*60&&m<per[2]*60,tgt=w!=null?w:(U.find(inP)!=null?U.find(inP):per[1]*60);
+  const free=U.filter(m=>!busyAt(dow,m,sid)).sort((x,y)=>(inP(y)-inP(x))||Math.abs(x-tgt)-Math.abs(y-tgt));
+  const want=tgt,wantOk=inWH(dow,want)&&!busyAt(dow,want,sid);
+  return {dow,want,wantOk,why:!inWH(dow,want)?'fora do seu horário':busyAt(dow,want,sid)?'ocupado • '+String(busyAt(dow,want,sid)).split(' ')[0]:'',alts:free.filter(m=>m!==want).slice(0,3),pick:wantOk?want:(free[0]!=null?free[0]:want)}}
+function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Object.values(p.parq||{}).filter(Boolean).length,nm=(p.name||'Aluno').split(' ')[0];
+  const PL=r.days.map(dw=>plan(dw,r.period,r.ideal_time,r.student_id));const first=PL.map(x=>nextDate(x.dow)).sort((a,b)=>a-b)[0];
+  const LL=[...new Set([...(LOCS||[]).map(l=>l.n),...(r.location?[r.location]:[]),...(r.location_other?[r.location_other]:[])])];
+  const changed=()=>PL.some(x=>x.pick!==x.want),allOk=()=>PL.every(x=>x.pick===x.want&&x.wantOk);
+  const dayH=x=>`<div class="rqd${x.pick===x.want&&x.wantOk?'':' bad'}"><div class="rqh"><span><b>${DOW[x.dow]}</b> ${hm(x.want)}</span>${x.wantOk?'<span class="ok">✓ livre</span>':`<span class="no">✗ ${esc(x.why)}</span>`}</div>
+    ${x.wantOk&&x.pick===x.want?'':`<div class="alt">${[...(x.wantOk?[x.want]:[]),...x.alts].map(m=>`<button data-alt="${x.dow}:${m}" class="${x.pick===m?'on':''}">${hm(m)}</button>`).join('')}<label class="oth">outro<input type="time" step="900" data-oth="${x.dow}" value="${m2t(x.pick)}"></label></div>${x.pick!==x.want?`<small class="ch">Proposta: ${DOW[x.dow]} ${hm(x.pick)}${busyAt(x.dow,x.pick,r.student_id)?' • ocupado':!inWH(x.dow,x.pick)?' • fora do seu horário':''}</small>`:''}`}
+    ${x.wantOk&&x.pick===x.want?`<button class="chg" data-chg="${x.dow}">mudar</button>`:''}</div>`;
+  const body=()=>`<span class="lbl">${r.pay_status==='expirado'?'Reserva expirou • fechar de novo':r.status==='proposta'?'Proposta enviada • mudar':'Novo aluno • pedido'}</span><h3 class="d">${esc(p.name||'Aluno')}</h3>
+  <div class="rqs"><b>${r.freq||r.days.length}x • ${r.days.map(d=>DOW[d]).join(', ').replace(/, ([^,]*)$/,' e $1')} • ${(PERI[r.period]||[''])[0].toLowerCase()}${r.ideal_time?', ideal '+esc(r.ideal_time):''}</b>
+   <div class="tg"><span>${esc(r.location||('Outro: '+(r.location_other||'')))}</span>${p.goal?`<span>${esc([p.goal,p.level].filter(Boolean).join(' • '))}</span>`:''}${p.injury?'<span class="w">lesão/dor</span>':''}${yes?`<span class="w">PAR-Q: ${yes} sim</span>`:''}</div>
+   ${r.note?`<div class="rqn">Pedido especial: “${esc(r.note)}”</div>`:''}${r.monthly_price?`<small class="note">Plano: R$ ${Number(r.monthly_price).toLocaleString('pt-BR')}/mês</small>`:''}</div>
+  <span class="lbl">Na sua agenda</span>${PL.map(dayH).join('')}
+  <div class="row2" style="margin-top:10px"><div><label>Local</label><select id="lc">${LL.map(l=>`<option ${l===(r.location||r.location_other)?'selected':''}>${esc(l)}</option>`).join('')}</select></div><div><label>Começa em</label><input id="sd" type="date" value="${iso(first)}"></div></div>
+  ${allOk()?`<button class="btn solid wide" id="fc" style="margin-top:14px">Fechar com ${esc(nm)}</button><p class="note" style="text-align:center;margin:6px 0 0">Tudo livre e igual ao pedido. As aulas ficam reservadas até o pagamento.</p>`
+   :`<button class="btn solid wide" id="sn" style="margin-top:14px">Enviar proposta</button><p class="note" style="text-align:center;margin:6px 0 0">Você mudou ${PL.filter(x=>x.pick!==x.want).map(x=>DOW[x.dow].toLowerCase()).join(' e ')||'o horário'}. ${esc(nm)} só precisa aceitar.</p>`}
+  <button class="btn wide" id="wf" style="margin-top:8px">Combinei no WhatsApp: fechar</button>
+  ${p.phone?`<a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center;border:0" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent('Oi, '+nm+'! Vi seu pedido de horário no app. ')}">Conversar no WhatsApp</a>`:''}
+  <button class="arq" id="ar">Arquivar pedido</button>`;
+  sheet(`<div class="rq9" id="rqb">${body()}</div>`,s=>{const re=()=>{const lc=s.querySelector('#lc').value,sd=s.querySelector('#sd').value;s.querySelector('#rqb').innerHTML=body();s.querySelector('#lc').value=lc;s.querySelector('#sd').value=sd};
+   const slots=()=>PL.map(x=>({dow:x.dow,time:m2t(x.pick),location:s.querySelector('#lc').value}));
+   const close=async(btn)=>{btn.disabled=true;const {error}=await sb.rpc('close_request',{p_req:r.id,p_slots:slots(),p_start:s.querySelector('#sd').value||null});if(error){btn.disabled=false;return toast('Não fechou: '+error.message)}
+     s.remove();RQ=RQ.filter(x=>x!==r);toast('Fechado! Aulas reservadas até o pagamento');
+     if(p.phone)sheet(`<span class="lbl">Horário fechado</span><h3 class="d">Avisar ${esc(nm)}?</h3><p class="note">${esc(nm)} já vê no app os horários e o PIX. As aulas entram na agenda quando você confirmar o pagamento.</p><a class="btn solid" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Fechei seus horários: ${PL.map(x=>DOW[x.dow]+' '+hm(x.pick)).join(', ')}. Entra no app para ver e fazer o pagamento: ${APP}`)}">Avisar no WhatsApp</a>`);
+     try{await sync()}catch(_){location.reload()}};
+   s.addEventListener('click',async e=>{const al=e.target.closest('[data-alt]');if(al){const [d,m]=al.dataset.alt.split(':').map(Number);PL.find(x=>x.dow===d).pick=m;re();return}
+    const ch=e.target.closest('[data-chg]');if(ch){const x=PL.find(z=>z.dow===+ch.dataset.chg);x.wantOk=false;x.why='mudar horário';x.alts=x.alts.length?x.alts:[];re();return}
+    if(e.target.closest('#fc'))return close(e.target.closest('#fc'));
+    if(e.target.closest('#wf'))return close(e.target.closest('#wf'));
+    if(e.target.closest('#sn')){const b=e.target.closest('#sn');b.disabled=true;await sb.from('proposals').update({status:'recusada'}).eq('request_id',r.id).eq('status','enviada');
+     const {error}=await sb.from('proposals').insert({request_id:r.id,slots:slots(),start_date:s.querySelector('#sd').value||null,created_by:ME.id});
+     if(error){b.disabled=false;return toast('Não enviou: '+error.message)}await sb.from('requests').update({status:'proposta',updated_at:new Date().toISOString()}).eq('id',r.id);
+     s.remove();toast('Proposta enviada');r.status='proposta';
+     if(p.phone)sheet(`<span class="lbl">Proposta enviada</span><h3 class="d">Avisar ${esc(nm)}?</h3><p class="note">A proposta já está no app. ${esc(nm)} só aceita ou te manda mensagem.</p><a class="btn solid" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Te mandei uma proposta de horário no app: ${APP}`)}">Avisar no WhatsApp</a>`);
+     redraw();return}
+    if(e.target.closest('#ar')){const {error}=await sb.from('requests').update({archived:true,updated_at:new Date().toISOString()}).eq('id',r.id);if(error)return toast(error.message);RQ=RQ.filter(x=>x!==r);s.remove();toast('Pedido arquivado');redraw()}});
+   s.addEventListener('change',e=>{const o=e.target.closest('[data-oth]');if(o&&o.value){const x=PL.find(z=>z.dow===+o.dataset.oth);x.pick=t2m(o.value);re()}})})}
+{const st=document.createElement('style');st.textContent=`.rq9 .rqs{border-radius:12px;padding:10px 12px;background:var(--card);border:1px solid var(--line);margin:6px 0 12px;font-size:14px}.rq9 .rqs .tg{margin:6px 0 0}
+.rq9 .rqn{margin-top:8px;font-size:13px;border-radius:8px;padding:7px 9px;background:rgba(226,170,60,.12);border:1px solid rgba(226,170,60,.45)}
+.rq9 .rqd{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;position:relative}.rq9 .rqd.bad{border-color:rgba(200,60,80,.45);background:rgba(200,60,80,.06)}
+.rq9 .rqh{display:flex;justify-content:space-between;align-items:center;font-size:14px}.rq9 .rqh b{font-family:var(--D,inherit);font-size:20px;font-weight:800;margin-right:4px}
+.rq9 .ok{color:#2e8a55;font-weight:800;font-size:12.5px}.rq9 .no{color:#c0394f;font-weight:800;font-size:12.5px}
+.rq9 .alt{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.rq9 .alt button,.rq9 .alt .oth{border:1px solid var(--line);border-radius:9px;padding:6px 11px;font-weight:800;font-size:13px;background:none;color:inherit;position:relative;overflow:hidden}
+.rq9 .alt button.on{background:var(--ink,#16171a);color:var(--bg,#fff);border-color:transparent}.rq9 .alt .oth input{position:absolute;inset:0;opacity:0;width:100%}
+.rq9 .ch{display:block;margin-top:6px;font-size:12px;font-weight:700;opacity:.8}.rq9 .chg{position:absolute;right:12px;bottom:-1px;opacity:0;pointer-events:none}
+.rq9 .rqd:not(.bad) .chg{position:static;opacity:.6;pointer-events:auto;background:none;border:0;font-size:12px;font-weight:700;text-decoration:underline;padding:4px 0 0;color:inherit}
+.rq9 #fc,.rq9 #sn,.rq9 #wf{width:100%;display:block}.rq9 .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rq9 .arq{display:block;margin:14px auto 0;background:none;border:0;font-size:12.5px;font-weight:700;opacity:.55;color:inherit}`;document.head.appendChild(st)}
 
+/* ---------- reservas aguardando pagamento ---------- */
+function rsvCard(){if(S.tab!=='agenda'||NEWP.on||!RSV.length)return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-rsv'))return;
+  const inf=RSV.filter(r=>r.pay_status==='informado').length,b=document.createElement('button');b.className='rlp';b.id='rl-rsv';b.style.cssText='width:100%;text-align:left';
+  b.innerHTML=`<span class="n">${RSV.length}</span><span style="flex:1"><b>${RSV.length===1?'1 reserva aguardando pagamento':RSV.length+' reservas aguardando pagamento'}</b><small>${inf?`${inf} ${inf===1?'aluno avisou':'alunos avisaram'} que pagou • confira`:'As aulas entram quando você confirmar'}</small></span><span>›</span>`;
+  const ref=ap.querySelector('#rl-req')||ap.querySelector('.brand');ref&&ref.nextSibling?ap.insertBefore(b,ref.nextSibling):ap.prepend(b);b.onclick=rsvList}
+function rsvList(){const f=t=>{const d=new Date(t);return `${DOW[d.getDay()].toLowerCase()}, ${pad(d.getDate())}/${pad(d.getMonth()+1)} às ${d.getHours()}h${d.getMinutes()?pad(d.getMinutes()):''}`};
+  sheet(`<span class="lbl">Agenda</span><h3 class="d">Reservas</h3><p class="note">Os horários ficam guardados para o aluno até o prazo. Sem pagamento, a reserva cai e o horário volta a ficar livre.</p>
+  ${RSV.map(r=>{const p=STUD.find(x=>x.id===r.student_id)||{},nm=(p.name||'Aluno').split(' ')[0];return `<div class="opt2" style="display:block"><b>${esc(p.name||'Aluno')}</b><small class="note" style="display:block">${r.pay_amount?'R$ '+Number(r.pay_amount).toLocaleString('pt-BR')+'/mês • ':''}${r.pay_status==='informado'?'<b style="color:#2e8a55">avisou que pagou</b>':'reserva até '+(r.pay_due?f(r.pay_due):'—')}</small>
+   <div class="row2" style="margin-top:10px"><button class="btn solid" data-pay="${r.student_id}">Pagou: liberar aulas</button>${p.phone?`<a class="btn" style="text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent('Oi, '+nm+'! Tudo certo com o pagamento do plano? Seus horários estão reservados.')}">WhatsApp</a>`:'<span></span>'}</div></div>`}).join('')}
+  <button class="btn" data-close style="margin-top:6px">Fechar</button>`,s=>s.addEventListener('click',async e=>{const b=e.target.closest('[data-pay]');if(!b)return;b.disabled=true;
+   const {error}=await sb.rpc('confirm_payment',{p_student:b.dataset.pay,p_method:'manual'});if(error){b.disabled=false;return toast('Não deu: '+error.message)}
+   try{const X=STU.find(x=>x._id===b.dataset.pay);if(X)X.paid=true}catch(_){}
+   s.remove();toast('Pagamento confirmado. Aulas na agenda!');try{await sync()}catch(_){location.reload()}}))}
 /* ---------- acesso do aluno (link) dentro da ficha ---------- */
 function accessCard(){if(S.tab!=='alunos')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-acc'))return;
   const X=A2.open&&STU.find(x=>x._id&&x.n===A2.open);if(!X)return;
@@ -4456,16 +4509,24 @@ function progSheet(){const P0={...PROG};
  /* voltar das telas internas para o menu novo */
  document.addEventListener('click',e=>{if(e.target.closest('[data-cfgback]')){e.stopImmediatePropagation();e.preventDefault();const sc=e.target.closest('.scrim');if(sc)sc.remove();cfgMenu()}},true);
 }
+/* ---------- chave PIX (pagamento manual do aluno) ---------- */
+function pixCard(){if(S.tab!=='fin')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-pix'))return;const k=PERS.pix||'';
+  const b=document.createElement('button');b.className='rlp';b.id='rl-pix';b.style.cssText='width:100%;text-align:left';
+  b.innerHTML=`<span class="n">PIX</span><span style="flex:1"><b>${k?'Chave PIX para os alunos':'Cadastre sua chave PIX'}</b><small>${k?esc(k.length>14?k.slice(0,6)+'…'+k.slice(-4):k)+' • aparece para o aluno pagar':'O aluno vê a chave na hora de pagar o plano'}</small></span><span>›</span>`;
+  const ref=ap.querySelector('.brand');ref&&ref.nextSibling?ap.insertBefore(b,ref.nextSibling):ap.prepend(b);
+  b.onclick=()=>sheet(`<span class="lbl">Financeiro</span><h3 class="d">Chave PIX</h3><p class="note">Aparece para o aluno na tela de pagamento. Prefira chave aleatória, e-mail ou celular em vez do CPF.</p>
+   <input class="inp" id="pxk" value="${esc(k)}" placeholder="Chave aleatória, e-mail ou celular" autocomplete="off"><div class="row2" style="margin-top:12px"><button class="btn" data-close>Fechar</button><button class="btn solid" id="pxs">Salvar</button></div>`,
+   s=>s.querySelector('#pxs').onclick=async()=>{PERS.pix=s.querySelector('#pxk').value.trim();s.remove();await saveNow();toast('Chave PIX salva');const o=document.getElementById('rl-pix');if(o)o.remove();pixCard()})}
 /* ---------- desenho ---------- */
 const _draw=draw;
-draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
+draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
   try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0);setTimeout(linkCheck,0);setTimeout(()=>{try{finCheck()}catch(e){console.error(e)}},0)};
 const redraw=async()=>{try{await fetchAll();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
 lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
 S.tab='agenda';draw();if(!PS||!PS.data||PS.data.v!==2)saveNow();
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');ld.remove();
-})().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
+})().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 
 </script>
 
