@@ -4319,17 +4319,18 @@ function plan(dow,period,ideal,sid){const per=PERI[period]||['',6,22],w=(()=>{co
 function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Object.values(p.parq||{}).filter(Boolean).length,nm=(p.name||'Aluno').split(' ')[0];
   const PL=r.days.map(dw=>plan(dw,r.period,r.ideal_time,r.student_id));const first=PL.map(x=>nextDate(x.dow)).sort((a,b)=>a-b)[0];
   const LL=[...new Set([...(LOCS||[]).map(l=>l.n),...(r.location?[r.location]:[]),...(r.location_other?[r.location_other]:[])])];
-  const changed=()=>PL.some(x=>x.pick!==x.want),allOk=()=>PL.every(x=>x.pick===x.want&&x.wantOk);
-  const dayH=x=>`<div class="rqd${x.pick===x.want&&x.wantOk?'':' bad'}"><div class="rqh"><span><b>${DOW[x.dow]}</b> ${hm(x.want)}</span>${x.wantOk?'<span class="ok">✓ livre</span>':`<span class="no">✗ ${esc(x.why)}</span>`}</div>
-    ${x.wantOk&&x.pick===x.want?'':`<div class="alt">${[...(x.wantOk?[x.want]:[]),...x.alts].map(m=>`<button data-alt="${x.dow}:${m}" class="${x.pick===m?'on':''}">${hm(m)}</button>`).join('')}<label class="oth">outro<input type="time" step="900" data-oth="${x.dow}" value="${m2t(x.pick)}"></label></div>${x.pick!==x.want?`<small class="ch">Proposta: ${DOW[x.dow]} ${hm(x.pick)}${busyAt(x.dow,x.pick,r.student_id)?' • ocupado':!inWH(x.dow,x.pick)?' • fora do seu horário':''}</small>`:''}`}
-    ${x.wantOk&&x.pick===x.want?`<button class="chg" data-chg="${x.dow}">mudar</button>`:''}</div>`;
+  const okDay=x=>x.pick===x.want&&(x.wantOk||(x.forced&&!busyAt(x.dow,x.pick,r.student_id)));
+  const changed=()=>PL.some(x=>x.pick!==x.want),allOk=()=>PL.every(okDay);
+  const dayH=x=>`<div class="rqd${okDay(x)?'':' bad'}"><div class="rqh"><span><b>${DOW[x.dow]}</b> ${hm(x.want)}</span>${x.wantOk?'<span class="ok">✓ livre</span>':okDay(x)?'<span class="ok">✓ você liberou</span>':`<span class="no">✗ ${esc(x.why)}</span>`}</div>
+    ${okDay(x)?'':`<div class="alt">${[...(x.wantOk||!busyAt(x.dow,x.want,r.student_id)?[x.want]:[]),...x.alts.filter(m=>m!==x.want)].map(m=>`<button data-alt="${x.dow}:${m}" class="${x.pick===m?'on':''}">${hm(m)}</button>`).join('')}<label class="oth">outro<input type="time" step="900" data-oth="${x.dow}" value="${m2t(x.pick)}"></label></div>${x.pick!==x.want?`<small class="ch">Proposta: ${DOW[x.dow]} ${hm(x.pick)}${busyAt(x.dow,x.pick,r.student_id)?' • ocupado':!inWH(x.dow,x.pick)?' • fora do seu horário':''}</small>`:''}`}
+    ${okDay(x)?`${x.forced&&!x.wantOk?'<small class="ch" style="color:var(--muted)">Fora do seu horário de trabalho, mas você liberou.</small>':''}<button class="chg" data-chg="${x.dow}">mudar</button>`:''}</div>`;
   const body=()=>`<span class="lbl">${r.pay_status==='expirado'?'Reserva expirou • fechar de novo':r.status==='proposta'?'Proposta enviada • mudar':'Novo aluno • pedido'}</span><h3 class="d">${esc(p.name||'Aluno')}</h3>
   <div class="rqs"><b>${r.freq||r.days.length}x • ${r.days.map(d=>DOW[d]).join(', ').replace(/, ([^,]*)$/,' e $1')} • ${(PERI[r.period]||[''])[0].toLowerCase()}${r.ideal_time?', ideal '+esc(r.ideal_time):''}</b>
    <div class="tg"><span>${esc(r.location||('Outro: '+(r.location_other||'')))}</span>${p.goal?`<span>${esc([p.goal,p.level].filter(Boolean).join(' • '))}</span>`:''}${p.injury?'<span class="w">lesão/dor</span>':''}${yes?`<span class="w">PAR-Q: ${yes} sim</span>`:''}</div>
    ${r.note?`<div class="rqn">Pedido especial: “${esc(r.note)}”</div>`:''}${r.monthly_price?`<small class="note">Plano: R$ ${Number(r.monthly_price).toLocaleString('pt-BR')}/mês</small>`:''}</div>
   <span class="lbl">Na sua agenda</span>${PL.map(dayH).join('')}
   <div class="row2" style="margin-top:10px"><div><label>Local</label><select id="lc">${LL.map(l=>`<option ${l===(r.location||r.location_other)?'selected':''}>${esc(l)}</option>`).join('')}</select></div><div><label>Começa em</label><input id="sd" type="date" value="${iso(first)}"></div></div>
-  ${allOk()?`<button class="btn solid wide" id="fc" style="margin-top:14px">Fechar com ${esc(nm)}</button><p class="note" style="text-align:center;margin:6px 0 0">Tudo livre e igual ao pedido. As aulas ficam reservadas até o pagamento.</p>`
+  ${allOk()?`<button class="btn solid wide" id="fc" style="margin-top:14px">Fechar com ${esc(nm)}</button><p class="note" style="text-align:center;margin:6px 0 0">Igual ao que ${esc(nm)} pediu. As aulas ficam reservadas até o pagamento.</p>`
    :`<button class="btn solid wide" id="sn" style="margin-top:14px">Enviar proposta</button><p class="note" style="text-align:center;margin:6px 0 0">Você mudou ${PL.filter(x=>x.pick!==x.want).map(x=>DOW[x.dow].toLowerCase()).join(' e ')||'o horário'}. ${esc(nm)} só precisa aceitar.</p>`}
   <button class="btn wide" id="wf" style="margin-top:8px">Combinei no WhatsApp: fechar</button>
   ${p.phone?`<a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center;border:0" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent('Oi, '+nm+'! Vi seu pedido de horário no app. ')}">Conversar no WhatsApp</a>`:''}
@@ -4340,8 +4341,8 @@ function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Objec
      s.remove();RQ=RQ.filter(x=>x!==r);toast('Fechado! Aulas reservadas até o pagamento');
      if(p.phone)sheet(`<span class="lbl">Horário fechado</span><h3 class="d">Avisar ${esc(nm)}?</h3><p class="note">${esc(nm)} já vê no app os horários e o PIX. As aulas entram na agenda quando você confirmar o pagamento.</p><a class="btn solid" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Fechei seus horários: ${PL.map(x=>DOW[x.dow]+' '+hm(x.pick)).join(', ')}. Entra no app para ver e fazer o pagamento: ${APP}`)}">Avisar no WhatsApp</a>`);
      try{await sync()}catch(_){location.reload()}};
-   s.addEventListener('click',async e=>{const al=e.target.closest('[data-alt]');if(al){const [d,m]=al.dataset.alt.split(':').map(Number);PL.find(x=>x.dow===d).pick=m;re();return}
-    const ch=e.target.closest('[data-chg]');if(ch){const x=PL.find(z=>z.dow===+ch.dataset.chg);x.wantOk=false;x.why='mudar horário';x.alts=x.alts.length?x.alts:[];re();return}
+   s.addEventListener('click',async e=>{const al=e.target.closest('[data-alt]');if(al){const [d,m]=al.dataset.alt.split(':').map(Number);const x=PL.find(x=>x.dow===d);x.pick=m;x.forced=true;re();return}
+    const ch=e.target.closest('[data-chg]');if(ch){const x=PL.find(z=>z.dow===+ch.dataset.chg);x.wantOk=false;x.forced=false;x.why='mudar horário';x.alts=x.alts.length?x.alts:[];re();return}
     if(e.target.closest('#fc'))return close(e.target.closest('#fc'));
     if(e.target.closest('#wf'))return close(e.target.closest('#wf'));
     if(e.target.closest('#sn')){const b=e.target.closest('#sn');b.disabled=true;await sb.from('proposals').update({status:'recusada'}).eq('request_id',r.id).eq('status','enviada');
@@ -4351,7 +4352,7 @@ function proposeSheet(r){const p=STUD.find(x=>x.id===r.student_id)||{},yes=Objec
      if(p.phone)sheet(`<span class="lbl">Proposta enviada</span><h3 class="d">Avisar ${esc(nm)}?</h3><p class="note">A proposta já está no app. ${esc(nm)} só aceita ou te manda mensagem.</p><a class="btn solid" style="text-decoration:none" target="_blank" rel="noopener" href="https://wa.me/${waN(p.phone)}?text=${encodeURIComponent(`Oi, ${nm}! Te mandei uma proposta de horário no app: ${APP}`)}">Avisar no WhatsApp</a>`);
      redraw();return}
     if(e.target.closest('#ar')){const {error}=await sb.from('requests').update({archived:true,updated_at:new Date().toISOString()}).eq('id',r.id);if(error)return toast(error.message);RQ=RQ.filter(x=>x!==r);s.remove();toast('Pedido arquivado');redraw()}});
-   s.addEventListener('change',e=>{const o=e.target.closest('[data-oth]');if(o&&o.value){const x=PL.find(z=>z.dow===+o.dataset.oth);x.pick=t2m(o.value);re()}})})}
+   s.addEventListener('change',e=>{const o=e.target.closest('[data-oth]');if(o&&o.value){const x=PL.find(z=>z.dow===+o.dataset.oth);x.pick=t2m(o.value);x.forced=true;re()}})})}
 {const st=document.createElement('style');st.textContent=`.rq9 .rqs{border-radius:12px;padding:10px 12px;background:var(--card);border:1px solid var(--line);margin:6px 0 12px;font-size:14px}.rq9 .rqs .tg{margin:6px 0 0}
 .rq9 .rqn{margin-top:8px;font-size:13px;border-radius:8px;padding:7px 9px;background:rgba(226,170,60,.12);border:1px solid rgba(226,170,60,.45)}
 .rq9 .rqd{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:8px;position:relative}.rq9 .rqd.bad{border-color:rgba(200,60,80,.45);background:rgba(200,60,80,.06)}

@@ -72,7 +72,8 @@ a.b1,a.b2{display:grid;place-items:center;text-decoration:none}a.b1{color:#1c1d2
 .okc{width:96px;height:96px;border-radius:50%;margin:60px auto 22px;border:2px solid var(--g);display:grid;place-items:center;color:var(--g);font-size:44px;font-weight:900;box-shadow:0 0 60px rgba(143,199,162,.25)}
 .nx{margin-top:22px;background:var(--card);border-radius:12px;padding:4px 16px}.nx div{display:flex;gap:12px;padding:13px 0;font-size:14px;font-weight:650;border-bottom:1px solid var(--ln);align-items:center}.nx div:last-child{border:0}
 .nx i{font-style:normal;color:var(--g);font-weight:900;width:18px}.nx small{color:var(--mu);font-weight:600;margin-left:auto;font-size:12.5px}.nx .on i{color:var(--fg)}.nx .done{color:var(--mu)}
-.pro{background:var(--card);border-radius:14px;padding:18px;margin-top:22px}.pro .big{font-family:var(--D);font-weight:900;font-size:44px;line-height:.95;text-transform:uppercase;margin:6px 0 4px}
+.pro{background:var(--card);border-radius:14px;padding:18px;margin-top:22px}.pro .sl9{display:flex;flex-direction:column;margin:8px 0 6px}.pro .sl9>div{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--li,rgba(255,255,255,.1))}.pro .sl9>div:last-child{border-bottom:0}.pro .sl9 span{font-weight:700;font-size:16px}.pro .sl9 b{font-family:var(--D);font-weight:900;font-size:30px;line-height:1}
+.pro .big{font-family:var(--D);font-weight:900;font-size:44px;line-height:.95;text-transform:uppercase;margin:6px 0 4px}
 .pro .msg{margin-top:14px;border-left:3px solid var(--g);padding:8px 12px;font-size:14px;background:rgba(143,199,162,.08);border-radius:0 8px 8px 0}
 .cls{display:flex;justify-content:space-between;align-items:center;background:var(--card);border-radius:12px;padding:13px 14px;margin-top:8px}.cls b{font-size:15px}.cls small{display:block;color:var(--mu);font-size:12.5px;font-weight:600;margin-top:2px}
 .cls .st{font-size:12px;font-weight:800;border-radius:6px;padding:4px 8px;background:rgba(255,255,255,.07);color:var(--mu)}.cls .st.ok{background:rgba(143,199,162,.16);color:var(--g)}
@@ -303,7 +304,7 @@ async function submit(){const D=ST.d,b=$('#go');b.disabled=true;b.textContent='E
   try{localStorage.removeItem('cc_draft')}catch(_){}ST.d={};home(true)}
 
 /* ---------- depois do pedido ---------- */
-const fmtSlot=s=>`${DOWN[s.dow]} ${s.time}`;
+const DOWC=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];const fmtSlot=s=>`${DOWN[s.dow]} ${s.time}`;
 /* ===== anamnese do personal (depois do horário fechado e do pagamento, antes do app) ===== */
 async function needAnam(){try{const [{data:t},{data:a}]=await Promise.all([sb.rpc('public_anm'),sb.from('anam_answers').select('id').eq('user_id',ST.user.id).limit(1)]);return t&&!(a&&a.length)?t:null}catch(_){return null}}
 function anamQs(t){const Q=[];
@@ -364,7 +365,7 @@ async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try
     $('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()};return}
   if(pr&&pr.status==='enviada'){const sl=pr.slots||[];
     R.innerHTML=`<div class="scr"><div class="box g" style="margin-top:20px"><b>O ${PN} respondeu seu pedido</b></div>
-    <div class="pro"><span style="font-size:12.5px;color:var(--mu);font-weight:700">Proposta de horário</span><p class="big">${sl.map(fmtSlot).join(' • ')}</p>
+    <div class="pro"><span style="font-size:12.5px;color:var(--mu);font-weight:700">Proposta de horário</span><div class="sl9">${sl.slice().sort((x,y)=>((x.dow+6)%7)-((y.dow+6)%7)).map(x=>`<div><span>${DOWC[x.dow]}</span><b>${String(x.time).slice(0,5)}</b></div>`).join('')}</div>
     <p class="qs">${esc(sl[0]&&sl[0].location||r.location||r.location_other||'')} • com ${PN}${pr.start_date?' • começa '+pr.start_date.split('-').reverse().slice(0,2).join('/'):''}</p>${pr.message?`<div class="msg">“${esc(pr.message)}”</div>`:''}</div>
     <p class="err" id="er"></p><div class="cta"><button class="b1" id="ac">Aceitar horário</button><button class="b2" id="tk">Mandar mensagem</button><button class="b2 nb" id="out">Sair da conta</button></div></div>`;$('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()};
     $('#ac').onclick=async()=>{$('#ac').disabled=true;const {error}=await sb.rpc('accept_proposal',{p_id:pr.id});if(error){$('#ac').disabled=false;return err('Não deu para aceitar: '+error.message)}toast('Horário fechado!');home()};
