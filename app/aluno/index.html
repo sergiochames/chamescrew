@@ -3,7 +3,13 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Chames Aluno">
 <meta name="robots" content="noindex"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icone-180.png"><link rel="icon" href="icone-180.png">
 <script>try{if(sessionStorage.getItem("rl-clean")){for(var __i=localStorage.length-1;__i>=0;__i--){var __k=localStorage.key(__i);if(__k&&__k.indexOf("rl:")===0&&__k!=="rl:rd")localStorage.removeItem(__k)}sessionStorage.removeItem("rl-clean")}var __c=localStorage.getItem("rl:rd");if(__c){window.__RD=JSON.parse(__c)}}catch(_){}</script>
-<style id="tone9">
+<script>window.__tq=function(m){m=String(m||'').trim();var D=[
+/^Tema:/,/^Cardio marcado/,/^Alimento trocado/,/^Trocado por/,/^Troca aplicada/,/^Removido$/,/^Separad/,/Conjugados/,/^Séries repetidas/,/^Valores preenchidos/,/^Refeição registrada/,
+/^Foto atualizada/,/^Perfil (atualizado|salvo)$/,/^Dieta salva$/,/^Enviando foto/,/finalizado\. Boa!$/,/^Nada mudou no treino/,/^Rascunho pronto/,/^QR salvo$/,/^Link selecionado/,/^Selecionei o código/,
+/^Salvo$/,/^[^.!]{0,40} salv[oa]s?$/,/^Duplicado\./,/^Tirado dos favoritos/,/^Pasta renomeada/,/^Observação colocada/,/^Guardado em Vistos/,/^Terça a sexta iguais/,/^Voltou para o modo/,/^Modo manual ligado/,
+/^Marcado como entregue/,/^Local desta aula:/,/^Plano: /,/ foi para (Seg|Ter|Qua|Qui|Sex|Sáb|Dom)/,/ ficou livre$/,/ trocados\. As letras/,/^Letras organizadas/,/ ficou sem dia/,/^\+\d+ exercícios de /,/^\d+ séries de /,
+/ liberado$/,/ aberto de novo para os alunos$/,/ bloqueado • /,/^Ajuste do seu jeito/,/^Agora é sua:/,/^Cadastro já preenchido/,/^Tudo visto\./,/^Treino pronto excluído/,/^(?!Aluno).* excluído$/,/^Link criado$/,/^Link copiado$/];
+for(var i=0;i<D.length;i++)if(D[i].test(m))return true;return false}</script><style id="tone9">
 :root[data-theme="dark"][data-tone="preto"]{--bg:#0e0f11;--fg:#efede8;--muted:#9c9a94;--line:#2a2b30;--frost:#222328;--sec:#16171a;--soft:#16171a;--card:#1a1b1f;--paper:#1a1b1f;--bz1:#2c2d33;--bz2:#16171a;--glass:rgba(14,15,17,.86);--on-ink:#0e0f11}
 :root[data-theme="dark"][data-tone="chumbo"]{--bg:#262624;--fg:#efede8;--muted:#a3a097;--line:#42413d;--frost:#393936;--sec:#2b2b29;--soft:#2b2b29;--card:#30302e;--paper:#30302e;--bz1:#3a3936;--bz2:#22221f;--glass:rgba(38,38,36,.86);--on-ink:#262624}
 html[data-tone] body{background:var(--bg)}
@@ -24,7 +30,7 @@ function toast(t){var e=document.getElementById('tone9t');if(!e){e=document.crea
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('.thm83,[data-thm]');if(!b)return;e.stopImmediatePropagation();e.preventDefault();
   T=O[(O.indexOf(T)+1)%3];try{localStorage.setItem(K,T)}catch(_){}
   try{if(typeof PERS==='object'&&PERS)PERS.look=T==='claro'?'claro':'escuro'}catch(_){}
-  apply();paint();toast('Tema: '+N[T])},true);
+  apply();paint()},true);
 document.addEventListener('DOMContentLoaded',function(){paint();new MutationObserver(function(){paint()}).observe(document.body,{childList:true,subtree:true})});
 })();
 </script>
@@ -2517,7 +2523,7 @@ const SEAL=()=>window.SEALX?window.SEALX():`<div class="seal"><div class="emb" s
 function go(v){document.body.classList.toggle('on-agenda',v==='agenda');$$('.view').forEach(s=>{if(s.id&&s.id.startsWith('v-'))s.hidden=s.id!=='v-'+v});
   $$('.tabs button').forEach(b=>b.setAttribute('aria-current',b.dataset.go===v?'page':'false'));window.scrollTo(0,0)}
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g)go(g.dataset.go)});
-function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+function toast(msg){if(window.__tq&&window.__tq(msg))return;const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
 function sheet(html,onMount){const s=document.createElement('div');s.className='scrim';s.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}<button class="btn wide" style="margin-top:14px" data-close>Fechar</button></div>`;
   s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-close]')){s.dataset.closed=1;s.remove()}});document.body.appendChild(s);onMount&&onMount(s);return s}
 
