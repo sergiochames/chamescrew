@@ -3801,7 +3801,44 @@ function renderTrHome(){const h=$('#trh');if(!h)return;setHero();updHoje();
    <div class="sec-h"><span class="d">Outros treinos</span></div>
    <div class="trl">${others.map(k=>`<div class="trr${TR.done[k]?' dn':''}"><span class="lt">${k}</span><span style="min-width:0"><b>${PLANS[k].title}</b><small>${PLANS[k].focus} • ~${trMin(k)} min</small></span>${right(k)}</div>`).join('')}</div>
    <p class="trnote">${MODETXT[CFG.modo]}</p>`}
+
+/* ===== dia de descanso no "Seu dia" + resumo da semana ===== */
+function restInfo(){try{if(CFG.semTreino||doneToday()||finishedToday)return null;const P=WKP[TODAYI]||{},fixo=CFG.modo!=='livre';
+  const freq=fixo?WKP.filter(p=>p.k).length:((window.STU&&STU.freq)||3);
+  const done=Math.max([0,1,2,3,4,5,6].filter(i=>i<=TODAYI&&items(i).some(x=>x.k)).length,(window.__WKST||{}).n||0);
+  const rest=fixo?!!P.r:(done>=freq||(TODAYI>=5&&freq<=5));if(!rest)return null;
+  return {done,freq,left:Math.max(0,freq-done),wkend:TODAYI>=5,k:pickToday()}}catch(_){return null}}
+window.restInfo=restInfo;window.__restCard=()=>restCard();
+let RSK='';function restCard(){const R=restInfo(),sd=document.querySelector('#v-hoje .sday');if(!sd)return;let el=document.getElementById('rs9');
+  if(!R){if(el)el.remove();RSK='';return}
+  const W=window.__WKST||{n:0,min:0,vol:0},CL=window.__CL||[],ws=new Date(new Date().getFullYear(),new Date().getMonth(),new Date().getDate()-TODAYI),we=new Date(ws.getTime()+7*864e5);
+  const aulas=CL.filter(c=>c.status==='feita'&&new Date(c.starts_at)>=ws&&new Date(c.starts_at)<we).length;
+  const nx=CL.filter(c=>c.status!=='cancelada'&&c.status!=='pedido'&&new Date(c.starts_at)>new Date(new Date().setHours(23,59,59))).sort((a,b)=>a.starts_at.localeCompare(b.starts_at))[0];
+  const DW=['dom','seg','ter','qua','qui','sex','sáb'],p2=n=>String(n).padStart(2,'0');
+  const nxt=nx?(()=>{const d=new Date(nx.starts_at);return `${DW[d.getDay()]} ${d.getDate()} • aula às ${p2(d.getHours())}:${p2(d.getMinutes())}`})():'';
+  const dots=[0,1,2,3,4,5,6].map(i=>{const I=items(i),P=WKP[i]||{};let ks=I.filter(x=>x.k);if(!ks.length){const lg=(W.days||[]).filter(d=>d[0]===i);if(lg.length)ks=[{k:lg[lg.length-1][1]}]}const st=ks.length?'on':i===TODAYI?'td':i<TODAYI&&CFG.modo!=='livre'&&P.k?'miss':'';const lab=ks.length?ks[ks.length-1].k:i===TODAYI?'☾':(i<TODAYI&&CFG.modo!=='livre'&&P.k)?'×':'–';return `<div class="${st}"><small>${WKD[i].charAt(0)}</small><span>${lab}</span></div>`}).join('');
+  const hm=W.min>=60?Math.floor(W.min/60)+'h'+(W.min%60?p2(W.min%60):''):W.min+' min';const pn=typeof PERS_NOME==='function'?PERS_NOME():'personal';
+  const key=JSON.stringify([R,W,aulas,nxt]);if(el&&el.previousElementSibling!==sd)sd.after(el);if(el&&RSK===key)return;RSK=key;
+  if(!el){el=document.createElement('div');el.id='rs9';sd.after(el)}
+  el.innerHTML=`<div class="block rs9c"><div class="row"><span class="lbl">Hoje</span><span class="pill">☾ descanso</span></div>
+   <p class="d rs9h">${R.left&&R.wkend?'Fim de semana':'Semana cumprida'}</p>
+   <p class="meta" style="margin:4px 0 0">${R.left?`Hoje é descanso no seu plano. ${R.left===1?'Faltou 1 treino':'Faltaram '+R.left+' treinos'} nesta semana: se quiser, dá para repor hoje.`:`Semana cumprida: ${R.done} de ${R.freq} treinos. Descansar também é treino.`}</p>
+   <div class="rs9w">${dots}</div>
+   ${R.left&&R.k?`<button class="rs9r" id="rs9go"><span>Repor o ${PLANS[R.k].title} (~${trMin(R.k)} min)</span><b>Fazer</b></button>`:''}</div>
+   <div class="rs9s"><div class="block"><b>${R.done}/${R.freq}</b><small>treinos feitos</small></div><div class="block"><b>${aulas}</b><small>${aulas===1?'aula':'aulas'} com o ${pn}</small></div><div class="block"><b>${W.min?hm:'—'}</b><small>treinando</small></div><div class="block"><b>${W.vol?W.vol.toLocaleString('pt-BR')+' kg':'—'}</b><small>carga total</small></div></div>
+   ${nxt?`<div class="block rs9n"><span class="ic">▲</span><span><b>Semana que vem</b><small>${nxt}</small></span></div>`:''}`;
+  const g=el.querySelector('#rs9go');if(g)g.onclick=()=>{try{startTr(R.k)}catch(_){$('#start-a')&&$('#start-a').click()}}}
+{const st=document.createElement('style');st.textContent=`#rs9{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.rs9h{font-size:34px;margin:6px 0 0}body.ag3 .rs9h.rs9h{font-family:Archivo,sans-serif!important;font-style:italic!important;font-weight:800!important;font-variation-settings:"wdth" 68!important;text-transform:uppercase!important;font-size:34px!important;letter-spacing:-.005em!important;line-height:1!important}
+.rs9w{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px}.rs9w div{text-align:center}.rs9w small{display:block;font-size:10.5px;font-weight:700;opacity:.6;margin-bottom:5px}
+.rs9w span{display:grid;place-items:center;width:34px;height:34px;margin:0 auto;border-radius:50%;font-weight:800;font-size:13px;border:1.5px solid color-mix(in srgb,currentColor 25%,transparent);opacity:.75}
+.rs9w .on span{background:#8fd19e;border-color:#8fd19e;color:#0b0c0f;opacity:1}.rs9w .td span{box-shadow:0 0 0 2px currentColor;opacity:1}.rs9w .miss span{opacity:.5}
+.rs9r{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;margin-top:14px;padding:12px 14px;border-radius:16px;border:1px solid color-mix(in srgb,currentColor 20%,transparent);background:transparent;color:inherit;font:inherit;font-weight:700;font-size:14px;text-align:left}
+.rs9r b{flex:none;font-size:12.5px;padding:8px 13px;border-radius:999px;background:var(--fg);color:var(--bg)}
+.rs9s{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rs9s .block{margin:0!important;padding:13px 14px!important}.rs9s b{display:block;font-size:24px;font-weight:800;line-height:1.1}.rs9s small{font-size:12px;opacity:.65;font-weight:600}
+.rs9n{display:flex;align-items:center;gap:12px;margin:0!important;padding:12px 14px!important}.rs9n .ic{flex:none;width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:rgba(143,209,158,.14);color:#8fd19e;font-weight:800}.rs9n b{display:block;font-size:14px}.rs9n small{font-size:12px;opacity:.65;font-weight:600}`;document.head.appendChild(st)}
 function updHoje(){const dkk=$('#dk-tr');if(!dkk)return;const row=dkk.closest('.srow'),b=row.querySelector('.sdt b'),sm=row.querySelector('.sdt small'),st=$('#h-tr-st'),bt=$('#start-a');
+  {const R=restInfo();if(R){b.textContent='Dia de descanso';sm.textContent=R.left?`${R.left===1?'Faltou 1 treino':'Faltaram '+R.left+' treinos'} na semana • opcional`:`Semana cumprida: ${R.done} de ${R.freq} treinos`;if(bt){bt.hidden=!R.left;bt.textContent='Repor'}return}}
   if(CFG.semTreino){b.textContent='Seu treino';sm.textContent='Em preparo pelo Sérgio';if(bt)bt.hidden=true;return}
   const dn=doneToday(),k=dn||pickToday();if(bt)bt.hidden=false;if(!k)return;b.textContent=PLANS[k].title;sm.textContent='';sm.append(`${PLANS[k].focus.split(' • ')[0]} • ~${trMin(k)} min • `,st);st.hidden=k!==__TK&&!dn;if(dn||finishedToday){st.hidden=false;st.textContent='feito ✓';if(bt)bt.textContent='Ver'}else if(bt&&!TR.on)bt.textContent='Começar'}
 function warnRep(k){const L=TR.last;if(!L||!['hoje','ontem'].includes(L.when))return null;const ov=MUS[k].filter(m=>MUS[L.k].includes(m));return ov.length?ov:null}
@@ -5067,8 +5104,8 @@ function renderCrew(){const cur=window.__RD?window.__RD.LV:2,names=[...RA.LEVELS
     <p class="d" style="font-size:34px;margin:4px 0 0">Level ${names[cur]}</p>
     <div class="tline"><div class="track"><i style="width:${fill}%"></i></div>${nodes}</div>
     <div class="nextlv"><div class="row"><b class="d" style="font-size:26px">Faltam ${left} ciclos</b><span class="meta" style="margin:0;font-size:13px">pra ${names[cur+1]}</span></div><div class="bar"><i style="width:${pct}%"></i></div><p style="font-size:13px;font-weight:800;margin:0">Ao chegar: ${RA.LEVELS[cur+1].perks[0].split(':')[0]}</p></div>`;void md}
-function renderDay(){const nut=window.DIETA_ON?window.DIETA_ON():true;const t=finishedToday,d=dietDay||marked.every(Boolean),c=sent.dia;const tro=!window.TREINO_OFF;const N=(nut?3:2)-(tro?0:1);const n=(tro?[t]:[]).concat([c]).concat(nut?[d]:[]).filter(Boolean).length;
-  [['dk-tr',t],['dk-di',d],['dk-ci',c]].forEach(([id,on])=>{const e=$('#'+id);e.classList.toggle('on',on);e.textContent=on?'✓':''});
+function renderDay(){const nut=window.DIETA_ON?window.DIETA_ON():true;const t=finishedToday,d=dietDay||marked.every(Boolean),c=sent.dia;const RST=window.restInfo?restInfo():null;const tro=!window.TREINO_OFF&&!RST;try{window.__restCard&&window.__restCard();const dk=$('#dk-tr');if(dk&&RST){const row=dk.closest('.srow'),b=row.querySelector('.sdt b'),sm=row.querySelector('.sdt small'),bt=$('#start-a');if(b)b.textContent='Dia de descanso';if(sm)sm.textContent=RST.left?(RST.left===1?'Faltou 1 treino':'Faltaram '+RST.left+' treinos')+' na semana • opcional':'Semana cumprida: '+RST.done+' de '+RST.freq+' treinos';if(bt){bt.hidden=!(RST.left&&RST.k);bt.textContent='Repor'}}}catch(_e){window.__rsErr=String(_e&&_e.stack||_e).slice(0,300)}const N=(nut?3:2)-(tro?0:1);const n=(tro?[t]:[]).concat([c]).concat(nut?[d]:[]).filter(Boolean).length;
+  [['dk-tr',t],['dk-di',d],['dk-ci',c]].forEach(([id,on])=>{const e=$('#'+id);e.classList.toggle('on',on);e.textContent=on?'✓':(id==='dk-tr'&&RST?'☾':'')});
   $('#day-pill').textContent=n===N?'Dia completo ✓':`${n} de ${N} para fechar`;
   const S=window.STU||{freq:3},RC=window.__RD&&window.__RD.CY,T=RC?RC.T:S.freq*4,Mn=Math.ceil(T*.75);const done=RC?Math.min(T,RC.done+(n===N&&!RC.todayIn?1:0)):Math.min(T,Math.round(7*T/12)+(n===N?1:0));const LEFT=RC?RC.left:13;$('#cyc-txt').textContent=`${done} de ${T} dias completos`;$('#cyc-bar').style.width=Math.round(done/T*100)+'%';
   $('#cyc-sub').textContent=done>=Mn?`Ciclo garantido. Faltam ${T-done} para a meta cheia em ${LEFT} dias.`:`Faltam ${Mn-done} dias completos para o ciclo contar • ${LEFT} dias restantes.`}
@@ -6461,7 +6498,7 @@ const now=new Date(),m0=new Date(now.getFullYear(),now.getMonth()-1,window.__CYA
 const [{data:CL,error:e2},{data:FX}]=await Promise.all([
   sb.from('classes').select('*').eq('student_id',uid).neq('status','reservada').gte('starts_at',m0.toISOString()).order('starts_at'),
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
-if(e2)return fail('Não deu para carregar suas aulas.');window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
+if(e2)return fail('Não deu para carregar suas aulas.');window.__CL=CL||[];window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
 try{const {data:lcs}=await PF.locs;window.__LOCS=(lcs||[]).filter(Boolean)}catch(_){window.__LOCS=[]}
 if(!window.__LOC0)window.__LOC0=(window.__LOCS||[])[0]||'';
 try{LOCAL=window.__LOC0}catch(_){}try{const A=window.ALOCX;if(A){A.length=0;(window.__LOC0?[window.__LOC0]:window.__LOCS).forEach(x=>A.push(x))}}catch(_){}try{PLOCS.length=0;window.__LOCS.forEach(x=>PLOCS.push(x))}catch(_){}
@@ -6689,6 +6726,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,TODAY=ymd(now);
 const [{data:WK},{data:LG},{data:DC},{data:WC},{data:AW}]=await PF.tr;
 const LOGS=LG||[],DCS=DC||[],WCS=WC||[];
+try{const ti=(now.getDay()+6)%7,a=ymd(new Date(now.getFullYear(),now.getMonth(),now.getDate()-ti)),b=ymd(new Date(now.getFullYear(),now.getMonth(),now.getDate()-ti+6));const L=LOGS.filter(l=>l.day>=a&&l.day<=b&&l.letter&&l.letter!=='_cfg');window.__WKST={days:L.map(l=>[(new Date(l.day+'T12:00:00').getDay()+6)%7,l.letter]),n:new Set(L.map(l=>l.day)).size,min:L.reduce((s,l)=>s+(+l.duration_min||0),0),vol:Math.round(L.reduce((s,l)=>s+(+l.volume_kg||0),0))}}catch(_){window.__WKST={n:0,min:0,vol:0}}
 function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercises||{};
   const P=W.filter(w=>w.letter!=='_cfg'&&w.exercises&&Array.isArray(w.exercises.ex)&&w.exercises.ex.some(e=>!e.cd)).slice(0,4);
   const DS=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],DL=['segunda','terça','quarta','quinta','sexta','sábado','domingo'],TI=(now.getDay()+6)%7;
@@ -6746,6 +6784,7 @@ setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&wi
   const cy=$q('#v-hoje .cycle .lbl');if(cy&&R.CY)cy.textContent=`Seu ciclo • ${R.CY.left} ${R.CY.left===1?'dia':'dias'} para fechar`;
   const tr=$q('#v-hoje .sday .srow .sdt b'),ts=$q('#v-hoje .sday .srow .sdt small'),sa=$q('#start-a');
   if(tr&&R.CFG&&R.CFG.semTreino){tr.textContent='Treino';if(ts)ts.textContent='O Sérgio está montando o seu treino';if(sa)sa.hidden=true}
+  else if(tr&&window.restInfo&&window.restInfo()){}
   else if(tr&&R.PLANS[R.TK]){const p=R.PLANS[R.TK],min=Math.round(p.ex.reduce((a,e)=>a+e.sets*((e.rest||30)+40)/60,0)/5)*5+5;tr.textContent=p.title;const st=document.getElementById('h-tr-st');if(ts&&st){ts.firstChild&&(ts.firstChild.textContent=`${p.focus} • ~${min} min • `)}}
   /* Matilha: level e temporada */
   const lh=$q('#v-matilha .lv-hero');if(lh){const lv=R.LV,b=lh.querySelector('#m-emb');if(b){b.dataset.lvcard=lv;b.setAttribute('aria-label','Ver level '+LVN[lv]);try{b.innerHTML=RA.emblem(lv,false,96)}catch(_){}}
