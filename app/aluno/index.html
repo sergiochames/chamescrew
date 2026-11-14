@@ -6584,6 +6584,8 @@ if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{c
 
 
 /* ===== Dieta: PDF do nutricionista (layout novo) ===== */
+window.__openSigned=async function(bucket,path,msg){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,600);if(error||!data){try{w&&w.close()}catch(_){}return toast(msg||'Não abriu')}if(w&&!w.closed){try{w.location.href=data.signedUrl;return}catch(_){}}location.href=data.signedUrl};
+
 const DE=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let DVK='';function dietView(force){const v=document.getElementById('v-dieta');if(!v)return;const D=P.diet,key=JSON.stringify(D||0);let box=v.querySelector(':scope>#rl-diet');if(box&&!force&&DVK===key)return;DVK=key;
   if(!box){box=document.createElement('div');box.id='rl-diet';v.prepend(box)}
@@ -6592,7 +6594,7 @@ let DVK='';function dietView(force){const v=document.getElementById('v-dieta');i
      <div class="grid2"><button class="btn solid" id="dt-open">Abrir</button><button class="btn" id="dt-new">Trocar</button></div></div>`
     :`<button class="block" id="dt-new" style="display:flex;align-items:center;gap:14px;width:100%;text-align:left;font:inherit;color:inherit"><span style="width:52px;height:52px;border-radius:14px;background:var(--fg);color:var(--bg);display:grid;place-items:center;font-weight:900;font-size:13px;flex:none">PDF</span><span style="flex:1;min-width:0"><b style="display:block;font-size:16px">Enviar a dieta em PDF</b><small class="meta">O arquivo que o nutricionista te entregou</small></span><span style="font-size:20px;opacity:.6">›</span></button>`}
    <p class="meta" style="font-size:12px;margin:14px 2px 0;line-height:1.45">A dieta é responsabilidade do nutricionista que assinou. O app e o seu personal só guardam o arquivo para você.</p></div>`;
-  const op=box.querySelector('#dt-open');if(op)op.onclick=async()=>{const {data,error}=await sb.storage.from('diets').createSignedUrl(D.path,600);if(error||!data)return toast('Não abriu a dieta');window.open(data.signedUrl,'_blank')};
+  const op=box.querySelector('#dt-open');if(op)op.onclick=()=>window.__openSigned('diets',D.path,'Não abriu a dieta');
   box.querySelector('#dt-new').onclick=dietSheet}
 {const st=document.createElement('style');st.textContent='body.rl .twmode{display:none!important}#v-dieta>:not(#rl-diet){display:none!important}html body #v-dieta>#rl-diet#rl-diet{display:block!important}';document.head.appendChild(st)}
 function dietSheet(){let file=null;sheet(`<span class="lbl">Dieta</span><p class="d" style="font-size:34px;margin:6px 0 10px">Enviar dieta</p>
