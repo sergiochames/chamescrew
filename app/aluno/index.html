@@ -6623,7 +6623,8 @@ if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{c
 /* ===== Dieta: PDF do nutricionista + transcrição com IA ===== */
 window.__openSigned=async function(bucket,path,msg){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,600);if(error||!data){try{w&&w.close()}catch(_){}return toast(msg||'Não abriu')}if(w&&!w.closed){try{w.location.href=data.signedUrl;return}catch(_){}}location.href=data.signedUrl};
 const DE=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const DTD=(()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`})();
+const dtd=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};let DTD=dtd();
+/* virou o dia com o app aberto: zera as marcações e recarrega */setInterval(()=>{const t=dtd();if(t!==DTD){DTD=t;MLOG={};OPT={};SWP={};OPENSW='';loadMeals().then(()=>{try{dietView(true);_rd()}catch(_){}})}},30000);
 let MLOG={};async function loadMeals(){try{const {data}=await sb.from('meal_logs').select('meal_idx,done_at,swaps').eq('user_id',uid).eq('day',DTD);MLOG={};(data||[]).forEach(r=>{if(r.done_at)MLOG[r.meal_idx]=1;const s=r.swaps;if(s&&typeof s==='object'){if(s.opt)OPT[r.meal_idx]=s.opt;if(s.sw)SWP[r.meal_idx]=s.sw}})}catch(_){}}
 const dPlan=()=>P.diet&&P.diet.plan&&Array.isArray(P.diet.plan.refeicoes)&&P.diet.plan.refeicoes.length?P.diet.plan:null;
 const hmin=s=>{const m=String(s||'').match(/(\d{1,2})\s*[:h]\s*(\d{2})?/);return m?(+m[1])*60+(+(m[2]||0)):null};
