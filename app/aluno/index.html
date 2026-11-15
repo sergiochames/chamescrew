@@ -6628,8 +6628,10 @@ const dtd=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth
 let MLOG={};async function loadMeals(){try{const {data}=await sb.from('meal_logs').select('meal_idx,done_at,swaps').eq('user_id',uid).eq('day',DTD);MLOG={};(data||[]).forEach(r=>{if(r.done_at)MLOG[r.meal_idx]=1;const s=r.swaps;if(s&&typeof s==='object'){if(s.opt)OPT[r.meal_idx]=s.opt;if(s.sw)SWP[r.meal_idx]=s.sw}})}catch(_){}}
 const dPlan=()=>P.diet&&P.diet.plan&&Array.isArray(P.diet.plan.refeicoes)&&P.diet.plan.refeicoes.length?P.diet.plan:null;
 const hmin=s=>{const m=String(s||'').match(/(\d{1,2})\s*[:h]\s*(\d{2})?/);return m?(+m[1])*60+(+(m[2]||0)):null};
-function curMeal(R){const nowM=new Date().getHours()*60+new Date().getMinutes();let best=-1;R.forEach((r,i)=>{const t=hmin(r.horario);if(t!==null&&t<=nowM+30)best=i});
-  if(best>=0&&!MLOG[best])return best;const nx=R.findIndex((r,i)=>!MLOG[i]&&(hmin(r.horario)===null||hmin(r.horario)>=nowM-60));return nx>=0?nx:R.findIndex((_,i)=>!MLOG[i])}
+/* horário da refeição: o do PDF; se não tiver, um horário típico pelo nome */
+const mealT=r=>{const t=hmin(r.horario);if(t!==null)return t;const n=DN(r.nome);return /cafe|desjejum/.test(n)?420:/lanche.*manha|colacao/.test(n)?600:/almoco/.test(n)?720:/pre.?treino/.test(n)?960:/lanche|merenda/.test(n)?960:/jantar/.test(n)?1200:/ceia/.test(n)?1320:null};
+/* "Agora" = a refeição ainda não feita com horário mais perto de agora */
+function curMeal(R){const now=new Date().getHours()*60+new Date().getMinutes();let best=-1,bd=1e9;R.forEach((r,i)=>{if(MLOG[i])return;const t=mealT(r);if(t===null)return;const d=Math.abs(t-now);if(d<bd){bd=d;best=i}});return best}
 const itemsOf=r=>(r.opcoes||[]).length?r.opcoes[0].itens||[]:(r.itens||[]);
 const nItems=r=>(r.opcoes||[]).length>1?r.opcoes.length+' opções':itemsOf(r).length+' '+(itemsOf(r).length===1?'item':'itens');
 
