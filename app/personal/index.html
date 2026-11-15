@@ -5038,10 +5038,20 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
   try{const now=Date.now();STU.filter(x=>x._id&&!x.arq&&WKS.some(w=>w.user_id===x._id&&w.letter!=='_cfg')).map(x=>{const l=LGA.find(z=>z.user_id===x._id),p=STUD.find(z=>z.id===x._id)||{},ref=l?new Date(l.day+'T12:00:00'):p.created_at?new Date(p.created_at):null;return {x,d:ref?Math.floor((now-ref)/864e5):0}}).filter(o=>o.d>=5).sort((a,b)=>b.d-a.d).slice(0,2)
     .forEach(o=>items.push(`<button class="it" data-a2wa="${o.x._id}"><span class="a2ic r">${a2i('dum')}</span><span class="tx"><b>${esc(o.x.n.split(' ')[0])} sem treinar há ${o.d} dias</b><small>Mandar um oi no WhatsApp</small></span><em>›</em></button>`))}catch(_){}
   if(isT){const td=new Date().toDateString(),NK={cancel:['r','x'],move:['b','sw'],undo:['b','sw'],book:['g','plus'],pay:['b','cash'],anam:['g','chk'],req:['y','sw'],novo:['y','plus'],talk:['b','bell'],closed:['g','chk'],ref_paid:['g','chk'],exp:['y','bell']};
-    const NL=PNOT.map((n,i)=>({n,i})).filter(({n})=>n._id&&n.k!=='pedido'&&n.k!=='conf'&&n.k!=='req_ok'&&n.k!=='req_no'&&(!n._done||new Date(n._done).toDateString()===td)&&n._at&&Date.now()-new Date(n._at)<14*864e5);
-    NL.slice(0,6).forEach(({n,i})=>{const k=NK[n.k]||['b','bell'],dn=!!n._done;items.push(`<div class="it a2n${dn?' a2dn2':''}"><span class="a2ic ${k[0]}">${a2i(k[1])}</span><button class="tx" data-a2ng="${i}"><b>${esc(n.t)}</b><small>${esc(String(n.s||'').replace(/ • toque para confirmar/,''))}${n.w?' • '+esc(n.w):''}</small></button><button class="a2ck${dn?' on':''}" data-a2done="${n._id}" aria-label="${dn?'Desmarcar':'Marcar como feito'}">${a2i('chk')}</button></div>`)});
-    if(NL.length>6)items.push(`<button class="it" data-a2all><span class="a2ic b">${a2i('bell')}</span><span class="tx"><b>Ver todos os avisos</b><small>Mais ${NL.length-6}</small></span><em>›</em></button>`)}
-  if(isT&&items.length){const s=document.createElement('div');s.className='a2sec';{const pend=items.filter(x=>!/a2dn2/.test(x)).length;s.innerHTML=`<b>Pra hoje</b><span>${pend?pend+' '+(pend===1?'pendente':'pendentes'):'tudo feito ✓'}</span>`}put(s);const p=document.createElement('div');p.id='a2p';p.className='a2g';p.innerHTML=items.join('');put(p)}
+    /* pedem ação: ficam até resolver (com a data); informativos: só no dia em que aconteceram */
+    const ACT={pay:1,req:1,anam:1,closed:1,novo:1,talk:1},isTd=n=>n._at&&new Date(n._at).toDateString()===td;
+    const NL0=PNOT.map((n,i)=>({n,i})).filter(({n})=>n._id&&!n._m&&n.k!=='pedido'&&n.k!=='conf'&&n.k!=='req_ok'&&n.k!=='req_no'&&n._at&&Date.now()-new Date(n._at)<14*864e5&&(ACT[n.k]?(!n._done||new Date(n._done).toDateString()===td):isTd(n)));
+    /* vários avisos iguais do mesmo aluno no dia viram uma linha */
+    const fw=t=>String(t||'').split(' ')[0],G=[],GM={};NL0.forEach(o=>{const n=o.n;if(ACT[n.k]){G.push({o:[o]});return}const key=n.k+'|'+fw(n.t);if(GM[key])GM[key].o.push(o);else{GM[key]={o:[o]};G.push(GM[key])}});
+    const VB={cancel:'cancelou',move:'remarcou',undo:'desfez o cancelamento de',book:'marcou'};
+    G.slice(0,6).forEach(g=>{const n=g.o[0].n,i=g.o[0].i,k=NK[n.k]||['b','bell'],c=g.o.length,dn=g.o.every(x=>!!x.n._done),ids=g.o.map(x=>x.n._id).join(',');
+      const old=!isTd(n)?' • '+esc(n.w||''):'';
+      const tt=c>1?(VB[n.k]?`${esc(fw(n.t))} ${VB[n.k]} ${c} aulas`:`${esc(n.t)} (${c})`):esc(n.t);
+      const sub=c>1?g.o.map(x=>esc(String(x.n.s||'').split(' • ')[0])).join(', '):esc(String(n.s||'').replace(/ • toque para confirmar/,''))+(n.w&&!old?' • '+esc(n.w):'')+old;
+      items.push(`<div class="it a2n${dn?' a2dn2':''}"><span class="a2ic ${k[0]}">${a2i(k[1])}</span><button class="tx" data-a2ng="${i}"><b>${tt}</b><small>${sub}</small></button><button class="a2ck${dn?' on':''}" data-a2done="${ids}" aria-label="${dn?'Desmarcar':'Marcar como feito'}">${a2i('chk')}</button></div>`)});
+    const rest=PNOT.filter(n=>n._id&&n.k!=='pedido').length-NL0.length;
+    if(G.length>6||rest>0)items.push(`<button class="it" data-a2all><span class="a2ic b">${a2i('bell')}</span><span class="tx"><b>Ver todos os avisos</b><small>${G.length>6?'Mais '+(G.length-6):'Avisos antigos e já vistos'}</small></span><em>›</em></button>`)}
+  if(isT&&items.length){const s=document.createElement('div');s.className='a2sec';{const pend=items.filter(x=>!/a2dn2|data-a2all/.test(x)).length;s.innerHTML=`<b>Pra hoje</b><span>${pend?pend+' '+(pend===1?'pendente':'pendentes'):'tudo feito ✓'}</span>`}put(s);const p=document.createElement('div');p.id='a2p';p.className='a2g';p.innerHTML=items.join('');put(p)}
   if(hero){put(wsec);put(wk)}
 }
 const DOW_S=['dom','seg','ter','qua','qui','sex','sáb'];
@@ -5103,7 +5113,7 @@ window.addEventListener('click',async e=>{const b=e.target.closest('[data-a2lk],
   if(b.dataset.a2pr){const c=pkCls(b.dataset.a2pr);if(!c)return;const on=c.status!=='feita';b.disabled=true;const {error}=await sb.from('classes').update({status:on?'feita':'marcada'}).eq('id',c.id);if(error){b.disabled=false;return toast('Não salvou: '+error.message)}toast(on?pkFirst(c.student_id)+' marcado como presente':'Presença desfeita');return pkRefresh()}
   if(b.dataset.a2mv)return pkMove(b.dataset.a2mv);if(b.dataset.a2cn)return pkCancel(b.dataset.a2cn);if(b.dataset.a2op)return aulaSheet(b.dataset.a2op);
   if(b.dataset.a2all!==undefined)return pnotSheet();
-  if(b.dataset.a2done){const id=b.dataset.a2done,n=PNOT.find(x=>x._id===id);if(!n)return;const v=n._done?null:new Date().toISOString();const {error}=await sb.from('notifications').update({done_at:v,read_at:n.new?new Date().toISOString():undefined}).eq('id',id);if(error)return toast('Não deu: '+error.message);n._done=v;n.new=0;draw();return}
+  if(b.dataset.a2done){const ids=b.dataset.a2done.split(','),L=ids.map(id=>PNOT.find(x=>x._id===id)).filter(Boolean);if(!L.length)return;const v=L.every(n=>n._done)?null:new Date().toISOString();const {error}=await sb.from('notifications').update({done_at:v,read_at:new Date().toISOString()}).in('id',ids);if(error)return toast('Não deu: '+error.message);L.forEach(n=>{n._done=v;n.new=0});draw();return}
   if(b.dataset.a2ng!==undefined){const n=PNOT[+b.dataset.a2ng];if(!n)return;const c=n._ref&&CLS.find(z=>z.id===n._ref);if(c){if(c.status==='pedido')return pedList(c.id);return aulaSheet(c.id)}S.tab=n.go||'agenda';draw();return}},true);
 
 /* ===== v93: visual novo no app inteiro + cabeçalho da Semana e do Mês igual ao do Dia ===== */
