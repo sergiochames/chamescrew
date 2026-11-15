@@ -3016,12 +3016,12 @@ const PLN={base:450,cur:'tri',ends:'07/12',days:35,auto:false};
 const PLANS3=[{k:'mes',n:'Mensal',m:1,off:0,tag:'',end:'09/12/2026',note:'Paga mês a mês. Sem fidelidade.'},
   {k:'tri',n:'Trimestral',m:3,off:.10,tag:'Mais escolhido',end:'09/02/2027',note:'3 meses, pago à vista no Pix.'},
   {k:'sem',n:'Semestral',m:6,off:.20,tag:'Melhor preço',end:'09/05/2027',note:'6 meses, pago à vista no Pix.'}];
-const MYOFF=[['Level Atleta',10],['Indicação (Bruno)',10]];
-let RN={p:'tri',pay:'pix',inst:1};
+const MYOFF=[];
+let RN={p:'tri',pay:'pix',inst:1,auto:false};
 const R2=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 function rnCalc(){const pl=PLANS3.find(x=>x.k===RN.p),full=PLN.base*pl.m,planOff=full*pl.off,my=Math.min(100,MYOFF.reduce((a,x)=>a+x[1],0))/100;
   const afterPlan=full-planOff,myOff=afterPlan*my,afterMy=afterPlan-myOff,pixOff=RN.pay==='pix'?afterMy*.03:0,total=Math.round((afterMy-pixOff)*100)/100;return{pl,full,planOff,myOff,pixOff,total,my}}
-function openRenew(){RN={p:PLN.cur,pay:'pix',inst:1};let el=$('#rnw');if(!el){el=document.createElement('div');el.id='rnw';el.className='fx';el.setAttribute('role','dialog');el.setAttribute('aria-label','Renovar plano');document.body.appendChild(el)}rnDraw();el.scrollTop=0}
+function openRenew(){RN={p:PLN.cur,pay:'pix',inst:1,auto:!!window.__AUTOREN};if(window.__asaas)window.__asaas({action:'quote',plan:PLN.cur||'mes',method:'pix'}).then(r=>{if(!r||!r.q)return;MYOFF.length=0;r.q.discounts.forEach(d=>MYOFF.push([d.nome||'Desconto',+d.pct||0]));try{WAL.items.length=0;r.q.discounts.forEach(d=>WAL.items.push({o:d.nome||'Desconto',pct:+d.pct||0,ok:1}));walFix()}catch(_){}window.__AUTOREN=RN.auto=!!r.auto_renew;if($('#rnw')&&!$('#rnw .rn-pix,#rnw .rn-load'))rnDraw()}).catch(()=>{});let el=$('#rnw');if(!el){el=document.createElement('div');el.id='rnw';el.className='fx';el.setAttribute('role','dialog');el.setAttribute('aria-label','Renovar plano');document.body.appendChild(el)}rnDraw();el.scrollTop=0}
 function rnDraw(){const el=$('#rnw');const c=rnCalc(),my=MYOFF.reduce((a,x)=>a+x[1],0);
   const card=p=>{const full=PLN.base*p.m,pm=(full*(1-p.off)*(1-c.my))/p.m;return `<button class="rn-pl${RN.p===p.k?' on':''}" data-rnp="${p.k}" aria-pressed="${RN.p===p.k}">
     ${p.tag?`<span class="rn-tag">${p.tag}</span>`:''}<span class="rn-r"></span><div style="min-width:0"><b>${p.n}</b><small>${p.note}</small></div>
@@ -3033,37 +3033,45 @@ function rnDraw(){const el=$('#rnw');const c=rnCalc(),my=MYOFF.reduce((a,x)=>a+x
    <p class="lbl" style="margin:18px 0 8px">Escolha o plano</p>${PLANS3.map(card).join('')}
    <p class="lbl" style="margin:18px 0 8px">Forma de pagamento</p>
    <div class="seg2" style="margin:0"><button data-rnpay="pix" aria-pressed="${RN.pay==='pix'}">Pix • −3%</button><button data-rnpay="card" aria-pressed="${RN.pay==='card'}">Cartão de crédito</button></div>
-   ${RN.pay==='card'&&maxI>1?`<div class="chips" style="margin-top:10px">${Array.from({length:maxI},(_,i)=>i+1).map(i=>`<button class="chip" aria-pressed="${RN.inst===i}" data-rni="${i}">${i}x ${R2(c.total/i)}</button>`).join('')}</div>`:''}
-   ${RN.pay==='card'&&RN.p==='mes'?'<p class="meta" style="font-size:12.5px;margin:8px 0 0">O cartão fica salvo no Asaas e a mensalidade cai sozinha todo mês.</p>':''}
+   ${RN.pay==='card'&&maxI>1&&!RN.auto?`<div class="chips" style="margin-top:10px">${Array.from({length:maxI},(_,i)=>i+1).map(i=>`<button class="chip" aria-pressed="${RN.inst===i}" data-rni="${i}">${i}x ${R2(c.total/i)}</button>`).join('')}</div>`:''}
+   ${RN.pay==='card'?`<label class="rn-auto"><input type="checkbox" data-rn-auto ${RN.auto?'checked':''}><span><b>Renovar automático</b><small>O Asaas cobra no cartão a cada ${c.pl.m===1?'mês':c.pl.m+' meses'}. Você desliga quando quiser.</small></span></label>`:''}
    <div class="rn-sum"><div><span>${c.pl.n} cheio (${c.pl.m}x ${R2(PLN.base)})</span><span>${R2(c.full)}</span></div>
      ${c.planOff?`<div><span>Desconto do plano</span><span>−${R2(c.planOff)}</span></div>`:''}<div><span>Seu desconto (${my}%)</span><span>−${R2(c.myOff)}</span></div>
      ${c.pixOff?`<div><span>Desconto do Pix (3%)</span><span>−${R2(c.pixOff)}</span></div>`:''}
      <div class="tot"><span>Total</span><span>${R2(c.total)}</span></div><p class="meta" style="font-size:12.5px;margin:4px 0 0">Válido até ${c.pl.end}. Você economiza ${R2(c.full-c.total)}.</p></div>
-   <button class="btn solid wide" data-rn-go style="margin-top:14px">${RN.pay==='pix'?`Gerar Pix de ${R2(c.total)}`:`Continuar para o cartão • ${RN.inst}x`}</button>
-   <p class="meta" style="font-size:12px;text-align:center;margin:8px 0 0">Você paga no Pix e o ${window.PERS_NOME_X?window.PERS_NOME_X():'personal'} confirma. O plano renova na hora.</p>`}
-function rnPix(){const c=rnCalc(),k=window.__PIX||'',PN=()=>window.PERS_NOME_X?window.PERS_NOME_X():'personal';
-  $('#rnw').innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Pix</span></div>
-   <span class="lbl" style="display:block;margin-top:16px">${c.pl.n} • ${R2(c.total)}</span><p class="d" style="font-size:44px;margin:4px 0 12px">Pague com Pix</p>
-   ${k?`<div class="block" style="word-break:break-all"><small class="meta" style="display:block;margin-bottom:4px">Chave Pix do ${PN()}</small><b>${k}</b></div>
-   <button class="btn solid wide" id="rn-ck" style="margin-top:12px">Copiar chave Pix</button>`:`<p class="meta">O ${PN()} ainda não cadastrou a chave Pix. Fale com ele.</p>`}
-   <p class="meta" style="font-size:13px;margin-top:12px">Pague <b>${R2(c.total)}</b> e mande o comprovante para o ${PN()} no WhatsApp. Ele confirma e o plano renova.</p>`;
-  const b=document.getElementById('rn-ck');if(b)b.onclick=async()=>{try{await navigator.clipboard.writeText(k);toast('Chave Pix copiada')}catch(_){toast('Copie a chave: '+k)}}}
-function rnCard(){const c=rnCalc();
-  $('#rnw').innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">asaas.com • seguro</span></div>
-   <div class="rn-asaas"><small>Página segura do Asaas (simulação)</small><b>Chames Crew • ${c.pl.n}</b><p class="d" style="font-size:36px;margin:2px 0 10px">${RN.inst}x ${R2(c.total/RN.inst)}</p>
-   ${['Número do cartão','Nome impresso','Validade','CVV'].map(l=>`<div class="rn-f">${l}</div>`).join('')}
-   <button class="btn solid wide" data-rn-paid style="margin-top:12px">Pagar ${R2(c.total)}</button><p class="meta" style="font-size:12px;margin:8px 0 0">Os dados do cartão ficam só no Asaas. A Chames Crew não vê nem guarda.</p></div>`}
+   <button class="btn solid wide" data-rn-go style="margin-top:14px">${RN.pay==='pix'?`Gerar Pix de ${R2(c.total)}`:`Continuar para o cartão • ${RN.auto?'automático':RN.inst+'x'}`}</button>
+   <p class="meta" style="font-size:12px;text-align:center;margin:8px 0 0">Pagamento pelo Asaas. Assim que cair, o plano renova sozinho.</p>`}
+function rnPoll(id){clearInterval(window.__rnPT);let n=0;window.__rnPT=setInterval(async()=>{if(!$('#rnw')||++n>120)return clearInterval(window.__rnPT);try{const r=await window.__asaas({action:'status',id});if(r&&r.pay&&r.pay.status==='pago'){clearInterval(window.__rnPT);rnDone()}}catch(_){}},5000)}
+async function rnStart(method,w){const c=rnCalc(),el=$('#rnw');
+  el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Asaas • seguro</span></div><div class="rn-load"><i></i>Gerando o seu ${method==='pix'?'Pix':'pagamento'}…</div>`;
+  let r=null;try{r=await window.__asaas({action:'pay',kind:'renova',plan:RN.p,freq:RN.f===undefined?PLN.f:RN.f,method,inst:RN.auto?1:RN.inst,auto:method==='card'&&RN.auto})}catch(e){r={error:'Sem conexão'}}
+  if(!$('#rnw'))return;
+  if(!r||!r.pay){try{w&&w.close()}catch(_){}el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button></div><p class="d" style="font-size:36px;margin:18px 0 8px">Não deu agora</p><p class="meta">${(r&&r.error)||'Tente de novo em instantes.'}</p><button class="btn solid wide" data-rn-back style="margin-top:12px">Voltar</button>`;return}
+  const p=r.pay,tot=R2(+p.amount);
+  if(method==='pix'){try{w&&w.close()}catch(_){}el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Pix</span></div>
+    <div class="rn-pix"><span class="lbl" style="display:block;margin-top:16px">${c.pl.n} • ${tot}</span><p class="d" style="font-size:44px;margin:4px 0 12px">Pague com Pix</p>
+    ${p.pix_img?`<img class="rn-qr" alt="QR Code do Pix" src="data:image/png;base64,${p.pix_img}">`:''}
+    ${p.pix_payload?`<button class="btn solid wide" data-rn-copy="${p.pix_payload}" style="margin-top:12px">Copiar código Pix</button>`:`<a class="btn solid wide" href="${p.invoice_url}" target="_blank" rel="noopener" style="margin-top:12px;display:block;text-align:center">Abrir o Pix</a>`}
+    <div class="rn-wait"><i></i>Esperando o pagamento. O plano renova sozinho quando o Pix cair.</div></div>`}
+  else{try{if(w&&!w.closed)w.location.href=p.invoice_url}catch(_){}
+    el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Cartão</span></div>
+    <div class="rn-pix"><span class="lbl" style="display:block;margin-top:16px">${c.pl.n} • ${tot}${p.installments>1?' em '+p.installments+'x':''}${RN.auto?' • automático':''}</span><p class="d" style="font-size:40px;margin:4px 0 12px">Pague no cartão</p>
+    <p class="meta">A página segura do Asaas abre numa nova aba. Os dados do cartão ficam só lá: a Chames Crew não vê nem guarda.</p>
+    <a class="btn solid wide" href="${p.invoice_url}" target="_blank" rel="noopener" style="margin-top:12px;display:block;text-align:center">Abrir página de pagamento</a>
+    <div class="rn-wait"><i></i>Esperando a confirmação do cartão…</div></div>`}
+  rnPoll(p.id)}
+function rnPix(){rnStart('pix')}
+function rnCard(){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}rnStart('card',w)}
 function rnDone(){const c=rnCalc();PLN.cur=RN.p;PLN.ends=c.pl.end.slice(0,5)+'/'+c.pl.end.slice(8);
-  if(window.FIN)FIN.unshift({id:FIN_ID++,who:'Ana',what:`Renovação ${c.pl.n.toLowerCase()}`,val:Math.round(c.total),st:'pago',info:`pago agora • Asaas • ${RN.pay==='pix'?'Pix':'cartão '+RN.inst+'x'}`});
   const conf=Array.from({length:22},(_,i)=>`<i class="conf" style="left:${(i*41)%100}%;background:${['#f3d38a','#fff','#9fb6c9','#d98b98'][i%4]};animation-delay:${(i%8)*.12}s"></i>`).join('');
   $('#rnw').innerHTML=`<div class="rn-ok">${conf}<div class="rn-ck">✓</div><span class="lbl">Pagamento confirmado</span><p class="d" style="font-size:48px;margin:6px 0">Plano renovado</p>
-   <p style="font-weight:800;margin:0">${c.pl.n} até ${c.pl.end}</p><p class="meta">Você economizou ${R2(c.full-c.total)}. O recibo chegou no seu e-mail e no WhatsApp.</p>
+   <p style="font-weight:800;margin:0">${c.pl.n} até ${c.pl.end}</p><p class="meta">Você economizou ${R2(c.full-c.total)}. O comprovante fica no seu histórico de pagamentos.</p>
    <button class="btn solid wide" data-rn-x style="margin-top:14px">Voltar ao app</button></div>`;
   const bn=$('#rn-ban');if(bn)bn.hidden=true;const t=document.querySelector('.disc-card .meta:last-child');if(t)t.textContent=`Plano ${c.pl.n.toLowerCase()} renovado até ${c.pl.end}. Seu desconto acumulado vale na próxima renovação.`}
-document.addEventListener('click',e=>{if(!$('#rnw'))return;const t=e.target.closest('[data-rnp],[data-rnpay],[data-rni],[data-rn-go],[data-rn-x],[data-rn-back],[data-rn-copy],[data-rn-paid]');if(!t)return;const d=t.dataset;
+document.addEventListener('click',e=>{if(!$('#rnw'))return;const t=e.target.closest('[data-rnp],[data-rnpay],[data-rni],[data-rn-go],[data-rn-x],[data-rn-back],[data-rn-copy],[data-rn-paid],[data-rn-auto]');if(!t)return;const d=t.dataset;if(d.rnAuto!==undefined){RN.auto=t.checked;if(RN.auto)RN.inst=1;rnDraw();return}
   if(d.rnp){RN.p=d.rnp;RN.inst=1;rnDraw()}if(d.rnpay){RN.pay=d.rnpay;rnDraw()}if(d.rni){RN.inst=+d.rni;rnDraw()}
   if(d.rnGo!==undefined){RN.pay==='pix'?rnPix():rnCard();$('#rnw').scrollTop=0}
-  if(d.rnBack!==undefined)rnDraw();if(d.rnX!==undefined)$('#rnw').remove();
+  if(d.rnBack!==undefined){clearInterval(window.__rnPT);rnDraw()}if(d.rnX!==undefined)$('#rnw').remove();
   if(d.rnCopy){(navigator.clipboard?navigator.clipboard.writeText(d.rnCopy):Promise.reject()).then(()=>toast('Código Pix copiado'),()=>toast('Código Pix copiado'))}
   if(d.rnPaid!==undefined)rnDone()});
 window.openRenew=openRenew;
@@ -4494,7 +4502,7 @@ const _rd24=rnDraw;rnDraw=function(){_rd24();const el=$('#rnw');if(!el)return;co
   el.querySelectorAll('.rn-pl').forEach(b=>{const P=PLANS3.find(x=>x.k===b.dataset.rnp),k=calcPkg({p:P.k,f:RN.f,wal:W,pay:'card'}),pr=b.querySelector('.rn-pr b');if(pr)pr.textContent=R2(k.total/P.m)});
   const go=el.querySelector('[data-rn-go]');if(go&&c.total<=0)go.outerHTML=`<button class="btn solid wide" data-rn-free style="margin-top:14px">Confirmar renovação • sem custo</button>`;
   el.insertAdjacentHTML('beforeend',`<p class="lbl" style="margin:22px 0 8px">Histórico</p><div class="hist2">${(window.__PAYH||[]).length?(window.__PAYH||[]).map(([m,t,v])=>`<div><span><b>${m}</b><small>${t}</small></span><span><b>${v?R2(v):'—'}</b><em>pago</em></span></div>`).join(''):'<p class="meta" style="margin:0">Nenhum pagamento registrado ainda.</p>'}</div>`);
-  el.querySelectorAll('[data-rnpay]').forEach(b=>{if(b.dataset.rnpay==='card')b.remove();else b.textContent='Pix • −3%'});const sg=el.querySelector('.seg2');if(sg)sg.style.gridTemplateColumns='1fr'};
+  /* cartão liberado: pagamento real pelo Asaas */};
 document.addEventListener('click',e=>{if(e.target.closest('[data-rn-free]')){const c=rnCalc();WAL.items=WAL.items.filter(x=>!x.ok);if(c.left)WAL.items.unshift({o:'Sobra da renovação anterior',pct:0,ok:1,val:c.left});rnDone();return}
   if(e.target.closest('[data-walinfo]'))sheet(`<span class="lbl">Saldo de desconto</span><p class="d" style="font-size:34px;margin:6px 0">Como funciona</p><p class="meta">Cada level e cada amigo que vira aluno somam um valor em reais no seu saldo. Na renovação ele é abatido do plano que você escolher. O que sobrar fica para a próxima. Indicação só conta depois que o amigo paga a primeira cobrança. O saldo vale 12 meses e não abate aula extra.</p><p class="meta" style="margin-top:10px"><b>Não vai renovar?</b> Fale com o ${PN()} antes do vencimento.</p><a class="btn wide" style="margin-top:8px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/5521971275039?text=${encodeURIComponent('Oi, '+PN()+'! Sobre meu saldo de desconto: estou pensando em não renovar o plano.')}">Falar com o ${PN()}</a>`)},true);
 document.addEventListener('click',e=>{if(e.target.closest('[data-rn-paid]')){const c=rnCalc();setTimeout(()=>{WAL.items=WAL.items.filter(x=>!x.ok);if(c.left)WAL.items.unshift({o:'Sobra da renovação anterior',pct:0,ok:1,val:c.left})},0)}},true);
@@ -6621,6 +6629,13 @@ if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{c
 
 
 /* ===== Dieta: PDF do nutricionista + transcrição com IA ===== */
+/* ===== Asaas: pagamento real (cobrança criada no servidor) ===== */
+window.__asaas=async function(body){const {data:{session:se}}=await sb.auth.getSession();const r=await fetch(CFG2.supabaseUrl+'/functions/v1/asaas',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(se&&se.access_token),apikey:CFG2.supabaseKey},body:JSON.stringify(body)});const j=await r.json().catch(()=>({error:'erro '+r.status}));return j};
+try{window.__AUTOREN=!!(P&&P.auto_renew)}catch(_){}
+{const st=document.createElement('style');st.textContent=`.rn-qr{display:block;width:220px;height:220px;margin:6px auto 0;border-radius:18px;background:#fff;padding:10px}
+.rn-wait,.rn-load{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:700;font-size:13.5px;margin-top:14px}.rn-load{margin-top:22px}
+.rn-wait i,.rn-load i{flex:none;width:18px;height:18px;border-radius:50%;border:2.5px solid color-mix(in srgb,currentColor 20%,transparent);border-top-color:#8fd19e;animation:rnsp 1s linear infinite}@keyframes rnsp{to{transform:rotate(360deg)}}
+.rn-auto{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;cursor:pointer}.rn-auto input{margin-top:3px;width:18px;height:18px;flex:none}.rn-auto b{display:block;font-size:14.5px}.rn-auto small{display:block;font-size:12.5px;opacity:.65;font-weight:600;margin-top:2px}`;document.head.appendChild(st)}
 window.__openSigned=async function(bucket,path,msg){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,600);if(error||!data){try{w&&w.close()}catch(_){}return toast(msg||'Não abriu')}if(w&&!w.closed){try{w.location.href=data.signedUrl;return}catch(_){}}location.href=data.signedUrl};
 const DE=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dtd=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};let DTD=dtd();
