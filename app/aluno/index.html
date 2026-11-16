@@ -4904,7 +4904,7 @@ function renderRank(){const me=$('#rk-me').checked;const col=rkMode==='geral'?3:
   $('#rk-list').innerHTML=`<p class="meta" style="font-size:12.5px;margin:4px 0 2px">${rkMode==='semana'?'% da meta desta semana. Empate: quem chegou mais recente fica na frente.':rkMode==='div'?`Divisão ${RA.LEVELS[myLv].name}: só quem está no mesmo level que você. % da meta do ciclo.`:'Ciclos cumpridos desde que entrou.'}</p>`+list.map((r,k)=>`<div class="r${r[0]===(window.__RD?window.__RD.ME:'Ana')?' me':''}" data-who="${r[0]}" role="button" tabindex="0"><span class="pos">${k+1}</span>${avatarFor(r[0],r[1],48)}<span><b>${r[0]}${r[0]===(window.__RD?window.__RD.ME:'Ana')?' (você)':''}${typeof PROF!=='undefined'&&PROF[r[0]]&&PROF[r[0]].ig&&PROF[r[0]].showIg?` <small style="display:inline;font-weight:700">@${PROF[r[0]].ig}</small>`:''}${typeof MOT!=='undefined'&&(MOT[r[0]]||[]).length?`<i class="rk-star">★${MOT[r[0]].length}</i>`:''}</b><small>${r[1]===5?'Prestígio '+'★'.repeat(r[2]):RA.LEVELS[r[1]].name}. ${rkMode==='geral'?r[3]+' ciclos cumpridos.':rkMode==='div'?r[4]+'% da meta do ciclo.':r[5]+'% da meta da semana.'}</small></span></div>`).join('')+(me?'':`<p class="meta" style="font-size:13px;margin:8px 0 0">Você está oculta. Só você vê sua posição.</p>`);
   $$('#rk-mode button').forEach(b=>b.setAttribute('aria-selected',b.dataset.rk===rkMode))}
 $('#rk-mode').addEventListener('click',e=>{const b=e.target.closest('[data-rk]');if(b){rkMode=b.dataset.rk;renderRank()}});
-$('#rk-me').addEventListener('change',renderRank);
+if(window.__RD&&window.__RD.RKON===false)$('#rk-me').checked=false;$('#rk-me').addEventListener('change',()=>{renderRank();window.__rkSave&&window.__rkSave(null,$('#rk-me').checked)});
 renderRank();
 setTimeout(()=>{renderMot();renderRank()},0);
 /* alerta do check-in: some quando envia; pisca depois das 20h */
@@ -4917,6 +4917,7 @@ function equivList(kg){return EQUIV.filter(([w])=>kg/w>=1&&kg/w<=60).map(([w,a,b
 function equivOf(kg,k){const L=equivList(kg);return L.length?L[(k||0)%L.length]:'quase um piano de cauda'}
 var PROF={Carla:{ig:'carla.fit',since:'mar/2024',kg:612400,ph:null,showIg:true,showKg:true,showCase:true},Pedro:{ig:'pedro.treina',since:'jun/2024',kg:498900,showIg:true,showKg:true,showCase:true},Lia:{ig:'',since:'jan/2025',kg:221300,showKg:true},Bruno:{ig:'bruno_m',since:'abr/2025',kg:96500,showIg:true,showCase:true},
   Duda:{ig:'duda.run',since:'out/2025',kg:118700,showIg:true,showKg:true,showCase:true},Ana:{ig:'ana.sempre',since:'mai/2026',kg:186400,showIg:true,showKg:true,showCase:true},Rafa:{ig:'',since:'ago/2025',kg:61200},Júlia:{ig:'ju.lia',since:'set/2026',kg:8900}};
+if(window.__RD&&window.__RD.PROF){for(const k in PROF)delete PROF[k];Object.assign(PROF,window.__RD.PROF)}
 function photoEmblem(lv,url,size){return `<span class="rembw rlv${lv} phemb" style="--s:${size}px"><span class="remb"><span class="in"><img src="${url}" alt=""></span></span>${lv>=1?'<span class="rspark"></span>':''}</span>`}
 function avatarFor(name,lv,size){const p=(typeof PROF!=='undefined'&&PROF&&PROF[name])||{};return p.usePhoto&&p.ph?photoEmblem(lv,p.ph,size):RA.emblem(lv,false,size)}
 var MOT={Duda:['Ana'],Ana:['Carla','Pedro'],Pedro:['Lia','Carla','Bruno'],Lia:['Pedro'],Carla:['Pedro','Júlia','Rafa','Lia'],Bruno:[],Rafa:['Bruno'],Júlia:[]};
@@ -4974,9 +4975,9 @@ function cropPhoto(src,done){const img=new Image();img.onload=()=>{
   ov.querySelector('#cc-ok').onclick=()=>{const c=document.createElement('canvas');c.width=c.height=480;const k=480/S,g=c.getContext('2d');
     const w=img.width*base*z,h=img.height*base*z;g.drawImage(img,(S/2-w/2+x)*k,(S/2-h/2+y)*k,w*k,h*k);ov.remove();done(c.toDataURL('image/jpeg',.9))};
  };img.src=src}
-function profEdit(){const p=PROF.Ana;
+function profEdit(){const ME=(window.__RD&&window.__RD.ME)||'Ana',p=PROF[ME]=PROF[ME]||{};
   sheet(`<span class="lbl">Meu perfil no ranking</span><p class="d" style="font-size:38px;margin:6px 0 10px">Como a matilha te vê</p>
-    <div style="display:flex;align-items:center;gap:14px"><div class="av" style="width:80px;height:80px;font-size:34px" id="pe-av">${p.ph?`<img src="${p.ph}" alt="Sua foto">`:'A'}</div>
+    <div style="display:flex;align-items:center;gap:14px"><div class="av" style="width:80px;height:80px;font-size:34px" id="pe-av">${p.ph?`<img src="${p.ph}" alt="Sua foto">`:ME[0]}</div>
       <label class="btn small" for="pe-ph" style="cursor:pointer;padding:10px 14px">Escolher foto</label><input type="file" id="pe-ph" accept="image/*" hidden></div>
     <div class="field" style="margin-top:14px"><label for="pe-ig">Instagram (opcional)</label><input class="inp" id="pe-ig" placeholder="seu.perfil" value="${p.ig||''}"></div>
     <p class="lbl" style="margin:16px 0 0">No ranking, mostrar</p>
@@ -4988,11 +4989,11 @@ function profEdit(){const p=PROF.Ana;
     <label class="agree" style="margin-top:8px"><input type="checkbox" id="pe-scase" ${p.showCase?'checked':''}> Mostrar meu estojo (insígnias e medalhas)</label>
     <p class="meta" style="font-size:12.5px;margin:8px 0 0">Aluno novo começa com tudo oculto. Você escolhe o que a matilha vê.</p>
     <button class="btn solid wide" style="margin-top:14px" id="pe-ok">Salvar</button>`,sh=>{
-      let mode=p.usePhoto?'foto':'ins';const prev=()=>{sh.querySelectorAll('#pe-mode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===mode));sh.querySelector('#pe-prev').innerHTML=mode==='foto'&&p.ph?photoEmblem(2,p.ph,120):mode==='foto'?'<p class="meta" style="margin:0">Escolha uma foto acima para ver como fica.</p>':RA.emblem(2,false,120)};prev();
+      let mode=p.usePhoto?'foto':'ins';const prev=()=>{sh.querySelectorAll('#pe-mode button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.m===mode));sh.querySelector('#pe-prev').innerHTML=mode==='foto'&&p.ph?photoEmblem((window.__RD?window.__RD.LV:2),p.ph,120):mode==='foto'?'<p class="meta" style="margin:0">Escolha uma foto acima para ver como fica.</p>':RA.emblem((window.__RD?window.__RD.LV:2),false,120)};prev();
       sh.querySelector('#pe-mode').onclick=ev=>{const b=ev.target.closest('[data-m]');if(b){mode=b.dataset.m;prev()}};
-      sh.querySelector('#pe-ph').onchange=ev=>{const f=ev.target.files[0];ev.target.value='';if(!f)return;cropPhoto(URL.createObjectURL(f),url=>{p.ph=url;mode='foto';sh.querySelector('#pe-av').innerHTML=`<img src="${url}" alt="Sua foto">`;prev()})};
+      sh.querySelector('#pe-ph').onchange=ev=>{const f=ev.target.files[0];ev.target.value='';if(!f)return;cropPhoto(URL.createObjectURL(f),url=>{p.ph=url;p._new=1;mode='foto';sh.querySelector('#pe-av').innerHTML=`<img src="${url}" alt="Sua foto">`;prev()})};
       sh.querySelector('#pe-ok').addEventListener('click',()=>{p.usePhoto=mode==='foto'&&!!p.ph;MOT_ON=sh.querySelector('#pe-mot').checked;renderMot();renderRank()},true);
-      sh.querySelector('#pe-ok').onclick=()=>{p.ig=sh.querySelector('#pe-ig').value.trim().replace(/^@/,'');p.showIg=sh.querySelector('#pe-sig').checked;p.showKg=sh.querySelector('#pe-skg').checked;p.showCase=sh.querySelector('#pe-scase').checked;sh.remove();renderRank();toast('Perfil salvo');profSheet('Ana')}})}
+      sh.querySelector('#pe-ok').onclick=()=>{p.ig=sh.querySelector('#pe-ig').value.trim().replace(/^@/,'');p.showIg=sh.querySelector('#pe-sig').checked;p.showKg=sh.querySelector('#pe-skg').checked;p.showCase=sh.querySelector('#pe-scase').checked;sh.remove();renderRank();toast('Perfil salvo');window.__rkSave&&window.__rkSave(p);profSheet(ME)}})}
 document.addEventListener('click',e=>{const q=e.target.closest('[data-eq]');if(q){const n=q.dataset.eq;q._k=(q._k??n.length)+1;q.querySelector('.eqt').textContent='o mesmo que '+equivOf(PROF[n].kg,q._k);return}if(e.target.closest('[data-prof-edit]')){profEdit();return}const r=e.target.closest('#rk-list .r,#hall .hrow');if(r&&r.dataset.who)profSheet(r.dataset.who)});
 /* estojo: insígnias + medalhas com quanto falta */
 var RMED_V=window._RMV||(window._RMV=(window.__RD&&window.__RD.RMV)||{doce:0,tempo:52,carga:3,resist:1,limite:30,agua:9,alim:5,sono:17,zero:2,destaque:0,perfeita:6,recrutador:1});
@@ -6536,7 +6537,7 @@ const uid=session.user.id;const R1=window.__RL1,R2=window.__RL2;
 const GO=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
 const pGen=GO(sb.rpc('gen_my_classes')),pExp=GO(sb.rpc('expire_reservations'));
 const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise.all([GO(sb.rpc('public_anm')),GO(sb.from('anam_answers').select('id').eq('user_id',uid).limit(1))]),
-  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),pp:GO(sb.rpc('public_pers')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
+  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),pp:GO(sb.rpc('public_pers')),rk:GO(sb.rpc('public_rank')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
   pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
   pq:pExp.then(()=>GO(sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1)))};
@@ -6598,6 +6599,10 @@ const DB={};
   if(c.status==='cancelada'){const cr=c.note==='credito';AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr)AG.dadas.push({d:k,h});return}
   AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||window.__LOC0||undefined})});
+window.__rkSave=async(p,on)=>{try{if(on!=null){await sb.rpc('rk_push',{p:{on:!!on}});return}
+  if(p._new&&p.ph&&/^data:/.test(p.ph)){const b=await (await fetch(p.ph)).blob();const path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(!error){const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;await sb.from('profiles').update({avatar_url:url}).eq('id',uid);P.avatar_url=url;p.ph=url;try{const me=document.getElementById('h-me');if(me)me.innerHTML=`<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`}catch(_){}}}delete p._new;
+  await sb.from('profiles').update({instagram:p.ig?('@'+p.ig):null}).eq('id',uid);
+  await sb.rpc('rk_push',{p:{usePhoto:!!p.usePhoto,showIg:!!p.showIg,showKg:!!p.showKg,showCase:!!p.showCase}})}catch(_){toast('Não salvou o perfil')}};
 /* box "Minha agenda" embaixo do card da aula */
 function agBox(){const V=document.getElementById('v-hoje'),au=document.getElementById('aula');if(!V)return;let B=document.getElementById('agbox');
   if(!B){B=document.createElement('button');B.id='agbox';B.type='button';B.dataset.go='agenda';B.className='agbox'}
@@ -6946,7 +6951,11 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
      if(n>0&&c<GOAL)break;st+=c;if(n>0&&created0&&a<created0)break}}R.STREAK=st;
   {const m0=ymd(new Date(now.getFullYear(),now.getMonth(),1)),best={};let n=0;LOGS.slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>(l.sets||[]).forEach(z=>{if(z.cardio||!z.n)return;const k=+z.kg||0;if(best[z.n]!=null&&k>best[z.n]&&l.day>=m0)n++;best[z.n]=Math.max(best[z.n]||0,k)}));R.PROGM=n}
   /* ranking: só você por enquanto (as vagas aparecem como pontinhos) */
-  const wkPct=Math.min(100,Math.round([...trDays].filter(inW).length/Math.max(1,freq)*100));R.RK=[[first,lv,0,cyc,Math.round(doneC/Math.max(1,T)*100),wkPct]];
+  const wkPct=Math.min(100,Math.round([...trDays].filter(inW).length/Math.max(1,freq)*100));const cp=Math.round(doneC/Math.max(1,T)*100),OT=(window.__RKD||[]).filter(o=>!o.me),used=new Set([first]);
+  R.RK=[[first,lv,0,cyc,cp,wkPct],...OT.map(o=>{let n=o.n||'Aluno';if(used.has(n))n=n+' '+(o.l||'')+'.';used.add(n);return [n,Math.min(4,+o.lv||0),0,+o.cyc||0,+o.cp||0,+o.wk||0]})];
+  {const rk=(P.setup||{}).rk||{},d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7));R.PROF={};OT.forEach((o,i)=>{R.PROF[R.RK[i+1][0]]={ig:o.ig||'',ph:o.av||null,usePhoto:!!o.av,showIg:!!o.ig}});
+   R.PROF[first]={ig:String(P.instagram||'').replace(/^@+/,''),ph:P.avatar_url||null,usePhoto:rk.usePhoto!=null?rk.usePhoto:!!P.avatar_url,showIg:rk.showIg!=null?rk.showIg:true,showKg:rk.showKg!=null?rk.showKg:true,showCase:rk.showCase!=null?rk.showCase:true};R.RKON=rk.on!==false;
+   try{sb.rpc('rk_push',{p:{lv,cyc,cp,wk:wkPct,wks:ymd(d)}}).then(()=>{},()=>{})}catch(_){}}
   /* fechar a semana: abre no dia/hora do personal (padrão sexta 6h) e fecha às 22h do último dia */
   const WO=Object.assign({dow:5,days:3},(CIC.wk||{}).open||{},{h:6,close:22}),WD=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
   let O=new Date(now.getFullYear(),now.getMonth(),now.getDate(),WO.h,0,0);while(O.getDay()!==WO.dow||O>now)O=new Date(O.getFullYear(),O.getMonth(),O.getDate()-1,WO.h,0,0);
@@ -6991,6 +7000,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   const ST0=((FX||[]).map(f=>f.start_date).filter(Boolean).sort()[0])||String(P.created_at||'').slice(0,10)||TODAY;const trD=new Set(LM.map(l=>l.day)),skips=[...Array(now.getDate()).keys()].map(k=>ymd(new Date(now.getFullYear(),now.getMonth(),k+1))).filter(d=>d<TODAY&&d>=ST0&&!trD.has(d)).length;
   const MONTH={cnt,pl:Math.max(1,Math.round(wks*pd/ORD.length)),cmin:CM.reduce((a,c)=>a+(c.answers.cardio===2?30:20),0),cses:CM.length,skips,mname:['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][now.getMonth()]};
   return {uid,v:3,PLANS,ORD,MUS,FIXN,TR:{done,last,on:false},TRLOG,WKP,TK,CFG:{modo,semTreino:false},WKTXT:`Semana de ${f2(ws)} a ${f2(we)}`,MONTH}}
+try{window.__RKD=((await PF.rk)||{}).data||[]}catch(_){window.__RKD=[]}
 const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
 /* o protótipo já desenhou com __RD; se mudou, guarda e abre de novo (uma vez) */
 {let same=false;try{same=window.__RD&&JSON.stringify(window.__RD)===RDJ}catch(_){}
@@ -7268,5 +7278,16 @@ body.ag3 #v-hoje #aula .bt9{display:grid!important;grid-template-columns:1fr 1fr
 #agbox .agd i{width:6px;height:6px;border-radius:3px;margin-top:4px;background:transparent}#agbox .agd i.c{background:var(--grn)}#agbox .agd i.w{background:var(--amb)}
 #agbox .agd.t{background:var(--fg);color:var(--bg);border-color:transparent}#agbox .agd.t small{color:inherit;opacity:.7}
 #agbox .agd.p{opacity:.45}
+</style>
+<style id="skin2d">
+.sheet:has(#pe-ok) .agree{display:flex!important;align-items:center;justify-content:space-between;flex-direction:row-reverse;gap:12px;padding:12px 14px;margin:0!important;background:var(--g2,rgba(255,255,255,.06));border:1px solid var(--g2b,rgba(255,255,255,.1));border-radius:0;font-weight:700;font-size:14px}
+.sheet:has(#pe-ok) .agree+.agree{border-top:0}
+.sheet:has(#pe-ok) #pe-sig{} .sheet:has(#pe-ok) label.agree:has(#pe-sig){border-radius:18px 18px 0 0;margin-top:6px!important}.sheet:has(#pe-ok) label.agree:has(#pe-scase){border-radius:0 0 18px 18px}
+.sheet:has(#pe-ok) .agree input{appearance:none;-webkit-appearance:none;width:42px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;margin:0;transition:background .2s}
+.sheet:has(#pe-ok) .agree input:after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:10px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sheet:has(#pe-ok) .agree input:checked{background:var(--fg)}.sheet:has(#pe-ok) .agree input:checked:after{transform:translateX(16px);background:var(--bg)}
+.sheet:has(#pe-ok) #pe-av{border-radius:50%;overflow:hidden;border:2px solid var(--g2b,rgba(255,255,255,.15))}.sheet:has(#pe-ok) #pe-av img{width:100%;height:100%;object-fit:cover}
+.sheet:has(#pe-ok) .inp{border-radius:14px!important}
+.sheet:has(#pe-ok) p.d{font-size:30px!important}
 </style>
 </body></html>
