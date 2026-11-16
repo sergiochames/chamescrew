@@ -4122,6 +4122,8 @@ async function fetchAll(){const G=q=>Promise.resolve(q).then(r=>r,e=>({data:null
   const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[];await pAR;
   try{const ids=(STUD||[]).filter(p=>p.role!=='equipe').map(p=>p.id);const R2=await Promise.all(ids.map(id=>sb.rpc('cycle_info',{p_student:id}).then(r=>[id,r.data],()=>[id,null])));CYC={};R2.forEach(([i,d])=>{if(d)CYC[i]=d})}catch(_){}}
 try{await fetchAll()}catch(e){return fail('Não deu para carregar: '+e.message)}
+/* aula cancelada some da agenda quando foi remarcada ou quando outra aula ocupa o mesmo horário */
+function canHide(c){if(c.status!=='cancelada')return false;const t=new Date(c.starts_at).getTime();return CLS.some(z=>z.id!==c.id&&((z.note==='mv:'+c.id)||(z.status!=='cancelada'&&z.status!=='pedido'&&Math.abs(new Date(z.starts_at).getTime()-t)<36e5)))}
 
 /* ---------- 1) estado do protótipo salvo no banco ---------- */
 const REF={};[['STU',()=>STU],['LOG',()=>LOG],['LOCS',()=>LOCS],['WH',()=>WH],['BOOK',()=>BOOK],['RULES',()=>RULES],['IND',()=>IND],['INF',()=>INF],['ANM',()=>ANM],['ANSW',()=>ANSW],
@@ -4220,7 +4222,7 @@ function apply(){
     X._on=!!p.onboarded;X._email=INV.some(i=>i.profile_id===X._id&&i.used_by)||!INV.some(i=>i.profile_id===X._id);const ui=INV.find(i=>i.profile_id===X._id&&!i.used_by);if(ui)X._code=ui.code});
   STU.forEach(X=>{if(X._id)KNOWN.add(X._id)});try{realWC()}catch(_){}
   S.ev={};S.sp={};const now=new Date();
-  CLS.forEach(c=>{if(c.status==='pedido')return;const d=new Date(c.starts_at),wi=wiOf(d),h=d.getHours()+d.getMinutes()/60,past=d<now;if(wi<0||wi>6)return;
+  CLS.forEach(c=>{if(c.status==='pedido'||canHide(c))return;const d=new Date(c.starts_at),wi=wiOf(d),h=d.getHours()+d.getMinutes()/60,past=d<now;if(wi<0||wi>6)return;
     const st=c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'?'ok':c.status==='confirmada'?'conf':'wait';
     const lid=(()=>{const nl=v=>String(v||'').trim().toLowerCase(),l=(LOCS||[]).find(z=>nl(z.n)===nl(c.location));return l?l.id:undefined})();
     (S.ev[wi]=S.ev[wi]||[]).push(Object.assign({h,n:nameOf(c.student_id),st,_res:c.status==='reservada',_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined},lid?{loc:lid}:{}))});
@@ -4232,7 +4234,7 @@ function apply(){
     return {id:c.id,at:new Date(c.starts_at),n:nameOf(c.student_id),sid:c.student_id,tp:o?'mv':c.kind==='credito'?'rep':c.kind==='extra'?'extra':'plano',fromId:o?o.id:null,from:o?new Date(o.starts_at):null,loc:c.location||''}})}
 apply();
 try{evOn=function(dt){const s=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate()),e=new Date(s.getTime()+864e5),now=new Date();
-  return CLS.filter(c=>{const d=new Date(c.starts_at);return d>=s&&d<e&&c.status!=='pedido'}).map(c=>{const d=new Date(c.starts_at);return {n:nameOf(c.student_id),h:d.getHours()+d.getMinutes()/60,_cid:c.id,ln:c.location||'',st:c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'?'ok':c.status==='confirmada'?'conf':'wait'}})}}catch(_){}
+  return CLS.filter(c=>{const d=new Date(c.starts_at);return d>=s&&d<e&&c.status!=='pedido'&&!canHide(c)}).map(c=>{const d=new Date(c.starts_at);return {n:nameOf(c.student_id),h:d.getHours()+d.getMinutes()/60,_cid:c.id,ln:c.location||'',st:c.status==='reservada'?'wait':c.status==='cancelada'?'can':c.status==='feita'?'ok':c.status==='confirmada'?'conf':'wait'}})}}catch(_){}
 
 
 /* ---------- ficha do aluno com dados reais (no lugar dos geradores de exemplo) ---------- */

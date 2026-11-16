@@ -5963,6 +5963,14 @@ let temaNow='Matilha';
 function swapTema(root,from,to){if(from===to)return;const A=FORM(from),B=FORM(to);['minha','topo','da','na','ao','pra','de','a'].forEach(k=>swapText(root,A[k],B[k]))}
 new MutationObserver(ms=>{if(temaNow==='Matilha')return;ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1&&!n.closest('#ob .tour'))swapTema(n,'Matilha',temaNow)}))}).observe(document.body,{childList:true,subtree:true});
 const _ag11=applyGame;applyGame=function(){_ag11();if(CFG.tema!==temaNow){swapTema(document.body,temaNow,CFG.tema);temaNow=CFG.tema}};
+window.__gameRefresh=()=>refreshAll();
+/* nomes dos levels do tema escolhido pelo personal (mesmos nomes do app do personal) */
+const LVNM={Matilha:['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'],Olimpo:['Mortal','Oráculo','Lenda','Imortal','Divindade','Olimpo'],'Constelação':['Faísca','Estrela','Cometa','Galáxia','Supernova','Universo']};
+let lvNow='Matilha';
+function lvSwap(root,from,to){if(from===to||!LVNM[from]||!LVNM[to])return;const A=LVNM[from],B=LVNM[to];const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let t;const L=[];while((t=w.nextNode()))L.push(t);
+  L.forEach(n=>{if(n.parentNode&&n.parentNode.closest&&n.parentNode.closest('script,style,#ob .tour'))return;let v=n.nodeValue,o=v;A.forEach((a,i)=>{v=v.replace(new RegExp('(?<![\\p{L}])'+a+'(?![\\p{L}])','gu'),'\u0000'+i+'\u0000')});v=v.replace(/\u0000(\d)\u0000/g,(_,i)=>B[+i]);if(v!==o)n.nodeValue=v})}
+new MutationObserver(ms=>{if(lvNow==='Matilha')return;ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1)lvSwap(n,'Matilha',lvNow);else if(n.nodeType===3&&n.parentNode)lvSwap(n.parentNode,'Matilha',lvNow)}))}).observe(document.body,{childList:true,subtree:true});
+const _ag12=applyGame;applyGame=function(){_ag12();if(CFG.tema!==lvNow){lvSwap(document.body,lvNow,CFG.tema);lvNow=CFG.tema}};
 window.SEALX=()=>`<div class="seal">${logoH(30)}<span class="d">${CFG.marca||CFG.pnome}</span><span class="motto" style="font-size:9.5px">${CFG.frase||''}</span></div>`;
 window.LOGO_SRC=()=>{if(CFG.logo)return CFG.logo;const t=iniOf(CFG.marca||CFG.pnome);return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="#fff"/><text x="50" y="62" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="36" fill="#000">${t}</text></svg>`)};
 /* selos já desenhados na tela são trocados */
@@ -6510,7 +6518,7 @@ const uid=session.user.id;const R1=window.__RL1,R2=window.__RL2;
 const GO=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
 const pGen=GO(sb.rpc('gen_my_classes')),pExp=GO(sb.rpc('expire_reservations'));
 const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise.all([GO(sb.rpc('public_anm')),GO(sb.from('anam_answers').select('id').eq('user_id',uid).limit(1))]),
-  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
+  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
   pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
   pq:pExp.then(()=>GO(sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1)))};
@@ -6524,6 +6532,8 @@ const [{data:CL,error:e2},{data:FX}]=await Promise.all([
   sb.from('classes').select('*').eq('student_id',uid).neq('status','reservada').gte('starts_at',m0.toISOString()).order('starts_at'),
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
 if(e2)return fail('Não deu para carregar suas aulas.');window.__CL=CL||[];window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
+/* tema da gamificação escolhido pelo personal */
+try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t}catch(_){}
 try{const {data:lcs}=await PF.locs;window.__LOCS=(lcs||[]).filter(Boolean)}catch(_){window.__LOCS=[]}
 if(!window.__LOC0)window.__LOC0=(window.__LOCS||[])[0]||'';
 try{LOCAL=window.__LOC0}catch(_){}try{const A=window.ALOCX;if(A){A.length=0;(window.__LOC0?[window.__LOC0]:window.__LOCS).forEach(x=>A.push(x))}}catch(_){}try{PLOCS.length=0;window.__LOCS.forEach(x=>PLOCS.push(x))}catch(_){}
@@ -7110,7 +7120,7 @@ try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 
-R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);setTimeout(unCover,450);
+R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{if(window.CFG&&CFG.tema!=='Matilha'&&window.__gameRefresh)window.__gameRefresh()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);setTimeout(unCover,450);
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');document.getElementById('rl-ld').remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 </script>
