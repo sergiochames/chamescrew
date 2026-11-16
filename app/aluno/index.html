@@ -4293,14 +4293,14 @@ const $=s=>document.querySelector(s);window.__TRS=null;
 const bar=document.createElement('div');bar.id='trprev';bar.innerHTML='<span><b>Você está só vendo</b><small>O treino começa quando você tocar em Começar ou marcar uma série.</small></span><span class="tpb"><button type="button" id="tp-pdf">PDF</button><button type="button" id="tp-go">Começar</button></span>';
 const chip=document.createElement('button');chip.type='button';chip.id='trchip';chip.hidden=true;chip.innerHTML='<i></i><span><b id="tc-t"></b><small>Toque para voltar e finalizar</small></span><em>Voltar</em>';
 document.body.append(chip);
-const place=()=>{const tb=$('#trbar');if(tb&&bar.parentElement!==tb.parentElement)tb.after(bar)};
+const place=()=>{const tb=$('#trbar');if(tb&&bar.parentElement!==tb.parentElement)tb.after(bar);if(tb&&!$('#tp-pdf2')){const c=$('#tr-cnt'),pb=document.createElement('button');pb.type='button';pb.id='tp-pdf2';pb.className='btn small line';pb.textContent='PDF';(c||tb.lastChild).before(pb)}};
 const mm=ms=>{const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
 const title=k=>{try{return PLANS[k].title}catch(_){return 'Treino'}};
 const start=()=>{const T=window.__TRS;if(!T||T.started)return;T.started=true;T.t0=Date.now();bar.hidden=true;try{sessionStorage.setItem('cc_trs',JSON.stringify(T))}catch(_){}};
 const clear=()=>{window.__TRS=null;chip.hidden=true;bar.hidden=true;document.body.classList.remove('tr-run');try{sessionStorage.removeItem('cc_trs')}catch(_){}};
 window.__trClear=clear;
 const _st=startTr;startTr=function(k,force){const T=window.__TRS;if(!T||T.k!==k){window.__TRS={k,started:false,t0:null}}_st(k,force);place();bar.hidden=!!window.__TRS.started||!!finishedToday;chip.hidden=true};
-document.addEventListener('click',e=>{if(e.target.closest('#tp-go')){start();return}if(e.target.closest('#tp-pdf')){document.body.classList.add('tr-print');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('tr-print'),800)},60);return}
+document.addEventListener('click',e=>{if(e.target.closest('#tp-go')){start();return}if(e.target.closest('#tp-pdf,#tp-pdf2')){document.body.classList.add('tr-print');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('tr-print'),800)},60);return}
   if(e.target.closest('#v-treino [data-ck]'))start();
   if(e.target.closest('#trchip')){const T=window.__TRS;if(T){window.__trLeave=1;try{startTr(T.k,true)}finally{window.__trLeave=0}}return}},true);
 /* saiu do treino: mostra o aviso se já tinha começado */
@@ -6629,6 +6629,12 @@ window.__rkSave=async(p,on)=>{try{if(on!=null){await sb.rpc('rk_push',{p:{on:!!o
   if(p._new&&p.ph&&/^data:/.test(p.ph)){const b=await (await fetch(p.ph)).blob();const path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(!error){const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;await sb.from('profiles').update({avatar_url:url}).eq('id',uid);P.avatar_url=url;p.ph=url;try{const me=document.getElementById('h-me');if(me)me.innerHTML=`<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`}catch(_){}}}delete p._new;
   await sb.from('profiles').update({instagram:p.ig?('@'+p.ig):null}).eq('id',uid);
   await sb.rpc('rk_push',{p:{usePhoto:!!p.usePhoto,showIg:!!p.showIg,showKg:!!p.showKg,showCase:!!p.showCase}})}catch(_){toast('Não salvou o perfil')}};
+/* saldo + cupom num card só ("Indique e ganhe") */
+{const mg=()=>{const v=document.getElementById('v-hoje');if(!v)return;const dc=v.querySelector('.disc-card'),rf=document.getElementById('ref9');
+  const dcOn=dc&&dc.style.display!=='none';document.body.classList.toggle('refjoin',!!(dcOn&&rf));
+  if(dcOn&&rf&&rf.parentElement!==dc)dc.appendChild(rf);if(!dcOn&&rf&&rf.parentElement!==v){const pv=v.querySelector('.prev2,.prev');pv?pv.before(rf):v.appendChild(rf)}
+  if(dcOn){const l=dc.querySelector('.row .lbl');if(l&&rf&&l.textContent!=='Indique e ganhe'){l.textContent='Indique e ganhe'}}};
+ try{const v=document.getElementById('v-hoje');if(v)new MutationObserver(()=>{clearTimeout(mg._t);mg._t=setTimeout(mg,80)}).observe(v,{childList:true,subtree:true})}catch(_){}setTimeout(mg,900);setTimeout(mg,2500)}
 /* box "Minha agenda" embaixo do card da aula */
 function agBox(){const V=document.getElementById('v-hoje'),au=document.getElementById('aula');if(!V)return;let B=document.getElementById('agbox');
   if(!B){B=document.createElement('button');B.id='agbox';B.type='button';B.dataset.go='agenda';B.className='agbox'}
@@ -7178,7 +7184,7 @@ let busy=false;
 async function sync(){if(busy)return;busy=true;try{
   const live=new Map(AG.slots.filter(x=>x._id).map(x=>[x._id,x]));
   for(const id in DB){const x=live.get(id),db=DB[id];if(db.st==='pedido')continue;let to=null,note=db.note;
-    if(x){if(db.st==='cancelada')to=x.conf?'confirmada':'marcada';else if(x.conf&&db.st!=='confirmada'&&db.st!=='feita')to='confirmada'}
+    if(x){if(db.st==='cancelada')to=x.conf?'confirmada':'marcada';else if(x.conf&&db.st!=='confirmada'&&db.st!=='feita')to='confirmada';else if(!x.conf&&db.st==='confirmada')to='marcada'}
     else if(db.st!=='cancelada'){const c=AG.canc.find(c=>c.slot&&c.slot._id===id);if(c){to='cancelada';note=c.kind==='credito'||c.ok?'credito':'dada'}}
     if(!to)continue;const {error}=await sb.from('classes').update({status:to,note}).eq('id',id);
     if(error){toast(/próxima/.test(error.message)?'Só dá para confirmar a próxima aula':'Não salvou: '+error.message);if(x&&to==='confirmada')x.conf=false;continue}
@@ -7316,6 +7322,15 @@ body.ag3 #v-hoje #aula .bt9{display:grid!important;grid-template-columns:1fr 1fr
 .sheet:has(#pe-ok) .inp{border-radius:14px!important}
 .sheet:has(#pe-ok) p.d{font-size:30px!important}
 </style>
+<style id="skin2e">
+#v-hoje .prev2 [data-pv="me"]{display:none!important}
+body.refjoin #v-hoje .disc-card #ref9{display:block!important;margin:14px 0 0!important;padding:14px 0 0!important;border:0!important;border-top:1px solid var(--g2l,rgba(255,255,255,.08))!important;border-radius:0!important;background:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.refjoin #v-hoje .disc-card #ref9 p.d{font-size:24px!important;margin:2px 0 4px!important}body.refjoin #v-hoje .disc-card #ref9 .row{justify-content:flex-start}
+body.refjoin #v-hoje .disc-card .btn:not([data-renew]):not([data-walinfo]):not(#ref9 *){display:none!important}
+body.refjoin #v-hoje #ref9 .row .lbl{display:none}
+body.ag3 #v-hoje>.disc-card,body.ag3 #v-hoje>#ref9{border-radius:24px!important;background:var(--g2)!important;border:1px solid var(--g2b)!important;box-shadow:var(--g2sh)!important;-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);border-radius:24px;color:var(--fg)!important}
+body.ag3 #v-hoje>.disc-card p.d{font-size:40px!important}body.ag3 #v-hoje>#ref9 p.d{font-size:26px!important}
+</style>
 <style id="trprev-css">
 #trprev{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:10px 0 12px;padding:12px 12px 12px 14px;border-radius:20px;background:var(--g2,rgba(255,255,255,.06));border:1px solid var(--g2b,rgba(255,255,255,.12));-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-family:var(--body)}
 body:not(.tr-on) #trprev{display:none!important}#trprev[hidden]{display:none!important}
@@ -7333,4 +7348,5 @@ html[data-theme="dark"] #trchip{background:rgba(30,32,38,.72);border-color:rgba(
 @media print{body.tr-print *{visibility:hidden!important}body.tr-print #v-treino,body.tr-print #v-treino *{visibility:visible!important}body.tr-print #v-treino{position:absolute;left:0;top:0;width:100%}
  body.tr-print #trprev,body.tr-print #trbar,body.tr-print .tabs,body.tr-print #finish,body.tr-print #finish2,body.tr-print #trchip,body.tr-print .ck{display:none!important}}
 </style>
+<style>#trbar #tp-pdf2{margin-left:auto;margin-right:6px}body.tr-print #tp-pdf2{display:none!important}</style>
 </body></html>
