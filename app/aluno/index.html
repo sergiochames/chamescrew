@@ -4287,6 +4287,32 @@ function resetPlan(k){$$(`[data-plan="${k}"] .ck`).forEach(b=>{b.setAttribute('a
 function redoTr(k){TR.redo=true;resetPlan(k);startTr(k,true)}
 const _st18=startTr;startTr=function(k,force){if(!TR.redo&&TR.done[k])TR.redo=true,resetPlan(k);_st18(k,force);$('#finish').hidden=!(curPlan===__TK&&!TR.redo);$('#finish2').hidden=!$('#finish').hidden};
 const _sp18=stopTr;stopTr=function(){TR.redo=false;_sp18()};
+/* treino: ver sem iniciar, PDF, aviso de treino rodando */
+(function(){try{
+const $=s=>document.querySelector(s);window.__TRS=null;
+const bar=document.createElement('div');bar.id='trprev';bar.innerHTML='<span><b>Você está só vendo</b><small>O treino começa quando você tocar em Começar ou marcar uma série.</small></span><span class="tpb"><button type="button" id="tp-pdf">PDF</button><button type="button" id="tp-go">Começar</button></span>';
+const chip=document.createElement('button');chip.type='button';chip.id='trchip';chip.hidden=true;chip.innerHTML='<i></i><span><b id="tc-t"></b><small>Toque para voltar e finalizar</small></span><em>Voltar</em>';
+document.body.append(chip);
+const place=()=>{const tb=$('#trbar');if(tb&&bar.parentElement!==tb.parentElement)tb.after(bar)};
+const mm=ms=>{const s=Math.max(0,Math.floor(ms/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(x).padStart(2,'0')};
+const title=k=>{try{return PLANS[k].title}catch(_){return 'Treino'}};
+const start=()=>{const T=window.__TRS;if(!T||T.started)return;T.started=true;T.t0=Date.now();bar.hidden=true;try{sessionStorage.setItem('cc_trs',JSON.stringify(T))}catch(_){}};
+const clear=()=>{window.__TRS=null;chip.hidden=true;bar.hidden=true;document.body.classList.remove('tr-run');try{sessionStorage.removeItem('cc_trs')}catch(_){}};
+window.__trClear=clear;
+const _st=startTr;startTr=function(k,force){const T=window.__TRS;if(!T||T.k!==k){window.__TRS={k,started:false,t0:null}}_st(k,force);place();bar.hidden=!!window.__TRS.started||!!finishedToday;chip.hidden=true};
+document.addEventListener('click',e=>{if(e.target.closest('#tp-go')){start();return}if(e.target.closest('#tp-pdf')){document.body.classList.add('tr-print');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('tr-print'),800)},60);return}
+  if(e.target.closest('#v-treino [data-ck]'))start();
+  if(e.target.closest('#trchip')){const T=window.__TRS;if(T){window.__trLeave=1;try{startTr(T.k,true)}finally{window.__trLeave=0}}return}},true);
+/* saiu do treino: mostra o aviso se já tinha começado */
+const tick=()=>{const T=window.__TRS,on=document.body.classList.contains('tr-on');
+  if(T&&T.started&&(TR.done&&TR.done[T.k]==='hoje'&&finishedToday)){clear();return}
+  const show=!!(T&&T.started&&!on);chip.hidden=!show;document.body.classList.toggle('tr-run',show);if(show)$('#tc-t').textContent=title(T.k)+' rodando • '+mm(Date.now()-T.t0)};
+setInterval(tick,1000);
+/* voltou para o app com treino rodando: lembra */
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;const T=window.__TRS;if(!T||!T.started||document.body.classList.contains('tr-on'))return;
+  try{sheet(`<span class="lbl">Treino em andamento</span><p class="d" style="font-size:30px;margin:4px 0 8px">${title(T.k)} está rodando</p><p class="meta">Começou há ${mm(Date.now()-T.t0)}. Volte para marcar as séries e finalizar, senão não conta no seu dia.</p><button class="btn solid wide" id="tr-rv" style="margin-top:12px">Voltar ao treino</button>`,s=>{s.querySelector('#tr-rv').onclick=()=>{s.remove();chip.click()}})}catch(_){}});
+}catch(e){console.error(e)}})();
+
 const todayLog=()=>[...(TR.log[TODAYI]||[]).filter(x=>x==='cardio'),...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])];
 const _rh18=renderTrHome;renderTrHome=function(){if(CFG.semTreino){_rh18();return}const h=$('#trh');if(!h)return;setHero();updHoje();
   const LG=j=>j===TODAYI?todayLog():(TR.log[j]||[]);const done=new Set([0,1,2,3,4,5,6].map(LG).flat().filter(x=>x!=='cardio')).size,meta=window.__RD?(WKP.filter(x=>x.k).length||ORD.length):4,i=TR.sel,P=WKP[i],L=LG(i);
@@ -5973,10 +5999,10 @@ function gnApply(root){const n=window.__GNOME;if(!n)return;const a=FORM(CFG.tema
 new MutationObserver(ms=>{if(!window.__GNOME)return;ms.forEach(m=>m.addedNodes.forEach(x=>{if(x.nodeType===1)gnApply(x)}))}).observe(document.body,{childList:true,subtree:true});
 {const _ag13=applyGame;applyGame=function(){_ag13();gnApply(document.body)}}
 /* sair do treino sem encerrar: avisa antes */
-document.addEventListener('click',e=>{if(!document.body.classList.contains('tr-on')||window.__trLeave)return;const bk=e.target.closest('#tr-back'),tb=e.target.closest('.tabs button[data-go]');
+document.addEventListener('click',e=>{if(!document.body.classList.contains('tr-on')||window.__trLeave||!(window.__TRS&&window.__TRS.started))return;const bk=e.target.closest('#tr-back'),tb=e.target.closest('.tabs button[data-go]');
   if(!bk&&!(tb&&tb.dataset.go!=='treino'))return;e.stopImmediatePropagation();e.preventDefault();const el=bk||tb;
-  sheet(`<span class="lbl">Treino em andamento</span><p class="d" style="font-size:36px;margin:4px 0 8px">Você não encerrou seu treino</p><p class="meta">Se sair agora, o treino fica sem finalizar e não conta no seu dia.</p>
-    <button class="btn solid wide" data-close style="margin-top:12px">Continuar treinando</button><button class="btn wide" id="trlv" style="margin-top:8px">Sair sem encerrar</button>`,s=>{const x=[...s.querySelectorAll('[data-close]')].pop();if(x&&!x.classList.contains('solid'))x.remove();
+  sheet(`<span class="lbl">Treino em andamento</span><p class="d" style="font-size:36px;margin:4px 0 8px">Você não encerrou seu treino</p><p class="meta">Ele continua rodando. Um aviso fica no cantinho para você voltar e finalizar. Só conta no seu dia depois de finalizar.</p>
+    <button class="btn solid wide" data-close style="margin-top:12px">Continuar treinando</button><button class="btn wide" id="trlv" style="margin-top:8px">Sair e voltar depois</button>`,s=>{const x=[...s.querySelectorAll('[data-close]')].pop();if(x&&!x.classList.contains('solid'))x.remove();
     s.querySelector('#trlv').onclick=()=>{s.remove();window.__trLeave=1;try{if(!bk){const t=document.querySelector('#tr-back');t&&t.click()}el.click()}finally{window.__trLeave=0}}})},true);
 /* nomes dos levels do tema escolhido pelo personal (mesmos nomes do app do personal) */
 const LVNM={Matilha:['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'],Olimpo:['Mortal','Oráculo','Lenda','Imortal','Divindade','Olimpo'],'Constelação':['Faísca','Estrela','Cometa','Galáxia','Supernova','Universo']};
@@ -7289,5 +7315,22 @@ body.ag3 #v-hoje #aula .bt9{display:grid!important;grid-template-columns:1fr 1fr
 .sheet:has(#pe-ok) #pe-av{border-radius:50%;overflow:hidden;border:2px solid var(--g2b,rgba(255,255,255,.15))}.sheet:has(#pe-ok) #pe-av img{width:100%;height:100%;object-fit:cover}
 .sheet:has(#pe-ok) .inp{border-radius:14px!important}
 .sheet:has(#pe-ok) p.d{font-size:30px!important}
+</style>
+<style id="trprev-css">
+#trprev{display:flex;align-items:center;gap:10px;justify-content:space-between;margin:10px 0 12px;padding:12px 12px 12px 14px;border-radius:20px;background:var(--g2,rgba(255,255,255,.06));border:1px solid var(--g2b,rgba(255,255,255,.12));-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);font-family:var(--body)}
+body:not(.tr-on) #trprev{display:none!important}#trprev[hidden]{display:none!important}
+#trprev b{display:block;font:800 14px var(--body);color:var(--fg)}#trprev small{display:block;font:600 11.5px var(--body);color:var(--muted);margin-top:2px}
+#trprev .tpb{display:flex;gap:6px;flex:none}#trprev button{height:36px;padding:0 14px;border-radius:12px;font:700 13px var(--body);border:1px solid var(--g2b,rgba(255,255,255,.15));background:transparent;color:var(--fg)}
+#trprev #tp-go{background:var(--fg);color:var(--bg);border-color:transparent}
+#trchip{position:fixed;left:16px;right:16px;bottom:calc(98px + env(safe-area-inset-bottom,0px));z-index:40;display:flex;align-items:center;gap:10px;padding:9px 9px 9px 14px;border-radius:20px;text-align:left;color:var(--fg);
+ background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.95);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);box-shadow:0 12px 30px rgba(20,24,40,.22);font-family:var(--body);max-width:460px;margin:0 auto}
+html[data-theme="dark"] #trchip{background:rgba(30,32,38,.72);border-color:rgba(255,255,255,.14);box-shadow:0 12px 30px rgba(0,0,0,.5)}
+#trchip[hidden]{display:none!important}
+#trchip i{width:10px;height:10px;border-radius:5px;background:#34b268;box-shadow:0 0 0 4px rgba(52,178,104,.22);flex:none;animation:trp 1.6s infinite}
+@keyframes trp{50%{box-shadow:0 0 0 7px rgba(52,178,104,.08)}}
+#trchip span{flex:1;min-width:0}#trchip b{display:block;font:800 14px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#trchip small{display:block;font:600 11.5px var(--body);color:var(--muted)}
+#trchip em{font-style:normal;height:36px;padding:0 14px;border-radius:12px;background:var(--fg);color:var(--bg);font:700 12.5px var(--body);display:grid;place-items:center;flex:none}
+@media print{body.tr-print *{visibility:hidden!important}body.tr-print #v-treino,body.tr-print #v-treino *{visibility:visible!important}body.tr-print #v-treino{position:absolute;left:0;top:0;width:100%}
+ body.tr-print #trprev,body.tr-print #trbar,body.tr-print .tabs,body.tr-print #finish,body.tr-print #finish2,body.tr-print #trchip,body.tr-print .ck{display:none!important}}
 </style>
 </body></html>
