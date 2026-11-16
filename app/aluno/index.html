@@ -4880,14 +4880,14 @@ document.addEventListener('click',e=>{const j=e.target.closest('[data-jump]');if
 const CYC=[0,3,6,12,24];const CUR_LV=window.__RD?window.__RD.LV:2,CUR_CYC=window.__RD?window.__RD.CYCN:6;
 function lvCard(i){const names=[...RA.LEVELS.map(l=>l.name),'Prestígio'];const L=i<5?RA.LEVELS[i]:RA.PRESTIGE;
   const got=i<CUR_LV,now=i===CUR_LV,lock=i>CUR_LV;
-  const need=i<5?CYC[i]:null;
+  const need=i<5?(window.__CYCG?window.__CYCG():CYC)[i]:null;
   let st,prog='';
   if(got)st='<span class="tag" style="background:var(--ok-bg);color:var(--ok)">Conquistado ✓</span>';
   else if(now)st='<span class="tag" style="background:var(--fg);color:var(--bg)">Seu level atual</span>';
   else st='<span class="tag" style="background:var(--frost);color:var(--muted)">🔒 Bloqueado</span>';
-  if(lock&&i<5){const f=need-CUR_CYC;prog=`<p style="font-weight:800;margin:0">Faltam ${f} ciclos cumpridos • uns ${f} meses</p><div class="bar" style="width:100%"><i style="width:${Math.round(CUR_CYC/need*100)}%"></i></div><p class="meta" style="margin:0;font-size:13px">${CUR_CYC} de ${need} ciclos. Ciclo cumprido = 75% dos dias completos da sua meta.</p>`}
+  if(lock&&i<5){const f=need-CUR_CYC;prog=`<p style="font-weight:800;margin:0">Faltam ${f} ciclos cumpridos • uns ${f} meses</p><div class="bar" style="width:100%"><i style="width:${Math.round(CUR_CYC/need*100)}%"></i></div><p class="meta" style="margin:0;font-size:13px">${CUR_CYC} de ${need} ciclos. Ciclo cumprido = ${(window.__GM||{}).ciclo||75}% dos dias completos da sua meta.</p>`}
   if(i===5)prog=`<p style="font-weight:800;margin:0">Depois da Elite (24 ciclos), você escolhe prestigiar</p><p class="meta" style="margin:0;font-size:13px">Depois, uma estrela nova a cada 6 ciclos cumpridos.</p>`;
-  if(now){const nx=CYC[i+1];prog=`<p style="font-weight:800;margin:0">${CUR_CYC} ciclos cumpridos • próximo: ${names[i+1]} em ${nx}</p><div class="bar" style="width:100%"><i style="width:${Math.round(CUR_CYC/nx*100)}%"></i></div>`}
+  if(now){const nx=(window.__CYCG?window.__CYCG():CYC)[i+1];prog=`<p style="font-weight:800;margin:0">${CUR_CYC} ciclos cumpridos • próximo: ${names[i+1]} em ${nx}</p><div class="bar" style="width:100%"><i style="width:${Math.round(CUR_CYC/nx*100)}%"></i></div>`}
   if(got)prog=`<p class="meta" style="margin:0;font-size:13px">Você chegou aqui com ${CYC[i]} ciclos cumpridos.</p>`;
   const req=i===0?'Entrada na matilha':i<5?`${need} ciclos cumpridos • uns ${need>=12?need/12+(need===12?' ano':' anos'):need+' meses'}`:'Depois da Elite';
   sheet(`<div class="lvcard"><div style="display:grid;place-items:center;padding:8px 0">${RA.emblem(i,lock,150)}</div>
@@ -5468,6 +5468,7 @@ em.o{background:#e9a35a}
 .labt{display:grid;gap:4px}.labt div{display:grid;grid-template-columns:20px minmax(0,1fr);gap:6px;font-size:12.5px;font-weight:600;padding:6px 8px;border-radius:10px}.labt .ok i{color:var(--ok);font-style:normal;font-weight:900}.labt .no{background:var(--miss-bg)}.labt .no i{color:var(--miss);font-style:normal;font-weight:900}.labt em{color:var(--muted);font-style:normal}
 
 /* v25 */
+body.norank .mtabs [data-mt="rk"],body.norank #mp-rk{display:none!important}body.norank .mtabs{grid-template-columns:1fr 1fr!important}
 #mp-rk>#sec-rk{margin-top:4px}#mp-rk #hall{margin-bottom:22px}
 .rkme{display:grid;gap:12px;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.rkme .rk-opt{margin:0}
 #mp-rk #rk-mode{margin-bottom:12px}
@@ -5771,7 +5772,7 @@ const CFG=window.CFG;
 const TEMAS={Matilha:{a:'a Matilha',da:'da Matilha',tab:'Matilha',motto:'Treino da matilha',ic:'<svg viewBox="0 0 100 100" fill="currentColor" aria-hidden="true"><path d="M14 8L36 32H64L86 8L83 44L94 58L76 66L66 92H34L24 66L6 58L17 44Z"/></svg>',em:'🐺'},
   Olimpo:{a:'o Olimpo',da:'do Olimpo',tab:'Olimpo',motto:'Treino do Olimpo',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 9l9-5 9 5M4 9h16M6 9v9M10 9v9M14 9v9M18 9v9M3 20h18"/></svg>',em:'🏛️'},
   'Constelação':{a:'a Constelação',da:'da Constelação',tab:'Estrelas',motto:'Treino das estrelas',ic:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.6 6.3L21 9l-5 4.4L17.5 20 12 16.6 6.5 20 8 13.4 3 9l6.4-.7z"/></svg>',em:'✨'}};
-const gameOn=window.gameOn=()=>CFG.plano!=='basico';
+const gameOn=window.gameOn=()=>CFG.plano!=='basico'&&CFG.game!==false;
 window.TEMA_TAB=()=>TEMAS[CFG.tema].tab;
 function applyTabs(){const nav=document.querySelector('.tabs nav');const n=[...nav.children].filter(b=>!b.hidden).length;nav.style.gridTemplateColumns=`repeat(${n},1fr)`}
 function applyGame(){const on=gameOn(),T=TEMAS[CFG.tema];const tb=document.querySelector('.tabs button[data-go="matilha"]');
@@ -6073,11 +6074,12 @@ function mTab(t){$$('.mtabs [data-mt]').forEach(b=>b.setAttribute('aria-selected
 document.addEventListener('click',e=>{const b=e.target.closest('[data-mt]');if(b){mTab(b.dataset.mt);return}},true);
 /* level: próxima recompensa + trilha */
 const GIFTS=['Entrada na turma','10% de desconto na renovação','10% + brinde surpresa','Kit: garrafa, creatina, barra e whey','Um mês grátis + kit completo','Seu nome no Hall e prêmio do personal'];
+document.addEventListener('click',e=>{if(e.target.closest('.tabs [data-go="matilha"]'))setTimeout(()=>{try{renderLvX()}catch(_){}},0)});
 function renderLvX(){const p=$('#mp-lv');if(!p)return;let x=$('#lvx');if(!x){x=document.createElement('div');x.id='lvx';p.appendChild(x)}
   const names=[...RA.LEVELS.map(l=>l.name),'Prestígio'],cur=window.__RD?window.__RD.LV:2;
-  x.innerHTML=`<div class="gift"><span class="gic">${ICO.gift}</span><span><small>No próximo level • ${names[cur+1]}</small><b>${GIFTS[cur+1]}</b><em>${window.__RD?(window.__RD.CYLEFT+' '+(window.__RD.CYLEFT===1?'ciclo':'ciclos')+' • uns '+window.__RD.CYLEFT+' '+(window.__RD.CYLEFT===1?'mês':'meses')):'faltam 6 ciclos • uns 6 meses'}</em></span></div>
+  x.innerHTML=`<div class="gift"><span class="gic">${ICO.gift}</span><span><small>No próximo level • ${names[cur+1]}</small><b>${(window.__PRZT&&window.__PRZT(cur+1))||GIFTS[cur+1]}</b><em>${window.__RD?(window.__RD.CYLEFT+' '+(window.__RD.CYLEFT===1?'ciclo':'ciclos')+' • uns '+window.__RD.CYLEFT+' '+(window.__RD.CYLEFT===1?'mês':'meses')):'faltam 6 ciclos • uns 6 meses'}</em></span></div>
    <p class="lbl" style="margin:18px 2px 8px">Sua trilha</p><div class="trail">${names.map((n,i)=>`<button class="tr-i${i<=cur?' got':''}${i===cur?' cur':''}" data-lvcard="${i}">${RA.emblem(i,i>cur,i===cur?58:46)}<span>${n}</span></button>`).join('<i class="tr-l"></i>')}</div>
-   <p class="meta" style="font-size:12.5px;margin:10px 2px 0">Ciclo cumprido = 75% dos dias completos da sua meta no mês.</p>`}
+   <p class="meta" style="font-size:12.5px;margin:10px 2px 0">Ciclo cumprido = ${(window.__GM||{}).ciclo||75}% dos dias completos da sua meta no mês.</p>`}
 /* conquistas: as mais perto em destaque */
 function renderNear(){const p=$('#mp-cq');if(!p||!window.RMEDS)return;let x=$('#near');if(!x){x=document.createElement('div');x.id='near';p.insertBefore(x,p.firstChild)}
   const ms=window.RMEDS().filter(m=>!m.secret).map(m=>{const t=window.rtier(m),v=(window.RMEDV()[m.id])||0,nx=m.th[t+1];return {m,t,v,nx,r:nx?v/nx:0}}).filter(o=>o.nx).sort((a,b)=>b.r-a.r).slice(0,3);
@@ -6553,7 +6555,7 @@ try{const upd=()=>{const t=document.getElementById('tr-title'),sub=document.getE
   if(!o){if(el)el.remove();return}if(!el){el=document.createElement('p');el.id='tr-obs';el.style.cssText='margin:8px 0 0;font-size:13.5px;font-weight:600;opacity:.8;line-height:1.4';sub.after(el)}if(el.textContent!==o)el.textContent=o};
   new MutationObserver(upd).observe(document.body,{subtree:true,childList:true,characterData:true});setTimeout(upd,500)}catch(_){}
 /* tema da gamificação escolhido pelo personal */
-try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t;if(g&&g.nome)window.__GNOME=String(g.nome).slice(0,22)}catch(_){}
+try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t;if(g&&g.nome)window.__GNOME=String(g.nome).slice(0,22);if(g&&Object.keys(g).length){window.__GM=g;if(window.CFG)window.CFG.game=g.on!==false;try{if(Array.isArray(g.th)&&g.th.length===5)RA.MEDALS.forEach(m=>{if(String(m.th)==='4,8,16,26,52')m.th=g.th.map(Number)})}catch(_){}document.body.classList.toggle('norank',g.rank===false)}}catch(_){}
 /* metas do aluno guardadas na conta (não só no aparelho) */
 try{const io=window.__metasIO;if(io){const srv=P.setup&&P.setup.metas,loc=io.get();let t=null;
   const push=m=>{clearTimeout(t);t=setTimeout(async()=>{try{const c=JSON.parse(JSON.stringify(m)),ks=Object.keys(c.days||{}).sort();ks.slice(0,Math.max(0,ks.length-70)).forEach(k=>delete c.days[k]);
@@ -6869,6 +6871,9 @@ function dietSheet(){let file=null;sheet(`<span class="lbl">Dieta</span><p class
      const r=await sb.from('profiles').update({diet}).eq('id',uid);if(r.error){b.disabled=false;b.textContent='Salvar dieta';return toast('Não salvou: '+r.error.message)}
      P.diet=diet;s.remove();dietView(true);if(useAI)runAI(path);else toast('Dieta salva')}})}
 dietView(true);loadMeals().then(()=>{try{dietView(true)}catch(_){}_rd()});setInterval(()=>{try{dietView()}catch(_){}},800);{const v=document.getElementById('v-dieta');if(v)new MutationObserver(()=>{if(!v.querySelector(':scope>#rl-diet'))try{dietView(true)}catch(_){}}).observe(v,{childList:true})}
+window.__CYCG=()=>{const n=(window.__GM||{}).niv;return Array.isArray(n)&&n.length===4?[0,...n.map(Number)]:[0,3,6,12,24]};
+window.__PRZT=i=>{const P=(window.__GM||{}).prz;if(!Array.isArray(P)||!P.some(p=>p&&Object.keys(p).length))return null;const p=P[i]||{};return Object.entries(p).map(([k,v])=>k==='desc'?v+'% de desconto':k==='aula'?v+(v==1?' aula grátis':' aulas grátis'):k==='rem'?'+'+v+(v==1?' remarcação':' remarcações'):v).filter(Boolean).join(' + ')||'Só a insígnia'};
+try{if(window.__PRZT(1)!=null)RA.LEVELS.forEach((L,i)=>{if(i)L.perks=[window.__PRZT(i)]})}catch(_){}
 const CIC=await (async()=>{try{const r=await PF.cic;return r.data||{}}catch(_){return {}}})();
 const CISTD=[['treinou','Treinou hoje?',['Sim','Não','Dia de descanso'],'limite'],['intens','Como foi o treino?',['Leve','Moderado','Pesado','No limite'],null],['energia','Como está sua energia?',['Baixa','Ok','Alta'],null],['cardio','Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min'],'resist'],['livre','Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food'],'zero'],['doce','Comeu doce fora do plano?',['Não','Um pouco','Sim'],'doce'],['agua','Bateu sua meta de água hoje?',['Não','Quase','Bati a meta'],'agua'],['sono','Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais'],'sono']];
 const WSTD=[['carga','Como sentiu os treinos da semana?',['Leves demais','No ponto','Pesados demais']],['chegou','Como você chegou no fim da semana?',['Cansado','Normal','Bem disposto']],['dor','Sentiu alguma dor ou desconforto?',['Nenhuma','Leve','Moderada','Forte']],['rotina','Como foi sua rotina na semana?',['Tranquila','Normal','Puxada']],['nota','Que nota você dá para a sua semana?',['0','1','2','3','4','5','6','7','8','9','10']]];
@@ -6887,7 +6892,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   const cnt=(f)=>[...ciDays.entries()].filter(([d,a])=>inW(d)&&f(a)).length;
   const cardioN=(((WK||[]).find(w=>w.letter==='_cfg')||{}).exercises||{}).cardio||[];
   R.ME=first;
-  {const off=CIC.off||{},lab=CIC.lab||{},ag=Math.min(4,Math.max(2,Math.round((+P.weight_kg||70)*35/250)*.25));R.QD=[];R.QK=[];R.MOFF=[];
+  {const off=CIC.off||{},lab=CIC.lab||{},ag=Math.min(4,Math.max(2,Math.round((+P.weight_kg||70)*35/250)*.25));R.QD=[];R.QK=[];R.MOFF=Object.entries((window.__GM||{}).med||{}).filter(([,v])=>v===false).map(([k])=>k);
    CISTD.forEach(([k,t,o,m])=>{if(k==='treinou')return;if(off[k]){if(m)R.MOFF.push(m);return}let tt=lab[k]||t;if(k==='agua'&&!lab[k])tt=`Bateu sua meta de água hoje (${ag.toLocaleString('pt-BR')} L)?`;R.QD.push([tt,o]);R.QK.push(k)});
    {const W=CIC.wk||{},wo=W.off||{},wl=W.lab||{};R.WKC={peso:W.peso||'opt',msg:W.msg!==false,msgl:wl.msg||'Quer pedir alguma mudança ou contar algo?'};R.QW=[];R.QWK=[];
     WSTD.forEach(([k,t,o])=>{if(wo[k])return;R.QW.push(k==='dor'?[wl.dor||W.dor||t,o,null,1,null,'where']:[wl[k]||t,o]);R.QWK.push(k)});
@@ -6911,8 +6916,8 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   R.CY={T,done:doneC,left:Math.max(0,Math.round((ce-now)/864e5)),todayIn:false};
   /* ciclos cumpridos -> level (Recruta 0, Consistente 3, Atleta 6, Casca Grossa 12, Elite 24) */
   let cyc=0;{let a=new Date(cs.getFullYear(),cs.getMonth()-24,cd);const created=P.created_at?new Date(P.created_at):now;for(;a<cs;a=new Date(a.getFullYear(),a.getMonth()+1,cd)){const b=new Date(a.getFullYear(),a.getMonth()+1,cd);if(b<=created)continue;
-    const n=[...new Set([...trDays,...ciDays.keys()])].filter(d=>d>=ymd(a)&&d<ymd(b)&&complete(d)).length;if(n>=Math.ceil(T*.75))cyc++}}
-  const CYC=[0,3,6,12,24];let lv=0;CYC.forEach((c,i)=>{if(cyc>=c)lv=i});lv=Math.min(4,lv+(+P.level_bonus||0));
+    const n=[...new Set([...trDays,...ciDays.keys()])].filter(d=>d>=ymd(a)&&d<ymd(b)&&complete(d)).length;if(n>=Math.ceil(T*(((window.__GM||{}).ciclo||75)/100)))cyc++}}
+  const CYC=window.__CYCG();let lv=0;CYC.forEach((c,i)=>{if(cyc>=c)lv=i});lv=Math.min(4,lv+(+P.level_bonus||0));
   R.LV=lv;R.CYCN=cyc;R.CYLEFT=lv<4?CYC[lv+1]-cyc:0;R.CYPCT=lv<4?Math.round((cyc-CYC[lv])/(CYC[lv+1]-CYC[lv])*100):100;
   /* medalhas: semanas completas */
   const wks={};const wkOfD=d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};const W_=k=>wks[k]=wks[k]||{tr:0,cardio:0,ci:0,agua:0,sono:0,ff:0,doce:0,carga:false};
@@ -6994,7 +6999,7 @@ setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&wi
 
 /* ===== telas do protótipo com os números reais + gravação no banco ===== */
 {const R=window.__RD,$q=s=>document.querySelector(s),esc2=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
- const LVN=['Recruta','Consistente','Atleta','Casca Grossa','Elite'],CYC=[0,3,6,12,24],PERK=['Entrada na matilha','10% de desconto','10% + brinde surpresa','Kit Chames Crew','1 mês grátis + kit'];
+ const LVN=['Recruta','Consistente','Atleta','Casca Grossa','Elite'],CYC=window.__CYCG(),PERK=['Entrada na matilha','10% de desconto','10% + brinde surpresa','Kit Chames Crew','1 mês grátis + kit'].map((x,i)=>i&&window.__PRZT(i)||x);
  document.body.classList.add('dlock');if(!Object.values(R.RMV||{}).some(v=>v>0))document.body.classList.add('rl-noql');/* sem plano de dieta: o protótipo mostra o estado sem dieta */
  const payBan=()=>{const P=window.__PAYR,v=document.getElementById('v-hoje');if(!P){const o=document.getElementById('rl-pay');if(o)o.remove();return}if(!v||v.querySelector('#rl-pay'))return;const inf=P.pay_status==='informado';
   v.insertAdjacentHTML('afterbegin',`<a id="rl-pay" href="/app/" style="display:flex;gap:12px;align-items:center;text-decoration:none;color:inherit;margin:4px 0 12px;padding:12px 14px;border-radius:14px;border:1px solid rgba(226,194,126,.45);background:rgba(226,194,126,.12)"><span style="flex:1"><b style="display:block;font-size:14px">${inf?'Pagamento em conferência':'Pagamento pendente'}</b><small style="display:block;font-size:12px;opacity:.8;margin-top:2px">${inf?'O personal confere e libera suas aulas.':'Suas aulas entram na agenda quando o pagamento for confirmado.'}</small></span><b style="font-size:13px">${inf?'Ver':'Pagar'} ›</b></a>`)};
@@ -7151,7 +7156,7 @@ try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 
-R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{if(window.CFG&&(CFG.tema!=='Matilha'||window.__GNOME)&&window.__gameRefresh)window.__gameRefresh()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);setTimeout(unCover,450);
+R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{if(window.CFG&&(CFG.tema!=='Matilha'||window.__GNOME||window.__GM)&&window.__gameRefresh)window.__gameRefresh()}catch(_){}try{window.__GM&&typeof renderLvX==='function'&&renderLvX()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);setTimeout(unCover,450);
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');document.getElementById('rl-ld').remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 </script>
