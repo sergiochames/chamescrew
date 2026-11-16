@@ -6656,7 +6656,8 @@ window.__pdfHTML=function(D){const E=s=>String(s==null?'':s).replace(/[&<>"]/g,c
  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plano de treino • ${E(D.student)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@1,900&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>@page{size:A4;margin:0}*{box-sizing:border-box;margin:0;padding:0}html,body{background:#0b0c0f}body{font-family:Manrope,Inter,system-ui,sans-serif;color:#f2f1ee;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.pg{max-width:794px;margin:0 auto;padding:26px 26px 22px;min-height:100vh;background:radial-gradient(90% 40% at 0% 0%,rgba(52,178,104,.22),transparent 60%),radial-gradient(70% 35% at 100% 30%,rgba(140,120,220,.12),transparent 60%),#0b0c0f}
+.pg{max-width:794px;margin:0 auto;padding:24px 24px 20px;background:#0b0c0f}
+.hd{border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px}.hd:before{content:'';display:block;position:absolute}h1:after{content:'';display:block;width:56px;height:4px;border-radius:2px;background:#34b268;margin-top:10px}
 .hd{display:flex;align-items:center;gap:14px;padding:4px 2px 18px}
 .lg{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;border:1.5px solid rgba(255,255,255,.18)}.li{display:grid;place-items:center;background:#f2f1ee;color:#0b0c0f;font:800 17px Manrope,Inter,sans-serif}
 .bd{flex:1}.bd b{display:block;font:800 18px Manrope,Inter,sans-serif}.bd small{font:600 12.5px Manrope,Inter,sans-serif;color:#a5a29b}
@@ -6676,7 +6677,7 @@ td em{display:inline-block;font:700 10.5px Manrope,Inter,sans-serif;font-style:n
 .n{width:30px;color:#a5a29b;font-weight:800}.c{text-align:center;white-space:nowrap;width:66px}.kg{color:#5fd393}
 tr.lk td{background:rgba(226,178,60,.04)}
 .po{padding:11px 16px;font:600 12px Manrope,Inter,sans-serif;color:#d8d6d0;border-top:1px solid rgba(255,255,255,.08)}.po b{font-weight:800;margin-right:4px;color:#f2f1ee}
-.ft{display:flex;justify-content:space-between;margin-top:18px;font:600 10.5px Manrope,Inter,sans-serif;color:#7d7b76}
+.ft{display:flex;justify-content:space-between;margin-top:16px;break-before:avoid;page-break-before:avoid;font:600 10.5px Manrope,Inter,sans-serif;color:#7d7b76}
 </style></head><body><div class="pg">
 <div class="hd">${logo}<div class="bd"><b>${E(D.brand)}</b><small>${E(D.pers)}</small></div><div class="tt"><small>${E(D.when)}</small></div></div><h1>Plano de treino</h1><p class="sub">${D.plans.length} ${D.plans.length===1?"treino":"treinos"} • feito para ${E(String(D.student).split(" ")[0])}</p>
 <div class="who"><div><small>Aluno</small><b>${E(D.student)}</b></div><div><small>Frequência</small><b>${E(D.freq)}</b></div><div><small>Tipo</small><b>${E(D.kind)}</b></div></div>
