@@ -4307,9 +4307,12 @@ document.addEventListener('click',e=>{if(e.target.closest('#tp-go')){start();ret
       freq:(STU.freq||ks.length)+'x por semana',kind:STU.pres===false?'Online':'Presencial',date:now.toLocaleDateString('pt-BR'),
       plans:ks.map(k=>({k,focus:PLANS[k].focus||PLANS[k].title,day:PLANS[k].day&&PLANS[k].day!=='quando puder'?PLANS[k].day.charAt(0).toUpperCase()+PLANS[k].day.slice(1):'',obs:(window.__PLOBS||{})[k]||'',
         ex:PLANS[k].ex.map(x=>({name:x.name,sets:x.sets,rr:x.rr||String(x.reps),rest:x.rest||0,obs:x.obs||'',m:(x.mt||[]).map(z=>MN[z]||z).join(' + '),lk:x.lk,kg:Math.max(0,...((x.prev||[]).map(z=>+z[0]||0)))||''}))}))};
-    const html=window.__pdfHTML(D),w=window.open('','_blank');
-    if(w){w.document.open();w.document.write(html);w.document.close();setTimeout(()=>{try{w.focus();w.print()}catch(_){}},900)}
-    else{const f=document.createElement('iframe');f.style.cssText='position:fixed;width:0;height:0;border:0';document.body.appendChild(f);f.contentDocument.open();f.contentDocument.write(html);f.contentDocument.close();setTimeout(()=>{f.contentWindow.print();setTimeout(()=>f.remove(),3000)},900)}}catch(er){toast('Não deu para gerar o PDF')}return}
+    const html=window.__pdfHTML(D);
+    const ov=document.createElement('div');ov.id='pdfov';ov.innerHTML='<div class="pdfwrap"><div class="pdfin"><iframe title="Plano de treino"></iframe></div></div><div class="pdfbar"><button type="button" class="pdfx" aria-label="Fechar">✕</button><span>Plano de treino</span><button type="button" class="pdfs">Salvar PDF</button></div>';document.body.appendChild(ov);document.body.style.overflow='hidden';
+    const f=ov.querySelector('iframe'),wr=ov.querySelector('.pdfwrap');f.contentDocument.open();f.contentDocument.write(html);f.contentDocument.close();
+    const fit=()=>{const k=Math.min(1,(wr.clientWidth-16)/820);f.style.transform='scale('+k+')';setTimeout(()=>{const h=f.contentDocument.documentElement.scrollHeight;f.style.height=h+'px';ov.querySelector('.pdfin').style.height=(h*k)+'px'},250)};fit();f.onload=fit;setTimeout(fit,700);
+    const close=()=>{ov.remove();document.body.style.overflow=''};ov.querySelector('.pdfx').onclick=close;
+    ov.querySelector('.pdfs').onclick=()=>{try{f.contentWindow.focus();f.contentWindow.print()}catch(_){const w=window.open('','_blank');if(w){w.document.write(html);w.document.close();setTimeout(()=>w.print(),800)}}}}catch(er){toast('Não deu para gerar o PDF')}return}
   if(e.target.closest('#v-treino [data-ck]'))start();
   if(e.target.closest('#trchip')){const T=window.__TRS;if(T){window.__trLeave=1;try{startTr(T.k,true)}finally{window.__trLeave=0}}return}},true);
 /* saiu do treino: mostra o aviso se já tinha começado */
@@ -6682,7 +6685,7 @@ tr.lk td{background:rgba(226,178,60,.04)}
 <div class="hd">${logo}<div class="bd"><b>${E(D.brand)}</b><small>${E(D.pers)}</small></div><div class="tt"><small>${E(D.when)}</small></div></div><h1>Plano de treino</h1><p class="sub">${D.plans.length} ${D.plans.length===1?"treino":"treinos"} • feito para ${E(String(D.student).split(" ")[0])}</p>
 <div class="who"><div><small>Aluno</small><b>${E(D.student)}</b></div><div><small>Frequência</small><b>${E(D.freq)}</b></div><div><small>Tipo</small><b>${E(D.kind)}</b></div></div>
 ${blocks}
-<div class="ft"><span>${E(D.brand)} • ${E(D.pers)}</span><span>Gerado no app em ${E(D.date)}</span></div></div></body></html>`};
+<div class="ft"><span>${E(D.brand)} • ${E(D.pers)}</span><span>Gerado no app em ${E(D.date)}</span></div></div><div id="nb" style="display:none;position:fixed;left:12px;right:12px;top:12px;gap:10px;align-items:center;padding:8px;border-radius:18px;background:rgba(30,32,38,.85);border:1px solid rgba(255,255,255,.15);font:800 14px Manrope,Inter,sans-serif;color:#f2f1ee"><button onclick="window.close();setTimeout(function(){history.back()},150)" style="height:40px;padding:0 14px;border-radius:12px;border:1px solid rgba(255,255,255,.2);background:transparent;color:#f2f1ee;font:700 14px Manrope,Inter,sans-serif">✕ Voltar ao app</button><span style="flex:1"></span><button onclick="window.print()" style="height:40px;padding:0 14px;border-radius:12px;border:0;background:#f2f1ee;color:#0b0c0f;font:800 13.5px Manrope,Inter,sans-serif">Salvar PDF</button></div><style>@media print{#nb{display:none!important}}</style><script>if(window.self===window.top)document.getElementById("nb").style.display="flex"</script></body></html>`};
 
 window.__ME_NAME=P.name||'';
 /* box "Minha agenda" embaixo do card da aula */
@@ -7399,4 +7402,13 @@ html[data-theme="dark"] #trchip{background:rgba(30,32,38,.72);border-color:rgba(
  body.tr-print #trprev,body.tr-print #trbar,body.tr-print .tabs,body.tr-print #finish,body.tr-print #finish2,body.tr-print #trchip,body.tr-print .ck{display:none!important}}
 </style>
 <style>#trbar #tp-pdf2{margin-left:auto;margin-right:6px}body.tr-print #tp-pdf2{display:none!important}</style>
+<style>
+#pdfov{position:fixed;inset:0;z-index:200;background:#0b0c0f;display:flex;flex-direction:column}
+#pdfov .pdfwrap{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:calc(76px + env(safe-area-inset-top,0px)) 8px 40px}
+#pdfov .pdfin{overflow:hidden;margin:0 auto}#pdfov iframe{width:820px;height:1200px;border:0;transform-origin:0 0;display:block;background:#0b0c0f}
+#pdfov .pdfbar{position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:10px;padding:8px;border-radius:20px;background:rgba(30,32,38,.72);border:1px solid rgba(255,255,255,.14);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);box-shadow:0 12px 30px rgba(0,0,0,.45);color:#f2f1ee;font-family:var(--body)}
+#pdfov .pdfbar span{flex:1;font:800 14px var(--body)}
+#pdfov .pdfx{width:40px;height:40px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#f2f1ee;font:700 16px var(--body)}
+#pdfov .pdfs{height:40px;padding:0 16px;border-radius:14px;border:0;background:#f2f1ee;color:#0b0c0f;font:800 13.5px var(--body)}
+</style>
 </body></html>
