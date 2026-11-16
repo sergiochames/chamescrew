@@ -5019,7 +5019,7 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
   /* card do aluno: sempre que o dia tem aula; começa na aula de agora ou na próxima, e dá para passar entre os alunos */
   const LV=live.filter(e=>e._id&&!e.gc);if(S.a2d!==S.day){S.a2d=S.day;S.a2ix=null}
   if(LV.length){if(S.a2ix==null){let k=0;if(isT){const c0=LV.findIndex(e=>e.h<=NOW&&NOW<e.h+1),n0=LV.findIndex(e=>e.h>NOW);k=c0>=0?c0:n0>=0?n0:LV.length-1}S.a2ix=k}S.a2ix=Math.max(0,Math.min(LV.length-1,S.a2ix));
-    const e0=LV[S.a2ix],isCur=isT&&e0.h<=NOW&&NOW<e0.h+1;const s=document.createElement('div');s.className='a2sec';s.innerHTML=`<b>${isCur?'Em aula':isT?'Hoje':'Aulas do dia'}</b><span>${esc(a2loc(e0))}</span>`;put(s);put(a2hero(e0,isCur,S.a2ix,LV.length,isT))}
+    const e0=LV[S.a2ix],isCur=isT&&e0.h<=NOW&&NOW<e0.h+1;const s=document.createElement('div');s.className='a2sec';s.innerHTML=`<b>${isCur?'Em aula':isT?'Hoje':'Aulas do dia'}</b><span>${esc(a2loc(e0))}</span>`;put(s);put(a2card(e0,isCur,S.a2ix,LV.length,isT))}
   /* sua semana */
   const W=[0,1,2,3,4,5,6].map(i=>{const L=(S.ev[i]||[]).filter(e=>!e.gc&&e.st!=='can');return {n:L.length,ok:L.filter(e=>e.st==='ok').length,pd:pedsOn(pdDay(i)).length}});
   const mx=Math.max(3,...W.map(w=>w.n)),dadas=W.reduce((a,w)=>a+w.ok,0),npd=PEDS().filter(p=>{const d=Math.round((new Date(p.at.getFullYear(),p.at.getMonth(),p.at.getDate())-pdDay(0))/864e5);return d>=0&&d<=6}).length,tot=W.reduce((a,w)=>a+w.n,0);
@@ -5028,7 +5028,7 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
   const wk=document.createElement('div');wk.id='a2w';wk.className='a2g';
   wk.innerHTML=`<div class="bars">${W.map((w,i)=>`<button class="bar${i<TODAY?' past':''}${i===TODAY?' td':''}${i===S.day&&i!==TODAY?' sel':''}${w.pd?' pd':''}" data-a2d="${i}" aria-label="${DLL[i]}: ${w.n} aulas"><u>${w.n||''}</u><i style="height:${w.n?Math.round(14+w.n/mx*62):5}%"></i><small>${i===TODAY?'Hoje':WD[i]}</small></button>`).join('')}</div>
    ${nxS?`<div class="nxt"><span class="a2av">${ini(nxS.n)}</span><span class="tx">Próxima aula<b>${esc(nxS.n.split(' ')[0])} • ${nxS.t}</b></span><span class="a2pill">${nxS.r}</span></div>`:'<div class="nxt"><span class="tx">Nenhuma aula marcada pela frente</span></div>'}`;
-  put(wsec);put(wk)
+  if(!LV.length){put(wsec);put(wk)}
   /* Dia / Semana / Mês + resumo */
   put(vs);const sm=document.createElement('div');sm.id='a2s';sm.textContent=`${live.length} ${live.length===1?'aula':'aulas'}${past?'':' • '+freeH.length+' '+(freeH.length===1?'livre':'livres')}`;put(sm);
   /* linha do tempo */
@@ -5069,7 +5069,7 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
     const rest=PNOT.filter(n=>n._id&&n.k!=='pedido').length-NL0.length;
     if(G.length>6||rest>0)items.push(`<button class="it" data-a2all><span class="a2ic b">${a2i('bell')}</span><span class="tx"><b>Ver todos os avisos</b><small>${G.length>6?'Mais '+(G.length-6):'Avisos antigos e já vistos'}</small></span><em>›</em></button>`)}
   if(isT&&items.length){const s=document.createElement('div');s.className='a2sec';{const pend=items.filter(x=>!/a2dn2|data-a2all/.test(x)).length;s.innerHTML=`<b>Pra hoje</b><span>${pend?pend+' '+(pend===1?'pendente':'pendentes'):'tudo feito ✓'}</span>`}put(s);const p=document.createElement('div');p.id='a2p';p.className='a2g';p.innerHTML=items.join('');put(p)}
-  if(hero){put(wsec);put(wk)}
+  if(LV.length){put(wsec);put(wk)}
 }
 const DOW_S=['dom','seg','ter','qua','qui','sex','sáb'];
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a2nav],[data-a2bk],[data-a2d],[data-a2pd],[data-a2fin],[data-a2wa]');if(!b)return;e.stopPropagation();e.preventDefault();const sc=()=>{const s=document.querySelector('.scroller');if(s)s.scrollTop=0;window.scrollTo(0,0)};
@@ -5085,6 +5085,35 @@ let BLK=[];async function loadBLK(){try{const {data,error}=await sb.from('blocks
 function a2blk(dt,h){const t=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate(),Math.floor(h),Math.round((h%1)*60)).getTime();return BLK.find(b=>t>=new Date(b.starts_at).getTime()&&t<new Date(b.ends_at).getTime())||null}
 loadBLK().then(()=>{try{if(S.tab==='agenda'&&!document.querySelector('.scrim'))draw()}catch(_){}});
 /* card do aluno (aula agora ou em menos de 1 hora) */
+/* card do aluno no estilo do card antigo (aprovado), em vidro, com foto e borda pela situação */
+function a2card(e,cur,ix,nn,isT){const c=CLS.find(z=>z.id===e._id)||{},X=STU.find(z=>z._id===c.student_id)||{},ph=c.student_id?pkPh(c.student_id):'';
+  const dt=isT?e.h-NOW:null,st=e.st==='ok'?'ok':e.st==='conf'?'conf':e.st==='can'?'can':'wait',stt={ok:'Presente ✓',conf:'Confirmado',wait:'A confirmar',can:'Cancelou'}[st];
+  const cnt=!isT?hh(e.h):cur?(e.st==='ok'?'presente':'em aula • há '+Math.max(1,Math.round(-dt*60))+' min'):dt>0?(dt<1?'em '+Math.max(1,Math.round(dt*60))+' min':'em '+Math.floor(dt)+'h'+String(Math.round((dt%1)*60)).padStart(2,'0')):'foi às '+hh(e.h);
+  const lbl=cur?'Em aula agora':!isT?'Aluno do dia':dt>0?(ix&&dt>0?'Depois':'Próximo aluno'):'Aula de hoje';
+  let pl='';try{pl=X.exp?'Aula experimental • grátis':(X.q?X.q[0]+' de '+X.q[1]+' aulas no mês':'')+(typeof freqOf==='function'?' • plano '+freqOf(X)+'x por semana':'')}catch(_){}
+  const el=document.createElement('div');el.id='a2x';el.className='a2k k-'+st;
+  el.innerHTML=`<div class="kh"><span>${lbl}${nn>1?` • ${ix+1} de ${nn}`:''}</span>${nn>1?`<span class="a2hn"><button data-a2hx="-1" aria-label="Aluno anterior" ${ix?'':'disabled'}>‹</button><button data-a2hx="1" aria-label="Próximo aluno" ${ix<nn-1?'':'disabled'}>›</button></span>`:''}</div>
+   <div class="km"><button class="kwho" data-a2op="${e._id}"><span class="kav">${X.foto?`<img src="${esc(X.foto)}" alt="">`:esc(ini(e.n))}</span><span class="knm"><b>${esc(e.n)}</b><small>${hh(e.h)} • ${a2i('pin')}${esc((a2loc(e)||'').split(' (')[0])}</small></span></button><span class="kcnt">${cnt}</span></div>
+   <div class="ks"><span class="kst">${stt}</span>${pl?`<span class="kpl">${esc(pl)}</span>`:''}${ph?`<a class="kwa" href="https://wa.me/${ph}" target="_blank" rel="noopener" aria-label="WhatsApp">${PKI.wa}</a>`:''}</div>
+   <div class="kb"><button class="p" data-a2pr="${e._id}">${e.st==='ok'?'Desfazer':'Presente'}</button><button data-a2mv="${e._id}">Remarcar</button><button data-a2cn="${e._id}">Cancelar</button></div>`;return el}
+{const st=document.createElement('style');st.textContent=`
+#a2x.a2k{--kc:#f3c45a;position:relative;border-radius:26px;padding:16px;background:rgba(255,255,255,.07);border:1.5px solid color-mix(in srgb,var(--kc) 70%,transparent);-webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);box-shadow:0 0 0 1px rgba(255,255,255,.04) inset,0 0 28px -6px color-mix(in srgb,var(--kc) 55%,transparent),0 18px 50px -24px color-mix(in srgb,var(--kc) 70%,transparent);color:#f3f2ee;overflow:visible}
+#a2x.a2k::before{content:"";position:absolute;inset:-18px -10px auto -10px;height:70%;z-index:-1;border-radius:40px;background:radial-gradient(60% 70% at 50% 40%,color-mix(in srgb,var(--kc) 32%,transparent),transparent 70%);filter:blur(18px);opacity:.75;pointer-events:none}
+#a2x.k-ok,#a2x.k-conf{--kc:#7fe0a8}#a2x.k-wait{--kc:#f3c45a}#a2x.k-can{--kc:#ff6b6b}
+html[data-theme="light"] #a2x.a2k{background:rgba(255,255,255,.72);color:#141414;box-shadow:0 0 0 1px rgba(255,255,255,.8) inset,0 0 26px -8px color-mix(in srgb,var(--kc) 70%,transparent),0 18px 44px -26px color-mix(in srgb,var(--kc) 90%,transparent)}
+html[data-theme="light"] #a2x .kb button.p{background:#141414;color:#fff}html[data-theme="light"] #a2x.k-wait{--kc:#e0a92a}html[data-theme="light"] #a2x.k-ok,html[data-theme="light"] #a2x.k-conf{--kc:#3fbf7a}
+#a2x .kh{display:flex;align-items:center;justify-content:space-between;font:800 13px Manrope,sans-serif;opacity:.85;padding-bottom:10px;border-bottom:1px solid rgba(127,127,127,.22)}
+#a2x .a2hn{display:flex;gap:8px;margin:0}#a2x .a2hn button{width:34px;height:34px;border-radius:50%;border:1px solid rgba(127,127,127,.3);background:rgba(127,127,127,.12);color:inherit;font-size:18px;font-weight:800;display:grid;place-items:center}#a2x .a2hn button:disabled{opacity:.3}
+#a2x .km{display:flex;align-items:center;gap:12px;margin-top:12px}#a2x .kwho{display:flex;align-items:center;gap:12px;flex:1;min-width:0;background:none;border:0;color:inherit;text-align:left;padding:0}
+#a2x .kav{width:52px;height:52px;border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;font-weight:900;background:rgba(127,127,127,.25);box-shadow:0 0 0 2px color-mix(in srgb,var(--kc) 80%,transparent)}#a2x .kav img{width:100%;height:100%;object-fit:cover}
+#a2x .knm{min-width:0}#a2x .knm b{display:block;font:900 22px/1.05 Archivo,"Archivo Black",sans-serif;text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#a2x .knm small{display:flex;align-items:center;gap:4px;margin-top:5px;font:700 13.5px Manrope,sans-serif;opacity:.8}#a2x .knm small svg{width:13px;height:13px}
+#a2x .kcnt{flex:none;font:800 13px Manrope,sans-serif;padding:7px 12px;border-radius:999px;background:rgba(127,127,127,.18)}
+#a2x .ks{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}#a2x .kst{font:800 13px Manrope,sans-serif;padding:6px 12px;border-radius:999px;background:color-mix(in srgb,var(--kc) 85%,transparent);color:#0b0c0f}
+#a2x .kpl{font:700 12.5px Manrope,sans-serif;opacity:.75;flex:1;min-width:0}#a2x .kwa{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(127,127,127,.3);color:inherit;margin-left:auto}#a2x .kwa svg{width:17px;height:17px}
+#a2x .kb{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:14px}#a2x .kb button{padding:12px 6px;border-radius:999px;border:1px solid rgba(127,127,127,.28);background:rgba(127,127,127,.14);color:inherit;font:800 14px Manrope,sans-serif}
+#a2x .kb button.p{background:#141414!important;color:#fff!important;border-color:transparent}
+`;document.head.appendChild(st)}
 function a2hero(e,cur,ix,nn,isT){if(isT===undefined)isT=true;const c=CLS.find(z=>z.id===e._id)||{},ph=c.student_id?pkPh(c.student_id):'',mins=isT?Math.round((e.h-NOW)*60):99999,pr=cur?Math.min(1,Math.max(0,NOW-e.h)):Math.min(1,Math.max(0,(60-mins)/60)),fut=mins>0;
   const wtx=cur?'termina '+hh(e.h+1):!isT?hh(e.h):fut?(mins<60?'em '+mins+' min':'em '+Math.round(mins/60)+'h'):'foi às '+hh(e.h),nav=nn>1?`<span class="a2hn"><button data-a2hx="-1" aria-label="Aluno anterior" ${ix?'':'disabled'}>‹</button><small>${ix+1} de ${nn}</small><button data-a2hx="1" aria-label="Próximo aluno" ${ix<nn-1?'':'disabled'}>›</button></span>`:'';
   const st=e.st==='ok'?['g','Presente ✓']:e.st==='conf'?['g','Confirmou']:['y',cur?'Aguardando presença':'A confirmar'],X=STU.find(z=>z._id===c.student_id)||{};
