@@ -5308,6 +5308,26 @@ memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=r
 .eacc .eah b{display:block;font-size:15px}.eacc .eah small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}.eacc .eah i{font-style:normal;font-size:18px;opacity:.5;transition:transform .2s}
 .eacc.on .eah i{transform:rotate(90deg)}.eacc .eab{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}`;document.head.appendChild(st)}
 
+/* ===== Treinos: modelo de programa e de treino sem cara de "semana do aluno"; menu do dia mais simples ===== */
+{const _drT=draw;draw=function(){_drT();if(S.tab!=='treinos'||!(T2.stu||T2.tpl))return;try{
+  const T=T2.tpl?FAVW.find(f=>f.id===T2.tpl):null;
+  if(T){const hl=app.querySelector('.bhead .lbl');if(hl)hl.textContent=T.kind==='semana'?'Programa':'Treino';
+    if(T.kind==='semana'){const cp=app.querySelector('[data-bcopy]');if(cp)cp.hidden=true;const md=app.querySelector('[data-bmodes]');if(md){const w=md.closest('.wkb')||md;w.hidden=true}
+      const hd=[...app.querySelectorAll('.row')].find(r=>r.querySelector('[data-bcopy]'));const l=hd&&hd.querySelector('span,b');if(l&&/Semana/.test(l.textContent))l.textContent='Dias do programa'}
+    else{const v=app.querySelector('[data-vol]');if(v)v.hidden=true}}
+}catch(_){}}}
+/* menu ⋯ do treino no aluno: só o que importa (arrastar o dia continua igual) */
+new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim .sheet')].pop();if(!s||s.dataset.bm2||!/Mudar de dia/.test(s.textContent)||!/Excluir treino/.test(s.textContent))return;s.dataset.bm2=1;
+  [...s.querySelectorAll('button,.opt2')].forEach(b=>{const t=b.innerText;
+    if(/^\s*\S*\s*Mudar de dia/m.test(t)||/Mudar de dia/.test((b.querySelector('b')||{}).textContent||''))b.hidden=true;
+    const B=b.querySelector('b'),Sm=b.querySelector('small');if(!B)return;
+    if(/^Nome e dias/.test(B.textContent)){B.textContent='Renomear o treino';if(Sm)Sm.textContent='Ou repetir em outro dia'}
+    if(/^Trocar o treino/.test(B.textContent)){B.textContent='Trocar por outro treino';if(Sm)Sm.textContent='Um pronto, outro da semana ou um novo'}
+    if(/^Tirar na /.test(B.textContent)){B.textContent='Deixar o dia livre';if(Sm)Sm.textContent='O treino fica guardado e volta quando quiser'}
+    if(/^Excluir treino/.test(B.textContent)){b.classList.add('bm2del')}});
+  const h=s.querySelector('h3,.d');if(h&&!s.querySelector('.bm2tip'))h.insertAdjacentHTML('afterend','<p class="note bm2tip" style="margin:0 0 4px">Para mudar o dia, arraste o treino na semana.</p>')}).observe(document.body,{childList:true,subtree:true});
+{const st=document.createElement('style');st.textContent=`.bm2del{opacity:.75}.bm2del b{color:var(--bad)!important;font-size:13.5px}`;document.head.appendChild(st)}
+
 /* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
 {const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}
