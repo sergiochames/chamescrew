@@ -5140,17 +5140,17 @@ function renderDay(){const nut=window.DIETA_ON?window.DIETA_ON():true;const t=fi
 window.renderDay=renderDay;
 setInterval(renderDay,400);
 document.addEventListener('click',e=>{if(!e.target.closest('[data-invite]'))return;
-  const RCODE=window.__REF&&window.__REF.code?window.__REF.code:window.__RD?(String(window.__RD.ME||'').normalize('NFD').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,6)+String(window.__RD.uid||'').replace(/\D/g,'').slice(0,2)):'ANA7',link=window.__RD?location.origin+'/app/?ref='+RCODE:'https://chamescrew.chamescrew.workers.dev/?ref=ANA7';
+  const RCODE=window.__REF&&window.__REF.code?window.__REF.code:window.__RD?(String(window.__RD.ME||'').normalize('NFD').replace(/[^A-Za-z]/g,'').toUpperCase().slice(0,6)+String(window.__RD.uid||'').replace(/\D/g,'').slice(0,2)):'ANA7',link=window.__RD?location.origin+'/app/?ref='+RCODE:'https://chamescrew.chamescrew.workers.dev/?ref=ANA7',PTN=window.__REF&&window.__REF.partner;
   sheet(`<div style="background:#000;color:#fff;border-radius:22px;padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
      <span class="d" style="font-size:22px">Chames Crew</span>
-     ${rdisc(MED.recrutador,window.__RD?-1:1,120)}
-     <div><p class="d" style="font-size:38px;margin:0">Recrutador</p><p style="font-weight:800;margin:2px 0 0">${window.__RD?'Indique e ganhe':'Aço'}</p><p style="font-size:13px;opacity:.65;margin:4px 0 0">${window.__RD?(window.__RD.ME+', level '+['Recruta','Consistente','Atleta','Casca Grossa','Elite'][window.__RD.LV||0]):'Ana, level Atleta'}</p></div>
+     ${PTN?'':rdisc(MED.recrutador,window.__RD?-1:1,120)}
+     <div><p class="d" style="font-size:38px;margin:0">${PTN?'Cupom '+RCODE:'Recrutador'}</p><p style="font-weight:800;margin:2px 0 0">${PTN?'Parceiro Chames Crew':window.__RD?'Indique e ganhe':'Aço'}</p><p style="font-size:13px;opacity:.65;margin:4px 0 0">${PTN?'':window.__RD?(window.__RD.ME+', level '+['Recruta','Consistente','Atleta','Casca Grossa','Elite'][window.__RD.LV||0]):'Ana, level Atleta'}</p></div>
      <div style="display:flex;align-items:center;gap:12px;text-align:left;width:100%">
        <div style="background:#fff;border-radius:10px;padding:6px;width:104px;height:104px;flex:none">${qrSVG(link)}</div>
-       <span style="font-size:14px;line-height:1.35">Bora treinar comigo?<br>Escaneia e vem pra matilha.<br><b>Código ${RCODE}</b></span></div></div>
+       <span style="font-size:14px;line-height:1.35">${PTN?`Usa meu cupom e ganha ${PTN.cdesc||0}%<br>no primeiro plano.<br><b>Cupom ${RCODE}</b>`:`Bora treinar comigo?<br>Escaneia e vem pra matilha.<br><b>Código ${RCODE}</b>`}</span></div></div>
    <p class="meta" style="font-size:13px;text-align:center">Tire um print desta tela e poste no Stories, ou mande o link.</p>
    <div class="grid2"><button class="btn small" id="inv-copy" style="padding:12px">Copiar código e link</button>
-   <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? '+(window.__REF&&window.__REF.desc?'Você ganha '+window.__REF.desc+'% no primeiro plano. ':'')+'Meu código de indicação: '+RCODE+'. Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
+   <a class="btn small" style="padding:12px;text-decoration:none;display:flex;align-items:center;justify-content:center" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent('Bora treinar comigo na Chames Crew? '+(window.__REF&&window.__REF.desc?'Você ganha '+window.__REF.desc+'% no primeiro plano. ':'')+(PTN?'Meu cupom: ':'Meu código de indicação: ')+RCODE+'. Entra pelo meu link: '+link)}">WhatsApp</a></div>`);
   $('#inv-copy').onclick=()=>{(navigator.clipboard?navigator.clipboard.writeText('Meu código de indicação: '+RCODE+' • '+link):Promise.reject()).then(()=>toast('Link copiado'),()=>toast('Não deu para copiar aqui. Use o QR.'))}});
 renderCrew();
 document.addEventListener('click',e=>{const b=e.target.closest('[data-med]');if(!b)return;const id=b.dataset.med;let k,n,t,d,extra='';
@@ -6617,9 +6617,14 @@ try{const {data:ph}=await PF.ph;const MC=['jan','fev','mar','abr','mai','jun','j
 AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);try{const {data:rf}=await PF.ref;window.__REF=rf||null;
   if(rf&&R1.WAL){const F=R1.FREQ,mv=F&&F[Math.min(7,Math.max(1,freq))]?F[Math.min(7,Math.max(1,freq))].p:0,now=Date.now();
     (rf.list||[]).forEach(x=>{const ok=x.paid_at&&now-new Date(x.paid_at).getTime()>=(+rf.dias||30)*864e5;R1.WAL.items.push({o:'Indicação • '+x.name,pct:+rf.rec||0,ok:ok?1:0,val:Math.round((+rf.rec||0)/100*mv*100)/100,info:x.paid_at?'libera '+(+rf.dias||30)+' dias depois do primeiro pagamento':'aguardando o primeiro pagamento'})})}
+  const esc0=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const mk=()=>{const R0=window.__REF,v=document.getElementById('v-hoje');if(!R0||!R0.on||!v||document.getElementById('ref9'))return;
     const L=R0.list||[],ok=L.filter(x=>x.paid_at).length,wt=L.length-ok;
     const el=document.createElement('section');el.id='ref9';el.className='block ref9';
+    const PT=R0.partner;if(PT){el.innerHTML=`<div class="row"><span class="lbl">Parceiro Chames Crew</span>${L.length?`<span class="pill">${L.length} ${L.length===1?'entrou':'entraram'}</span>`:''}</div>
+      <p class="d" style="font-size:34px;margin:6px 0 4px">Seu cupom ${esc0(PT.cup)}</p>
+      <p class="meta" style="margin:0 0 12px">${PT.cdesc?`Quem usar ganha <b>${PT.cdesc}%</b> no primeiro plano. `:''}${PT.v?`Você ganha <b>${PT.tipo==='pct'?PT.v+'% da mensalidade':'R$ '+PT.v}</b> de cada um${PT.rec==='mensal'?', todo mês':''}.`:''}</p>
+      <button class="btn solid wide" data-invite>Compartilhar meu cupom</button>`}else
     el.innerHTML=`<div class="row"><span class="lbl">Indique e ganhe</span>${L.length?`<span class="pill">${ok} ${ok===1?'amigo':'amigos'}${wt?` • ${wt} aguardando`:''}</span>`:''}</div>
       <p class="d" style="font-size:34px;margin:6px 0 4px">Traga um amigo</p>
       <p class="meta" style="margin:0 0 12px">${R0.desc?`Ele ganha <b>${R0.desc}%</b> no primeiro plano. `:''}${R0.rec?`Você ganha <b>${R0.rec}%</b> na sua renovação quando ele completar ${R0.dias} dias de treino.`:''}</p>
