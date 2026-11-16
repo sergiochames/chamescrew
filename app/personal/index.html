@@ -5283,6 +5283,31 @@ memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=r
 
 
 
+/* ===== Editar aluno: 5 blocos que abrem e fecham (mesmos campos, mesmo salvar) ===== */
+{const _eS=editStu;editStu=function(n){_eS.apply(this,arguments);try{const x=stu(n);const sh=[...document.querySelectorAll('.scrim')].pop()?.querySelector('.sheet');if(!sh||!sh.querySelector('#esv'))return;
+  const G={dados:[],atd:[],sau:[],plano:[],parc:[]};let cur='dados';const kids=[...sh.children];const h3=sh.querySelector('h3.d');
+  const MK={'Atendimento':'atd','Local padrão':'atd','Desconto fixo':'plano','Objetivo':'sau','Nível':'sau','Restrições e lesões':'sau','Contato de emergência':'sau','Anotação só sua':'sau'};
+  for(const el of kids){if(el===h3||el.matches('span.lbl')&&el===kids[0])continue;if(el.matches('.row2')||el.matches('[data-earq]'))continue;
+    if(el.matches('[data-efx]')){G.atd.push(el);continue}if(el.matches('[data-epar]')){G.parc.push(el);continue}if(el.matches('[data-efin]')){G.plano.push(el);continue}
+    const t=(el.matches('.lbl')?el.textContent.trim():'');if(MK[t])cur=MK[t];G[cur].push(el)}
+  const loc=(LOCS.find(l=>l.id===(x.loc||1))||LOCS[0]||{}).n||'',inf=x.inf&&INF.find(f=>f.id===x.inf);
+  const SUM={dados:[x.ph?'WhatsApp':'',x.em?'e-mail':'',x.nasc?'nascimento':'',x.gen||''].filter(Boolean).join(', ')||'Nome, contato, CPF e gênero',
+    atd:[x.mode||'',loc.split(' (')[0],x.fixo&&!isOn(x)?'horário fixo':''].filter(Boolean).join(' • ')||'Onde e quando treina',
+    sau:[x.obj||'',x.niv||'',x.rest?'tem restrição':''].filter(Boolean).join(' • ')||'Objetivo, nível, lesões, emergência',
+    plano:(x.desc?x.desc+'% de desconto fixo':'Sem desconto fixo')+' • plano no Financeiro',parc:inf?'Parceiro • cupom '+(inf.cup||''):'Não é parceiro'};
+  const NM={dados:'Dados',atd:'Atendimento',sau:'Treino e saúde',plano:'Plano e pagamento',parc:'Parceria'};
+  if(h3){h3.textContent=x.n;const sm=document.createElement('p');sm.className='note';sm.style.margin='-4px 0 4px';sm.textContent=[x.mode,x.obj,x.niv].filter(Boolean).join(' • ')||'Toque num bloco para editar';h3.after(sm)}
+  let anchor=sh.querySelector('[data-earq]')||sh.querySelector('.row2');
+  Object.keys(G).forEach(k=>{if(!G[k].length)return;const box=document.createElement('div');box.className='eacc';box.innerHTML=`<button type="button" class="eah" data-eacc="${k}"><span><b>${NM[k]}</b><small>${esc(SUM[k])}</small></span><i>›</i></button><div class="eab" hidden></div>`;
+    const body=box.querySelector('.eab');G[k].forEach(el=>body.appendChild(el));const f0=body.firstElementChild;if(f0&&f0.matches('.lbl')&&f0.textContent.trim()===NM[k])f0.hidden=true;anchor.before(box)});
+  const arq=sh.querySelector('[data-earq]');if(arq){arq.classList.add('lnk');arq.classList.remove('btn');arq.style.cssText='align-self:center;opacity:.7;font-size:13px'}
+  sh.addEventListener('click',e=>{const b=e.target.closest('[data-eacc]');if(!b)return;const box=b.parentElement,op=box.classList.contains('on');sh.querySelectorAll('.eacc.on').forEach(z=>{z.classList.remove('on');z.querySelector('.eab').hidden=true});
+    if(!op){box.classList.add('on');box.querySelector('.eab').hidden=false;setTimeout(()=>box.scrollIntoView({block:'nearest',behavior:'smooth'}),30)}})}catch(err){console.warn('eacc',err)}}}
+{const st=document.createElement('style');st.textContent=`.eacc{border:1px solid var(--line);border-radius:18px;background:color-mix(in srgb,var(--fg) 4%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);overflow:hidden}
+.eacc .eah{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;background:none;border:0;color:inherit;text-align:left;font:inherit}
+.eacc .eah b{display:block;font-size:15px}.eacc .eah small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}.eacc .eah i{font-style:normal;font-size:18px;opacity:.5;transition:transform .2s}
+.eacc.on .eah i{transform:rotate(90deg)}.eacc .eab{display:flex;flex-direction:column;gap:10px;padding:0 14px 14px}`;document.head.appendChild(st)}
+
 /* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
 {const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}
