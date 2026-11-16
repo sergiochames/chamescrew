@@ -4484,13 +4484,11 @@ const CIT={yn:'Sim ou não',multi:'Múltipla escolha',check:'Caixas de seleção
 const ciCfg=()=>PERS.ci=PERS.ci||{off:{},lab:{},custom:[],meta:'freq'};
 function treinoHub(kind){if(kind&&kind.target)kind=null;const c=ciCfg(),on=CISTD.filter(q=>q[0]!=='treinou'&&!c.off[q[0]]).length+c.custom.length,med=CISTD.filter(q=>q[3]&&!c.off[q[0]]).length,def=(ANM.find(a=>a.id===ANMdef)||ANM[0]||{});
   const showA=kind!=='tr',showT=kind!=='ac';
+  const ow=Object.assign({dow:5,days:3},(PERS.ciw||{}).open||{}),DS=['dom','seg','ter','qua','qui','sex','sáb'];
+  const row=(k,t,v,sub)=>`<button class="hrow" data-th="${k}"><span class="ht"><b>${t}</b>${sub?`<small>${sub}</small>`:''}</span><span class="hv">${v}</span><i>›</i></button>`;
   sheet(`<span class="lbl">Configurações</span><h3 class="d">${kind==='tr'?'Treinos':kind==='ac'?'Acompanhamento':'Treino e acompanhamento'}</h3>
-   ${showA&&!kind?'<span class="lbl" style="margin:4px 0 -2px">Acompanhamento</span>':''}${showA?`<button class="opt2" data-th="anam"><b>Anamnese</b><small>${esc(def.n||'Anamnese')} • padrão${def.pronta?'':' • editada por você'}</small></button>
-   <button class="opt2" data-th="ci"><b>Check-in</b><small>Do dia: ${on} perguntas • ${med} contam para medalhas<br>Da semana: abre ${(()=>{const o=Object.assign({dow:5,days:3},(PERS.ciw||{}).open||{});return ['domingo','segunda','terça','quarta','quinta','sexta','sábado'][o.dow]+' às 6h • '+o.days+(o.days>1?' dias':' dia')+' para responder'})()}</small></button>
-`:''}${showT&&!kind?'<span class="lbl" style="margin:8px 0 -2px">Treinos</span>':''}${showT?`<button class="opt2" data-th="prog"><b>Progressão de carga</b><small>${PROG.on?`Ligada • passou ${PROG.r1} rep: +${PROG.p1}% • ${PROG.r2}+ reps: +${PROG.p2}%`:'Desligada'}</small></button>
-   <button class="opt2" data-th="prontos"><b>Treinos prontos</b><small>${FAVW.length?FAVW.length+' modelo'+(FAVW.length>1?'s':'')+' • '+esc(FAVW.slice(0,2).map(f=>f.name).join(', ')):'Nenhum ainda • comece de um modelo'}</small></button>
-   <button class="opt2" data-th="fav"><b>Exercícios favoritos</b><small>${T2.fav.size} ${T2.fav.size===1?'exercício aparece':'exercícios aparecem'} primeiro no montador</small></button>
-   `:''}
+   ${showA?`<div class="hgrp">${!kind?'<span class="hgl">Acompanhamento</span>':''}${row('anam','Anamnese',esc((def.n||'Padrão').replace(/^Anamnese\s*/,'')||'Padrão'),'O formulário que o aluno responde')}${row('ci','Check-in',on+' perguntas','Semanal abre '+DS[ow.dow]+' às 6h')}</div>`:''}
+   ${showT?`<div class="hgrp">${!kind?'<span class="hgl">Treinos</span>':''}${row('prog','Progressão de carga',PROG.on?'Ligada':'Desligada',PROG.on?`+${PROG.p1}% com ${PROG.r1} rep a mais`:'')}${row('prontos','Treinos prontos',String(FAVW.length),'Sua biblioteca')}${row('fav','Exercícios favoritos',String(T2.fav.size),'Aparecem primeiro no montador')}</div>`:''}
    <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{const b=e.target.closest('[data-th]');if(!b)return;s.remove();const k=b.dataset.th;
     if(k==='anam'){S.tab='treinos';T2.stu=null;T2.tpl=null;T2.view='anam';draw()}else if(k==='prontos'||k==='fav'){S.tab='treinos';T2.stu=null;T2.tpl=null;T2.view='prontos';draw();if(k==='fav')toast('Toque na ★ ao lado do exercício no montador para favoritar')}
     else if(k==='ci')ciEditor();else if(k==='prog')progSheet();else msgList()}))}
@@ -5107,7 +5105,7 @@ html[data-theme="light"] #a2x .kb button.p{background:#141414;color:#fff}html[da
 #a2x .km{display:flex;align-items:center;gap:12px;margin-top:12px}#a2x .kwho{display:flex;align-items:center;gap:12px;flex:1;min-width:0;background:none;border:0;color:inherit;text-align:left;padding:0}
 #a2x .kav{width:52px;height:52px;border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;font-weight:900;background:rgba(127,127,127,.25);box-shadow:0 0 0 2px color-mix(in srgb,var(--kc) 80%,transparent)}#a2x .kav img{width:100%;height:100%;object-fit:cover}
 #a2x .knm{min-width:0}#a2x .knm b{display:block;font:900 22px/1.05 Archivo,"Archivo Black",sans-serif;text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#a2x .knm small{display:flex;align-items:center;gap:4px;margin-top:5px;font:700 13.5px Manrope,sans-serif;opacity:.8}#a2x .knm small svg{width:13px;height:13px}
+#a2x .knm small{display:flex;align-items:center;gap:4px;margin-top:5px;white-space:nowrap;overflow:hidden;font:700 13.5px Manrope,sans-serif;opacity:.8}#a2x .knm small svg{width:13px;height:13px}
 #a2x .kcnt{flex:none;font:800 13px Manrope,sans-serif;padding:7px 12px;border-radius:999px;background:rgba(127,127,127,.18)}
 #a2x .ks{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}#a2x .kst{font:800 13px Manrope,sans-serif;padding:6px 12px;border-radius:999px;background:color-mix(in srgb,var(--kc) 85%,transparent);color:#0b0c0f}
 #a2x .kpl{font:700 12.5px Manrope,sans-serif;opacity:.75;flex:1;min-width:0}#a2x .kwa{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(127,127,127,.3);color:inherit;margin-left:auto}#a2x .kwa svg{width:17px;height:17px}
@@ -5360,6 +5358,11 @@ new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim .sheet')
   const h=s.querySelector('h3,.d');if(h&&!s.querySelector('.bm2tip'))h.insertAdjacentHTML('afterend','<p class="note bm2tip" style="margin:0 0 4px">Para mudar o dia, arraste o treino na semana.</p>')}).observe(document.body,{childList:true,subtree:true});
 {const st=document.createElement('style');st.textContent=`.bm2del{opacity:.75}.bm2del b{color:var(--bad)!important;font-size:13.5px}`;document.head.appendChild(st)}
 
+{const st=document.createElement('style');st.textContent=`.hgrp{border:1px solid var(--line);border-radius:20px;background:color-mix(in srgb,var(--fg) 4%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);overflow:hidden;position:relative}
+.hgrp .hgl{display:block;font-size:11.5px;font-weight:800;color:var(--muted);padding:12px 14px 2px;letter-spacing:.02em}
+.hrow{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;background:none;border:0;border-top:1px solid var(--line);color:inherit;text-align:left;font:inherit}.hgrp .hgl+.hrow,.hgrp>.hrow:first-child{border-top:0}
+.hrow .ht{flex:1;min-width:0}.hrow .ht b{display:block;font-size:15px}.hrow .ht small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.hrow .hv{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}.hrow i{font-style:normal;font-size:18px;opacity:.45}`;document.head.appendChild(st)}
 /* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
 {const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}
