@@ -3433,7 +3433,7 @@ function expSheet(d0,h0){let d=d0===undefined?(S.day<TODAY?TODAY:S.day):d0,h=h0,
    const keep=()=>({n:s.querySelector('#xn').value,p:s.querySelector('#xp').value}),re=()=>{const k=keep();s.querySelector('#xb').innerHTML=body();s.querySelector('#xn').value=k.n;s.querySelector('#xp').value=k.p};
    s.addEventListener('click',e=>{const b=e.target.closest('[data-xo],[data-xd],[data-xh]');if(!b)return;if(b.dataset.xo){orig=b.dataset.xo;s.querySelectorAll('[data-xo]').forEach(x=>x.setAttribute('aria-pressed',x===b));return}if(b.dataset.xd){d=+b.dataset.xd;h=undefined}if(b.dataset.xh)h=+b.dataset.xh;re()});
    s.querySelector('#xok').onclick=()=>{const n=s.querySelector('#xn').value.trim(),ph=s.querySelector('#xp').value.replace(/\D/g,'');if(n.length<2){toast('Escreva o nome');return}if(ph.length<10){toast('WhatsApp com DDD');return}if(h===undefined){toast('Escolha o horário');return}
-     const go=()=>{EXP.push({n,ph,orig,d,h,res:null});(S.ev[d]=S.ev[d]||[]).push({h,n,st:'conf',exp:true});s.remove();S.day=d;draw();toast(`Experimental de ${fn(n)} marcada ${dayLbl(d).toLowerCase()} às ${hh(h)}`);waChip(n,`Oi, ${fn(n)}! Sua aula experimental está marcada ${dTxt(d,h)} 💪 Vem com roupa de treino e uma garrafinha d'água. Qualquer coisa me chama!`,true)};
+     const go=()=>{EXP.push({n,ph,orig,d,h,res:null});(S.ev[d]=S.ev[d]||[]).push({h,n,st:'conf',exp:true});s.remove();S.day=d;draw();toast(`Experimental de ${fn(n)} marcada ${dayLbl(d).toLowerCase()} às ${hh(h)}`);waChip(n,(window.__rlMsg&&window.__rlMsg('exp',{nome:fn(n),personal:PERS.name||'',quando:dTxt(d,h)}))||`Oi, ${fn(n)}! Sua aula experimental está marcada ${dTxt(d,h)} 💪 Vem com roupa de treino e uma garrafinha d'água. Qualquer coisa me chama!`,true)};
      const old=EXP.find(x=>x.ph===ph);if(old)confirmBox('Já fez experimental',`${esc(old.n)} já fez uma experimental com esse número. Marcar outra mesmo assim?`,'Sim, marcar',go);else go()}})}
 const expFU=x=>`<section class="card expfu"><div class="row"><span class="lbl">Aula experimental • ${hh(x.h)}</span><span class="expt">grátis</span></div><b class="d" style="font-size:24px">Como foi com a ${esc(fn(x.n))}?</b>
   <div class="row2"><button class="btn solid" data-xr="sim:${esc(x.n)}">Virou aluna 🎉</button><button class="btn" data-xr="msg:${esc(x.n)}">Mandar mensagem</button></div><button class="lnk" data-xr="nao:${esc(x.n)}" style="align-self:center">Não fechou</button></section>`;
@@ -4277,6 +4277,7 @@ async function sync(){if(busy)return;if(document.querySelector('.cbox')){setTime
     if(!e._id){const x=e.n&&!e.gc&&STU.find(s=>s.n===e.n);if(!x||!x._id||e._new)continue;e._new=1;
         const d=new Date(wk0.getFullYear(),wk0.getMonth(),wk0.getDate()+(+wi),Math.floor(e.h),Math.round((e.h%1)*60));
         const loc=locName(e.loc)||((FXS.find(f=>f.student_id===x._id)||{}).location)||locName((LOCS[0]||{}).id);
+        if(e.st==='conf')e.st='wait';/* marcada pelo personal: o aluno ainda confirma */
         const {data,error}=await sb.from('classes').insert({student_id:x._id,starts_at:d.toISOString(),location:loc,status:'marcada',kind:e.extra?'extra':'plano'}).select().single();
         if(error){delete e._new;toast('Não salvou a aula: '+error.message);continue}e._id=data.id;e._wi=+wi;e._h=e.h;e._st=e.st;CLS.push(data);seen.add(data.id);continue}
     seen.add(e._id);const up={};
@@ -4511,14 +4512,15 @@ function ciEditor(){const c=ciCfg();
 /* lembretes e mensagens: vêm prontos, você pode editar */
 const MSGD={boas:['Boas-vindas','Vai no WhatsApp quando você cadastra um aluno','Oi, {nome}! Aqui é {personal}. Seu cadastro tá pronto. Toca no link, cria sua senha e instala o app no celular: {link}\n\nSeu código: {codigo}'],
  convite:['Convite','Quando você convida alguém pelo link','Oi, {nome}! Aqui é {personal}. Te mandei o convite do app: lá ficam seu treino, suas aulas e sua evolução. Toca no link, coloca seu e-mail e cria sua senha: {link}\n\nSeu código: {codigo}'],
+ exp:['Aula experimental','Vai no WhatsApp quando você marca uma experimental','Oi, {nome}! Sua aula experimental está marcada {quando} 💪 Vem com roupa de treino e uma garrafinha d\'água. Qualquer coisa me chama!'],
  foto:['Foto do mês','Lembrete mensal para mandar a foto de evolução','📸 Oi, {nome}! Dia da foto de evolução. Tira de frente, de lado e de costas, mesma luz de sempre, e me manda no WhatsApp.']};
 const msgOf=k=>(PERS.msgs&&PERS.msgs[k])||MSGD[k][2];
 window.__rlMsg=(k,v)=>{const custom=PERS.msgs&&PERS.msgs[k];if(!custom&&!v.force)return null;return msgOf(k).replace(/\{(\w+)\}/g,(m,x)=>v[x]!=null?v[x]:m)};
 function msgList(){sheet(`<span class="lbl">Configurações</span><h3 class="d">Mensagens</h3>${Object.entries(MSGD).map(([k,[n,d]])=>`<button class="opt2" data-me="${k}"><b>${n}</b><small>${d}${PERS.msgs&&PERS.msgs[k]?' • editada por você':''}</small></button>`).join('')}<button class="opt2" data-me="bday"><b>Aniversário</b><small>Mensagem no dia do aniversário do aluno</small></button><button class="btn" data-close>Fechar</button>`,
   s=>s.addEventListener('click',e=>{const b=e.target.closest('[data-me]');if(!b)return;s.remove();if(b.dataset.me==='bday'){try{bdaySheet()}catch(_){}}else msgEdit(b.dataset.me)}))}
 function msgEdit(k){const [n]=MSGD[k];sheet(`<span class="lbl">Configurações › Mensagens</span><h3 class="d">${n}</h3>${k==='foto'?`<label class="sw" style="margin:4px 0 10px"><span><b>Lembrete mensal ligado</b><br><small class="note">Todo dia ${PERS.fday||1} o aluno recebe o aviso no app</small></span><input type="checkbox" data-mft ${PERS.foto!==false?'checked':''}></label>`:''}<textarea class="inp" id="mtx" rows="7" style="min-height:150px">${esc(msgOf(k))}</textarea>
-  <p class="note" style="margin:6px 0">Toque para inserir: ${['nome','personal',...(k==='foto'?[]:['link','codigo'])].map(x=>`<button class="mini" data-mv="${x}">{${x}}</button>`).join(' ')}</p>
-  <div class="msg" id="mpv" style="font-size:13px"></div><button class="lnk" data-mr>Voltar ao texto original</button><div class="row2"><button class="btn" data-close>Fechar</button><button class="btn solid" data-ms>Salvar mensagem</button></div>`,s=>{const t=s.querySelector('#mtx'),pv=()=>{s.querySelector('#mpv').textContent=t.value.replace(/\{(\w+)\}/g,(m,x)=>({nome:'Carlos',personal:PERS.name||'Você',link:APP+'?c=K7QM2X',codigo:'K7QM2X'})[x]||m)};pv();t.oninput=pv;
+  <p class="note" style="margin:6px 0">Toque para inserir: ${['nome','personal',...(k==='foto'?[]:k==='exp'?['quando']:['link','codigo'])].map(x=>`<button class="mini" data-mv="${x}">{${x}}</button>`).join(' ')}</p>
+  <div class="msg" id="mpv" style="font-size:13px"></div><button class="lnk" data-mr>Voltar ao texto original</button><div class="row2"><button class="btn" data-close>Fechar</button><button class="btn solid" data-ms>Salvar mensagem</button></div>`,s=>{const t=s.querySelector('#mtx'),pv=()=>{s.querySelector('#mpv').textContent=t.value.replace(/\{(\w+)\}/g,(m,x)=>({nome:'Carlos',personal:PERS.name||'Você',link:APP+'?c=K7QM2X',codigo:'K7QM2X',quando:'ter 17/11 às 10:00'})[x]||m)};pv();t.oninput=pv;
    s.addEventListener('click',e=>{const v=e.target.closest('[data-mv]');if(v){const a=t.selectionStart||t.value.length;t.value=t.value.slice(0,a)+'{'+v.dataset.mv+'}'+t.value.slice(a);pv();t.focus();return}
     if(e.target.closest('[data-mr]')){t.value=MSGD[k][2];pv();return}
     if(e.target.closest('[data-ms]')){const ft=s.querySelector('[data-mft]');if(ft)PERS.foto=ft.checked;PERS.msgs=PERS.msgs||{};if(t.value.trim()===MSGD[k][2])delete PERS.msgs[k];else PERS.msgs[k]=t.value.slice(0,1200);s.remove();saveNow();toast('Mensagem salva')}})})}
@@ -5281,6 +5283,12 @@ memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=r
 
 
 
+/* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
+{const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
+.sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}
+.sheet .chip[aria-pressed="true"]::before{content:"✓ ";font-weight:900}
+.sheet .opt2[aria-pressed="true"]{border:2px solid var(--fg)!important;box-shadow:0 3px 12px rgba(0,0,0,.12)!important}
+.sheet .opt2[aria-pressed="true"]>b::after{content:"  ✓";font-weight:900}`;document.head.appendChild(st)}
 /* card do aluno na agenda: passar entre os alunos do dia */
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a2hx]');if(!b)return;e.stopPropagation();S.a2ix=(S.a2ix||0)+ +b.dataset.a2hx;draw()},true);
 {const st=document.createElement('style');st.textContent=`#a2x .a2hn{display:flex;align-items:center;gap:6px;margin-left:auto;margin-right:10px}#a2x .a2hn button{width:28px;height:28px;border-radius:50%;border:1px solid var(--a2ln,rgba(127,127,127,.3));background:transparent;color:inherit;font-size:16px;font-weight:800;line-height:1;display:grid;place-items:center}#a2x .a2hn button:disabled{opacity:.3}#a2x .a2hn small{font-size:11.5px;font-weight:800;opacity:.7}`;document.head.appendChild(st)}
