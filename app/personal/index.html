@@ -1497,7 +1497,7 @@ const regOf=m=>Object.keys(LIB).find(r=>LIB[r][m]);
 const listOf=m=>{const all=[...((LIB[regOf(m)]||{})[m]||[]),...T2.mine.filter(x=>x.m===m).map(x=>x.n)];const al=(a,b)=>a.localeCompare(b,'pt');return [...all.filter(n=>T2.fav.has(n)).sort(al),...all.filter(n=>!T2.fav.has(n)).sort(al)]};
 const ICK={add:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',ok:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',go:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>'};
 const STAR='<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8Z"/></svg>';
-const METS={drop:['Drop-set','Ao falhar, tira 20–30% da carga e continua.'],rest:['Rest-pause','Falhou, 15 s de pausa e mais reps.'],cluster:['Cluster','Blocos de 3 reps com 20 s de pausa.'],pirc:['Pirâmide crescente','Sobe a carga, desce as reps.'],pird:['Pirâmide decrescente','Desce a carga, sobe as reps.'],fst7:['FST-7','7 séries de 8–12, 30–45 s de pausa.'],gvt:['GVT 10×10','10 × 10 com ~60% da carga.'],neg:['Negativa','Desce em 3 a 5 segundos.'],iso:['Isometria','Segura 3 s na contração.'],myo:['Myo-reps','Série até perto da falha + mini-séries.'],s21:['Série 21','7 em baixo, 7 em cima, 7 completas.']};
+const METS={drop:['Drop-set','Na última série, ao chegar perto da falha, tire 20 a 30% da carga e continue sem descanso até falhar de novo.'],rest:['Rest-pause','Ao chegar na falha, descanse 15 segundos e faça mais algumas repetições. Repita isso 2 vezes.'],cluster:['Cluster','Divida a série em blocos de 3 repetições, com 20 segundos de pausa entre eles, mantendo a carga.'],pirc:['Pirâmide crescente','Aumente a carga a cada série e diminua as repetições. A última é a mais pesada.'],pird:['Pirâmide decrescente','Comece com a carga mais pesada e tire peso a cada série, aumentando as repetições.'],fst7:['FST-7','7 séries de 8 a 12 repetições com 30 a 45 segundos de descanso, para fechar o músculo no fim do treino.'],gvt:['GVT 10×10','10 séries de 10 repetições com cerca de 60% da sua carga máxima e 60 a 90 segundos de descanso.'],neg:['Negativa','Controle a descida em 3 a 5 segundos em cada repetição. A subida é normal.'],iso:['Isometria','Segure 3 segundos no ponto de maior contração em cada repetição, antes de voltar.'],myo:['Myo-reps','Uma série até perto da falha e depois mini-séries de 3 a 5 repetições com 5 respirações de pausa entre elas.'],s21:['Série 21','7 repetições na metade de baixo do movimento, 7 na metade de cima e 7 completas, sem pausa.']};
 function repSheet(e,k,done){let applyAll=k==='all';const cur=String(k==='all'?e.s[0][1]:e.s[k][1]);
   sheet(`<span class="lbl">${k==='all'?'Todas as séries':(k+1)+'ª série'}</span><h3 class="d">Repetições</h3>
     <div class="chips reps">${RANGES.map(r=>`<button class="chip" data-rpv="${r}" aria-pressed="${cur===r}">${r.replace('-',' a ')}</button>`).join('')}</div>
@@ -5381,39 +5381,47 @@ const mbi=k=>`<svg class="mbi" viewBox="0 0 24 24" fill="none" stroke="currentCo
 const MBD=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],MBD1=['S','T','Q','Q','S','S','D'];
 const mbMin=P=>{let s=0;(P.ex||[]).forEach(e=>{const n=(e.s&&e.s.length)||3;s+=n*(45+(+e.rest||60))});return Math.max(5,Math.round(s/60/5)*5)};
 const mbSum=e=>{const S=(e.s&&e.s.length?e.s:[[0,10]]),rs=[...new Set(S.map(z=>z[1]))];return `${S.length}×${rs.join('/')}${e.rest?' • '+e.rest+'s':''}`};
-function mbList(x,w){const L='ABCDEFGHIJ';
-  app.innerHTML=`<div class="bhead"><button class="bback" data-bback aria-label="Voltar"><span>‹</span>Alunos</button><div style="flex:1;min-width:0"><span class="lbl">Treino • ${esc(x.mode||'')}</span><b class="bhn">${esc(x.n)}</b></div><button class="mini anqb" data-anq>Anamnese</button></div>
-   <div class="mbh"><span>Treinos ${esc(x.n.split(' ')[0])==='' ?'':'de '+esc(x.n.split(' ')[0])}</span><em>${w.plans.reduce((a,p)=>a+p.days.length,0)}x por semana</em></div>
+function mbList(x,w,T){const L='ABCDEFGHIJ';
+  app.innerHTML=(T?`<div class="bhead"><button class="bback" data-bback aria-label="Voltar"><span>‹</span>Prontos</button><div style="flex:1;min-width:0"><span class="lbl">Programa</span><b class="bhn">${esc(T.name)}</b></div></div><div class="tbar"><span class="tg">${tagLine(T.tags)||'<em>sem etiqueta</em>'}</span><button class="mini" data-tren>Nome e pastas</button><button class="mini solid" data-tuse="${T.id}">Usar em aluno</button></div>`:`<div class="bhead"><button class="bback" data-bback aria-label="Voltar"><span>‹</span>Alunos</button><div style="flex:1;min-width:0"><span class="lbl">Treino • ${esc(x.mode||'')}</span><b class="bhn">${esc(x.n)}</b></div><button class="mini anqb" data-anq>Anamnese</button></div>`)+`
+   <div class="mbh"><span>${T?'Treinos do programa':'Treinos de '+esc(x.n.split(' ')[0])}</span><em>${w.plans.reduce((a,p)=>a+p.days.length,0)}x por semana</em></div>
    ${w.plans.map((p,j)=>`<button class="mbc" data-mbo="${j}"><span class="mbl">${L[j]}</span><span class="mbt"><b>${esc(p.name)}</b><small>${p.ex.length} ${p.ex.length===1?'exercício':'exercícios'}${p.ex.length?' • ~'+mbMin(p)+' min':''}</small><span class="mbd">${MBD1.map((d,i)=>`<i class="${p.days.includes(i)?'on':''}">${d}</i>`).join('')}</span></span>${mbi('chev')}</button>`).join('')}
    <div class="mbc mbcd"><span class="mbl o">${mbi('heart')}</span><span class="mbt"><b>Cardio</b><small>${w.cardio.length?w.cardio.length+'x • '+esc((w.cd[w.cardio[0]]||{}).t||'Corrida')+' • '+((w.cd[w.cardio[0]]||{}).min||30)+' min':'Toque nos dias para colocar'}</small><span class="mbd">${MBD1.map((d,i)=>`<i class="${w.cardio.includes(i)?'on':''}" data-mbcd="${i}" role="button">${d}</i>`).join('')}</span></span>${w.cardio.length?`<button class="mbe" data-bcd="${w.cardio[0]}" aria-label="Editar cardio">Editar</button>`:''}</div>
    <button class="btn mbnew" data-mbnew>${mbi('plus')}Novo treino</button>
    ${w.plans.some(p=>p.ex.length)?`<button class="mbaj" data-mbvol><span class="mbvm">${(()=>{try{return bodyHeat(volOf(w))}catch(_){return ''}})()}</span><span><b>Equilíbrio da semana</b><small>${(()=>{try{return volSummary(w)}catch(_){return 'Volume por músculo'}})()}</small></span>${mbi('chev')}</button>`:''}
    <button class="mbaj" data-mbaj>${mbi('set')}<span><b>Ajustes da semana</b><small>${w.start?fmtD(w.start)+' → '+fmtD(effEnd(x))+' • ':''}${w.mode==='fixo'?'dia fixo':w.mode==='seq'?'segue a fila':'aluno escolhe o treino'}</small></span>${mbi('chev')}</button>
-   <div class="bsave"><button class="btn solid" data-bdone>Pronto</button></div>`}
-function mbPost(x,w){const P=w.plans[T2.sel];if(!P)return;
-  const bb=app.querySelector('[data-bback]');if(bb){bb.removeAttribute('data-bback');bb.dataset.mbback='1';bb.innerHTML='<span>‹</span>Treinos'}
+   <div class="bsave"><button class="btn solid" data-bdone>${T?'Salvar programa':'Pronto'}</button></div>`;
+  if(T){app.querySelectorAll('[data-mbaj]').forEach(n=>n.remove())}}
+function mbPost(x,w,T){const P=w.plans[T2.sel];if(!P)return;const solo=T&&T.kind==='treino';
+  const bb=app.querySelector('[data-bback]');if(bb&&!solo){bb.removeAttribute('data-bback');bb.dataset.mbback='1';bb.innerHTML='<span>‹</span>'+(T?'Programa':'Treinos')}
+  if(T){const n=app.querySelector('.tbar + p.note');if(n)n.hidden=true}
   const aq=app.querySelector('[data-anq]');if(aq)aq.remove();
   ['.wkc','.proto','[data-aibuild]','[data-vol]','[data-bpick]','[data-btpl]'].forEach(q=>app.querySelectorAll(q).forEach(n=>n.hidden=true));
   const fv=app.querySelector('[data-bfav]');if(fv)fv.hidden=true;
   const th=app.querySelector('.tcard2 .th');if(th){const h=th.querySelector('h2'),l=th.querySelector('.lbl');
     if(h){const i=document.createElement('input');i.className='mbname';i.value=P.name;i.setAttribute('aria-label','Nome do treino');i.addEventListener('input',()=>{P.name=i.value.slice(0,40)});i.addEventListener('blur',()=>{if(!P.name.trim())P.name='Treino '+'ABCDEFGHIJ'[T2.sel];i.value=P.name});h.replaceWith(i)}
     if(l)l.remove()}
-  const card=app.querySelector('.tcard2');if(card){
-    const dc=document.createElement('div');dc.className='mbdays';dc.innerHTML=MBD.map((d,i)=>`<button data-mbday="${i}" aria-pressed="${P.days.includes(i)}">${d}</button>`).join('');th?th.after(dc):card.prepend(dc);
+  const card=app.querySelector('.tcard2');if(card&&solo&&!card.querySelector('.th')){const th0=document.createElement('div');th0.className='th';th0.innerHTML=`<span class="tlt">${esc((T.name||'T')[0].toUpperCase())}</span><h2 class="d">x</h2>`;card.prepend(th0);const h=th0.querySelector('h2'),i=document.createElement('input');i.className='mbname';i.value=P.name&&!/^Treino [A-J]$/.test(P.name)?P.name:T.name;i.addEventListener('input',()=>{P.name=i.value.slice(0,40);T.name=P.name});h.replaceWith(i)}
+  if(card){
+    if(!solo){const LT2='ABCDEFGHIJ',dc=document.createElement('div');dc.className='mbdays';dc.innerHTML=MBD.map((d,i)=>{const me=P.days.includes(i),o=w.plans.findIndex((q,j)=>j!==T2.sel&&q.days.includes(i)),cd=w.cardio&&w.cardio.includes(i);return `<button data-mbday="${i}" aria-pressed="${me}" class="${!me&&(o>=0||cd)?'oc':''}"><b>${d}</b><i>${me?LT2[T2.sel]:o>=0?LT2[o]:cd?'cardio':'livre'}</i></button>`}).join('');const th1=card.querySelector('.th');th1?th1.after(dc):card.prepend(dc)}
     card.querySelectorAll('.ex2').forEach(b=>{const e=P.ex[+b.dataset.bex];if(!e)return;const sm=b.querySelector('small'),bt=b.querySelector('b');
       if(bt)bt.innerHTML=esc(e.n);if(sm)sm.textContent=[e.obs?e.obs:'',ytId&&ytId(e.yt)?'vídeo':''].filter(Boolean).join(' • ');if(sm&&!sm.textContent)sm.remove();
-      if(!b.querySelector('.mbm')){const m=document.createElement('span');m.className='mbm';m.textContent=mbSum(e);b.appendChild(m)}});
+      if(!b.querySelector('.mbm')){const S2=(e.s&&e.s.length?e.s:[[0,10]]),rs=[...new Set(S2.map(z=>z[1]))].join('/');const m=document.createElement('span');m.className='mbm';m.innerHTML=`<b>${S2.length}<em>×</em>${esc(rs)}</b>${e.rest?`<small>${e.rest}s</small>`:''}`;b.appendChild(m)}
+      const wr=b.closest('.ex2w');if(wr&&!wr.querySelector('.mbx')){const x0=document.createElement('button');x0.className='mbx';x0.dataset.mbx=b.dataset.bex;x0.setAttribute('aria-label','Apagar '+e.n);x0.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';(wr.querySelector('.swc')||wr).appendChild(x0)}});
     card.querySelectorAll('.lkbar button').forEach(b=>b.textContent='Conjugados • toque para separar');
     const sb=card.querySelector('[data-sortbox]');const ad=document.createElement('button');ad.className='btn solid mbadd';ad.dataset.mbadd='1';ad.innerHTML=mbi('plus')+'Adicionar';(sb||card).after?(sb?sb.after(ad):card.appendChild(ad)):0;
     const ob=document.createElement('div');ob.className='mbobs';ob.innerHTML=`<label class="lbl" for="mbobs">Observações do treino</label><textarea id="mbobs" rows="2" placeholder="Ex.: aquecer 10 min na esteira antes">${esc(P.obs||'')}</textarea>`;card.after(ob);ob.querySelector('textarea').addEventListener('input',ev=>{P.obs=ev.target.value.slice(0,500)})}
-  const bs=app.querySelector('.bsave');if(bs)bs.innerHTML=`<div class="row2"><button class="btn" data-mbfav>${mbi('star')}Salvar na biblioteca</button><button class="btn solid" data-mbback>Pronto</button></div>`}
-{const _dB=drawBuilder;drawBuilder=function(){if(!T2.stu||T2.tpl){T2.open=null;return _dB()}
+  const bs=app.querySelector('.bsave');if(bs){if(solo)bs.innerHTML=`<button class="btn solid" data-bdone>Salvar treino</button>`;else if(T)bs.innerHTML=`<button class="btn solid" data-mbback>Pronto</button>`;else bs.innerHTML=`<div class="row2"><button class="btn" data-mbfav>${mbi('star')}Salvar na biblioteca</button><button class="btn solid" data-mbback>Pronto</button></div>`}}
+{const _dB=drawBuilder;drawBuilder=function(){if(T2.tpl){const T=FAVW.find(f=>f.id===T2.tpl);if(!T)return _dB();const w=CUR();if(T2._otpl!==T2.tpl){T2._otpl=T2.tpl;T2.open=null}
+    if(T.kind==='treino'){T2.sel=0;T2.vd=null;_dB();try{mbPost(null,w,T)}catch(err){console.warn('mbt',err)}return}
+    if(T2.open==null||T2.open>=w.plans.length){T2.open=null;return mbList(null,w,T)}
+    T2.sel=T2.open;T2.vd=null;_dB();try{mbPost(null,w,T)}catch(err){console.warn('mbt',err)}return}
+  if(!T2.stu){T2.open=null;return _dB()}
   if(T2._ostu!==T2.stu){T2._ostu=T2.stu;T2.open=null}const x=stu(T2.stu),w=CUR();try{fixL(w)}catch(_){}
   if(w.single){return _dB()}
   if(T2.open==null||T2.open>=w.plans.length){T2.open=null;return mbList(x,w)}
   T2.sel=T2.open;T2.vd=null;_dB();try{mbPost(x,w)}catch(err){console.warn('mb',err)}}}
-document.addEventListener('click',e=>{const t=e.target;let b;if(S.tab!=='treinos'||!T2.stu||T2.tpl)return;
-  const w=CUR(),x=stu(T2.stu);
+document.addEventListener('click',e=>{const t=e.target;let b;if(S.tab!=='treinos'||!(T2.stu||T2.tpl))return;
+  const w=CUR(),x=T2.tpl?null:stu(T2.stu);
   if((b=t.closest('[data-mbo]'))){e.stopImmediatePropagation();T2.open=+b.dataset.mbo;draw();const sc=document.querySelector('.scroller');if(sc)sc.scrollTop=0;return}
   if((b=t.closest('[data-mbback]'))){e.stopImmediatePropagation();T2.open=null;draw();if(x&&x._id)saveWk(x);return}
   if((b=t.closest('[data-mbnew]'))){e.stopImmediatePropagation();w.plans.push({name:'Treino '+'ABCDEFGHIJ'[w.plans.length],days:[],ex:[],obs:''});T2.open=w.plans.length-1;draw();return}
@@ -5431,8 +5439,9 @@ document.addEventListener('click',e=>{const t=e.target;let b;if(S.tab!=='treinos
      <button class="mbopt" data-mbq="[data-aibuild]"><span class="mbic">${mbi('ai')}</span><span><b>Montar com IA</b><small>Fale, escreva ou mande um PDF</small></span></button>
      <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',ev=>{const o=ev.target.closest('[data-mbq]');if(!o)return;s.remove();const h=app.querySelector(o.dataset.mbq);if(h)h.click()}));return}
   if((b=t.closest('[data-mbvol]'))){e.stopImmediatePropagation();const tmp=document.createElement('button');tmp.hidden=true;tmp.setAttribute('data-vol','');app.appendChild(tmp);tmp.click();tmp.remove();return}
+  if((b=t.closest('[data-mbx]'))){e.stopImmediatePropagation();e.preventDefault();askDelete(+b.dataset.mbx);return}
   if((b=t.closest('[data-mbfav]'))){e.stopImmediatePropagation();const h=app.querySelector('[data-bfav]');if(h)h.click();return}
-  if((b=t.closest('[data-mbaj]'))){e.stopImmediatePropagation();
+  if((b=t.closest('[data-mbaj]'))){if(!x)return;e.stopImmediatePropagation();
     sheet(`<span class="lbl">${esc(x.n)}</span><h3 class="d">Ajustes da semana</h3>
      ${w.plans.length?`<button class="mbopt" data-mbq2="per"><span><b>Período do treino</b><small>${w.start?fmtD(w.start)+' → '+fmtD(effEnd(x)):'Começa quando você salvar'}</small></span></button>`:''}
      <button class="mbopt" data-mbq2="modes"><span><b>Treino do dia</b><small>${w.mode==='fixo'?'Dia fixo':w.mode==='seq'?'Segue a fila':'Aluno escolhe'}</small></span></button>
@@ -5456,6 +5465,10 @@ document.addEventListener('click',e=>{const t=e.target;let b;if(S.tab!=='treinos
 .mbobs{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--fg) 4%,transparent)}.mbobs textarea{background:none;border:0;color:inherit;font:600 14px Manrope,sans-serif;resize:vertical;min-height:44px;outline:none}
 .mbopt{display:flex;align-items:center;gap:12px;width:100%;padding:13px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--fg) 4%,transparent);color:inherit;text-align:left;font:inherit}.mbopt b{display:block;font-size:14.5px}.mbopt small{display:block;font-size:12px;color:var(--muted);font-weight:600}.mbic{width:38px;height:38px;border-radius:12px;background:var(--fg);color:var(--bg);display:grid;place-items:center;flex:none}
 .bsave .row2 .btn{display:flex;align-items:center;justify-content:center;gap:6px}
+.mbdays button{display:flex!important;flex-direction:column;align-items:center;gap:1px;line-height:1.1}.mbdays button b{font:800 12px Manrope,sans-serif}.mbdays button i{font-style:normal;font:700 9.5px Manrope,sans-serif;opacity:.65}
+.mbdays button.oc{border-style:dashed!important;opacity:.75}
+.tcard2 .ex2 .mbm{display:flex;flex-direction:column;align-items:flex-end;gap:1px}.tcard2 .ex2 .mbm b{font:800 15px Manrope,sans-serif;color:var(--fg);letter-spacing:-.01em}.tcard2 .ex2 .mbm b em{font-style:normal;opacity:.45;margin:0 2px;font-weight:700}.tcard2 .ex2 .mbm small{font:700 11px Manrope,sans-serif;color:var(--muted)}
+.tcard2 .swc{display:flex;align-items:center}.tcard2 .swc .ex2{flex:1;min-width:0}.mbx{flex:none;width:30px;height:30px;margin-left:4px;border-radius:50%;border:0;background:color-mix(in srgb,var(--fg) 8%,transparent);color:var(--muted);display:grid;place-items:center}.mbx svg{width:13px;height:13px}
 .mbaj .mbvm small,.mbaj .mbvm span,.mbaj .mbvm b{display:none!important}.mbaj .mbvm{overflow:hidden;max-width:58px}
 .mbdays{flex-wrap:nowrap!important;gap:4px!important}.mbdays button{padding:7px 0!important;flex:1;min-width:0;font-size:11.5px!important}
 /* editar exercício mais enxuto */
