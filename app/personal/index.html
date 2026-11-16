@@ -5017,7 +5017,7 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
   /* card do aluno: sempre que o dia tem aula; começa na aula de agora ou na próxima, e dá para passar entre os alunos */
   const LV=live.filter(e=>e._id&&!e.gc);if(S.a2d!==S.day){S.a2d=S.day;S.a2ix=null}
   if(LV.length){if(S.a2ix==null){let k=0;if(isT){const c0=LV.findIndex(e=>e.h<=NOW&&NOW<e.h+1),n0=LV.findIndex(e=>e.h>NOW);k=c0>=0?c0:n0>=0?n0:LV.length-1}S.a2ix=k}S.a2ix=Math.max(0,Math.min(LV.length-1,S.a2ix));
-    const e0=LV[S.a2ix],isCur=isT&&e0.h<=NOW&&NOW<e0.h+1;const s=document.createElement('div');s.className='a2sec';s.innerHTML=`<b>${isCur?'Em aula':isT?'Hoje':'Aulas do dia'}</b><span>${esc(a2loc(e0))}</span>`;put(s);put(a2card(e0,isCur,S.a2ix,LV.length,isT))}
+    const e0=LV[S.a2ix],isCur=isT&&e0.h<=NOW&&NOW<e0.h+1;put(a2card(e0,isCur,S.a2ix,LV.length,isT))}
   /* sua semana */
   const W=[0,1,2,3,4,5,6].map(i=>{const L=(S.ev[i]||[]).filter(e=>!e.gc&&e.st!=='can');return {n:L.length,ok:L.filter(e=>e.st==='ok').length,pd:pedsOn(pdDay(i)).length}});
   const mx=Math.max(3,...W.map(w=>w.n)),dadas=W.reduce((a,w)=>a+w.ok,0),npd=PEDS().filter(p=>{const d=Math.round((new Date(p.at.getFullYear(),p.at.getMonth(),p.at.getDate())-pdDay(0))/864e5);return d>=0&&d<=6}).length,tot=W.reduce((a,w)=>a+w.n,0);
@@ -5028,7 +5028,7 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
    ${nxS?`<div class="nxt"><span class="a2av">${ini(nxS.n)}</span><span class="tx">Próxima aula<b>${esc(nxS.n.split(' ')[0])} • ${nxS.t}</b></span><span class="a2pill">${nxS.r}</span></div>`:'<div class="nxt"><span class="tx">Nenhuma aula marcada pela frente</span></div>'}`;
   if(!LV.length){put(wsec);put(wk)}
   /* Dia / Semana / Mês + resumo */
-  put(vs);const sm=document.createElement('div');sm.id='a2s';sm.textContent=`${live.length} ${live.length===1?'aula':'aulas'}${past?'':' • '+freeH.length+' '+(freeH.length===1?'livre':'livres')}`;put(sm);
+  put(vs);
   /* linha do tempo */
   const it=[];E.forEach((e,i)=>it.push({t:e.h,o:1,k:'ev',e,i}));peds.forEach(p=>it.push({t:pedH(p),o:2,k:'pd',p}));
   if(!past)hrs.forEach(h=>{if(isT&&h<=NOW)return;if(busyH(h))return;if(peds.some(p=>Math.floor(pedH(p))===h))return;const bk=blkAt(h);it.push({t:h,o:3,k:bk?'lk':'fr',bk})});
@@ -5363,6 +5363,8 @@ new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim .sheet')
 .hrow{display:flex;align-items:center;gap:10px;width:100%;padding:13px 14px;background:none;border:0;border-top:1px solid var(--line);color:inherit;text-align:left;font:inherit}.hgrp .hgl+.hrow,.hgrp>.hrow:first-child{border-top:0}
 .hrow .ht{flex:1;min-width:0}.hrow .ht b{display:block;font-size:15px}.hrow .ht small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
 .hrow .hv{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}.hrow i{font-style:normal;font-size:18px;opacity:.45}`;document.head.appendChild(st)}
+/* agenda mais compacta (ajuste fino) */
+{const st=document.createElement('style');st.textContent=`body.ag2 #a2h{margin-top:6px}body.ag2 #a2h .d2{margin-top:8px}body.ag2 .a2sec{margin:18px 2px 8px}body.ag2 #app>.vseg{margin-top:4px!important}body.ag2 #app>.cfg82{margin-top:14px}body.ag2 #app>section.card.a2keep{margin-top:12px}body.ag2 #a2x.a2k{margin-top:14px}body.ag2 #a2t{margin-top:0}body.ag2 #a2w{margin-top:0}`;document.head.appendChild(st)}
 /* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
 {const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}
