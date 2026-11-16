@@ -4227,6 +4227,7 @@ function apply(){
   STUD.forEach(p=>{if(stuById(p.id))return;const has=FXS.some(f=>f.student_id===p.id)||CLS.some(c=>c.student_id===p.id);if(!p.onboarded||!has)return;
     STU.push({n:p.name||'Aluno',q:[0,(p.freq||2)*(PRICE.wk||4)],ph:String(p.phone||'').replace(/^\+\d+\s*/,'').replace(/\D/g,''),mode:p.presencial===false?'Online':'Presencial',mod:[...PRE.tudo],due:30,_id:p.id,via:'Convite'})});
   STU.forEach(X=>{const p=STUD.find(s=>s.id===X._id);if(!p)return;
+    {const F=FXS.filter(f=>f.student_id===X._id&&f.active!==false);if(F.length)X.fixo=F.map(f=>{const [H,M]=String(f.at_time).split(':').map(Number);return {d:(f.dow+6)%7,h:H+(M||0)/60,l:((LOCS||[]).find(l=>String(l.n).trim().toLowerCase()===String(f.location||'').trim().toLowerCase())||{}).id||X.loc||1}}).sort((a,b)=>a.d-b.d||a.h-b.h)}/* a fixa vem sempre do banco, nunca da semana */
     if(p.access_until){X.due=Math.ceil((new Date(p.access_until+'T12:00:00')-new Date())/864e5);const ad=new Date(p.access_until+'T12:00:00');X.until=pad(ad.getDate())+'/'+pad(ad.getMonth()+1)}else if(!X.until)X.until='fim do plano';
     if(!X.nasc&&p.birth_date)X.nasc=p.birth_date.split('-').reverse().join('/');if(!X.cpf&&p.doc_num)X.cpf=p.doc_num;if(!X.obj&&p.goal)X.obj=p.goal;if(!X.niv&&p.level)X.niv=p.level;if(!X.rest&&p.injury)X.rest=p.injury;
     if(WKS.some(w=>w.user_id===X._id))X.wk=wkFromDB(X._id);

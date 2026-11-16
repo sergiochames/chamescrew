@@ -2714,14 +2714,14 @@ $('#finish').onclick=()=>{
     e.prev.forEach((p,s)=>{if($(`[data-ck="A-${i}-${s}"]`).getAttribute('aria-pressed')==='true'){done++;ev+=(+$(`#kg-A-${i}-${s}`).value||0)*(+$(`#rp-A-${i}-${s}`).value||0)}});
     vol+=ev;
     const kNow=Math.max(0,...exKg(__TK,i)),kPrev=Math.max(...e.prev.map(p=>p[0]));
-    if(kNow>kPrev)recs++;
+    if(kPrev>0&&kNow>kPrev)recs++;
     const sg=suggestion(e);if(sg&&exDone(__TK,i)&&exKg(__TK,i).every(k=>k>=sg.kg)&&exReps(__TK,i).every(r=>r>=e.reps))gained.push(e.name);
     const dv=pv?Math.round((ev-pv)/pv*100):0;
     const skp=SKIP[__TK+'-'+i];const shown=skp&&skp.sub?skp.sub:e.name;
     if(skp&&skp.reason!=='ocupado'){rows+=`<div class="cmp"><span style="min-width:0"><b>${e.name}</b><br><small>${skp.reason==='dor'?'Pulado por dor • conta como feito':'Pulado • sem tempo'}</small></span><span class="v">—</span></div>`;return}
     CMP.push({n:shown,a:kPrev,b:kNow,done});
     rows+=`<div class="cmp"><span style="min-width:0"><b>${shown}</b><br><small>${done} de ${e.sets} séries • volume ${ev.toLocaleString('pt-BR')} kg</small></span>
-      <span class="v ${kNow>kPrev?'up':''}">${done?`${kPrev} → ${kNow} kg`:'não feito'}<br><small class="${dv>0?'up':''}">${done?(dv>0?'+':'')+dv+'% volume':''}</small></span></div>`});
+      <span class="v ${kPrev>0&&kNow>kPrev?'up':''}">${done?(kPrev>0?`${kPrev} → ${kNow} kg`:kNow>0?`1ª carga: ${kNow} kg`:`${kNow} kg`):'não feito'}<br><small class="${dv>0?'up':''}">${done?(dv>0?'+':'')+dv+'% volume':''}</small></span></div>`});
   const before=progTier(progMonth);progMonth+=gained.length;const after=progTier(progMonth);renderProg();
   const unlocked=after>before;
   let counted=n;PLANS[__TK].ex.forEach((e,i)=>{const sk=SKIP[__TK+'-'+i];if(sk&&sk.reason==='dor')counted+=e.sets-e.prev.filter((_,s)=>$(`[data-ck="A-${i}-${s}"]`).getAttribute('aria-pressed')==='true').length});
@@ -6536,7 +6536,7 @@ const uid=session.user.id;const R1=window.__RL1,R2=window.__RL2;
 const GO=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
 const pGen=GO(sb.rpc('gen_my_classes')),pExp=GO(sb.rpc('expire_reservations'));
 const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise.all([GO(sb.rpc('public_anm')),GO(sb.from('anam_answers').select('id').eq('user_id',uid).limit(1))]),
-  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
+  ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),pp:GO(sb.rpc('public_pers')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
   pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
   pq:pExp.then(()=>GO(sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1)))};
@@ -6555,6 +6555,9 @@ try{const upd=()=>{const t=document.getElementById('tr-title'),sub=document.getE
   if(!o){if(el)el.remove();return}if(!el){el=document.createElement('p');el.id='tr-obs';el.style.cssText='margin:8px 0 0;font-size:13.5px;font-weight:600;opacity:.8;line-height:1.4';sub.after(el)}if(el.textContent!==o)el.textContent=o};
   new MutationObserver(upd).observe(document.body,{subtree:true,childList:true,characterData:true});setTimeout(upd,500)}catch(_){}
 /* tema da gamificação escolhido pelo personal */
+try{const ph=(o)=>{const L=document.querySelector('header.top .logo');if(!L||!o||!o.name)return;const nm=String(o.name).trim(),ini=nm.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();L.classList.add('plogo');let B=L.querySelector('.pbox');if(!B){B=document.createElement('span');B.className='pbox';L.appendChild(B)}B.innerHTML=(o.avatar?`<img class="pav" src="${o.avatar}" alt="">`:`<span class="pav pini">${ini}</span>`)+`<span class="pnm"><b>${nm.replace(/</g,'')}</b><small>seu personal</small></span>`};
+  try{const c=JSON.parse(localStorage.getItem('cc_pers')||'null');if(c)ph(c)}catch(_){}
+  PF.pp.then(({data:o})=>{if(o&&o.name){ph(o);try{localStorage.setItem('cc_pers',JSON.stringify(o))}catch(_){}}}).catch(()=>{})}catch(_){}
 try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t;if(g&&g.nome)window.__GNOME=String(g.nome).slice(0,22);if(g&&Object.keys(g).length){window.__GM=g;if(window.CFG)window.CFG.game=g.on!==false;try{if(Array.isArray(g.th)&&g.th.length===5)RA.MEDALS.forEach(m=>{if(String(m.th)==='4,8,16,26,52')m.th=g.th.map(Number)})}catch(_){}document.body.classList.toggle('norank',g.rank===false)}}catch(_){}
 /* metas do aluno guardadas na conta (não só no aparelho) */
 try{const io=window.__metasIO;if(io){const srv=P.setup&&P.setup.metas,loc=io.get();let t=null;
@@ -6595,6 +6598,16 @@ const DB={};
   if(c.status==='cancelada'){const cr=c.note==='credito';AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr)AG.dadas.push({d:k,h});return}
   AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',_id:c.id,loc:c.location||window.__LOC0||undefined})});
+/* box "Minha agenda" embaixo do card da aula */
+function agBox(){const V=document.getElementById('v-hoje'),au=document.getElementById('aula');if(!V)return;let B=document.getElementById('agbox');
+  if(!B){B=document.createElement('button');B.id='agbox';B.type='button';B.dataset.go='agenda';B.className='agbox'}
+  const ref=au&&au.parentElement===V?au:V.querySelector('.sday');if(ref&&B.previousElementSibling!==ref)ref.after(B);
+  const t=new Date(),mon=new Date(t.getFullYear(),t.getMonth(),t.getDate()-((t.getDay()+6)%7)),DS=['SEG','TER','QUA','QUI','SEX','SÁB','DOM'];let n=0,cf=0;
+  const cells=DS.map((w,i)=>{const d=new Date(mon.getFullYear(),mon.getMonth(),mon.getDate()+i),dn=dayN(d),L=AG.slots.filter(x=>KN[x.d]===dn);n+=L.length;cf+=L.filter(x=>x.conf).length;
+    const dot=L.length?(L.every(x=>x.conf)?'c':'w'):'';const today=dn===dayN(t);return `<span class="agd${today?' t':''}${d<new Date(t.getFullYear(),t.getMonth(),t.getDate())?' p':''}"><small>${w}</small><b>${d.getDate()}</b><i class="${dot}"></i></span>`}).join('');
+  const cr=AG.creds.length;
+  B.innerHTML=`<span class="agh"><span><b>Minha agenda</b><small>${n?n+(n===1?' aula':' aulas')+' esta semana':'Sem aulas esta semana'}${cr?' • '+cr+(cr===1?' crédito':' créditos'):''}</small></span><em>Marcar e remarcar ›</em></span><span class="agds">${cells}</span>`}
+{let tq=0;const run=()=>{clearTimeout(tq);tq=setTimeout(()=>{try{agBox()}catch(_){}},60)};const au=document.getElementById('aula');if(au)new MutationObserver(run).observe(au,{childList:true,subtree:true,characterData:true});document.addEventListener('click',e=>{if(e.target.closest('.tabs [data-go="hoje"]'))run()});run();setTimeout(run,1200);setTimeout(run,3000)}
 /* créditos e mudanças pela regra do personal (ciclo do plano) */
 {const okC=AG.canc.filter(c=>c.ok).sort((a,b)=>(KN[b.d]||0)-(KN[a.d]||0));AG.creds.length=0;for(let i=0;i<(CI.credits||0);i++){const c=okC[i];AG.creds.push({from:c?c.d:keyOf(dayN(now)),exp:dayN(endD),_id:c&&c.slot?c.slot._id:undefined})}
  const A=window.__CYA||1,m=now.getDate()>=A?now.getMonth()+1:(now.getMonth()||12),cc=AG.canc.filter(c=>c.ok).length;AG.remM[m]=Math.max(0,(CI.used||0)-Math.min(cc,CI.used||0));if(m===10)AG.rem=AG.remM[m]}
@@ -6898,7 +6911,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
     WSTD.forEach(([k,t,o])=>{if(wo[k])return;R.QW.push(k==='dor'?[wl.dor||W.dor||t,o,null,1,null,'where']:[wl[k]||t,o]);R.QWK.push(k)});
     (W.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QW.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0,ty]);R.QWK.push('w_'+c.id)})}
    (CIC.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QD.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0,ty]);R.QK.push('c_'+c.id)})}
-  R.STU={plan:'treino',pres:P.presencial!==false,freq,cardio:cardioN.length||0,peso:+P.weight_kg||70,hideW:false,quota:freq*4};
+  R.STU={plan:P.diet?'ambos':'treino',pres:P.presencial!==false,freq,cardio:cardioN.length||0,peso:+P.weight_kg||70,hideW:false,quota:freq*4};
   const el=TI,HT=TODO?el+1:Math.min(el+1,GOAL);R.WEEK={el,ci:{d:cnt(a=>TODO||!isRest(a)),t:GOAL},limite:{d:[...trDays].filter(inW).length,t:freq,nox:1},resist:{d:cnt(a=>a.cardio>0),t:Math.max(1,cardioN.length||2),nox:1},
     zero:{d:cnt(a=>a.livre!=null&&a.livre!==2),t:HT},doce:{d:cnt(a=>a.doce===0),t:HT},agua:{d:cnt(a=>a.agua===2),t:HT},sono:{d:cnt(a=>a.sono===2),t:HT},alim:{d:0,t:HT}};
   /* bolinhas da semana: dia completo */
@@ -6922,7 +6935,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   /* medalhas: semanas completas */
   const wks={};const wkOfD=d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};const W_=k=>wks[k]=wks[k]||{tr:0,cardio:0,ci:0,agua:0,sono:0,ff:0,doce:0,carga:false};
   trDays.forEach(d=>W_(wkOfD(d)).tr++);ciDays.forEach((a,d)=>{const w=W_(wkOfD(d));if(TODO||!isRest(a))w.ci++;if(a.cardio>0)w.cardio++;if(a.agua===2)w.agua++;if(a.sono===2)w.sono++;if(a.livre===2)w.ff++;if(a.doce>0)w.doce++});
-  {const best={};LOGS.slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>{const w=W_(wkOfD(l.day));(l.sets||[]).forEach(z=>{if(z.cardio||!z.n)return;const k=+z.kg||0;if(best[z.n]!=null&&k>best[z.n])w.carga=true;best[z.n]=Math.max(best[z.n]||0,k)})})}
+  {const best={};LOGS.slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>{const w=W_(wkOfD(l.day));(l.sets||[]).forEach(z=>{if(z.cardio||!z.n)return;const k=+z.kg||0;if(best[z.n]>0&&k>best[z.n])w.carga=true;best[z.n]=Math.max(best[z.n]||0,k)})})}
   const DN=Object.entries(wks).filter(([k])=>k<wsd),C=f=>DN.filter(([k,w])=>f(w,k)).length,closed=new Set(WCS.map(w=>w.week_start));
   const TH=TODO?5:GOAL;R.RMV={doce:C(w=>w.ci>=TH&&w.doce===0),tempo:closed.size,carga:C(w=>w.carga),resist:C(w=>w.cardio>=2),limite:C(w=>w.tr>=Math.min(4,freq)),agua:C(w=>w.agua>=TH),alim:0,sono:C(w=>w.sono>=TH),zero:C(w=>w.ci>=TH&&w.ff===0),
     destaque:(AW||[]).filter(a=>a.medal_id==='destaque').length,perfeita:C((w,k)=>w.ci>=(TODO?7:GOAL)&&w.tr>=Math.min(freq,4)&&closed.has(k)),recrutador:0};
@@ -7228,5 +7241,32 @@ body.ag3 #v-checkin .q .chip[aria-pressed=true]{background:var(--fg)!important;c
 body.ag3 #v-checkin .rl-cih{padding:10px 0!important}
 body.ag3 #v-checkin #send{border-radius:16px!important;min-height:48px}
 body.ag3 #v-checkin>#metas{padding:12px 14px!important}
+</style>
+<style id="skin2b">
+header.top .logo.plogo>:not(.pbox){display:none!important}
+header.top .logo .pbox{display:flex;align-items:center;gap:10px;min-width:0}
+header.top .logo .pav{width:36px;height:36px;border-radius:50%;object-fit:cover;flex:none;border:1.5px solid var(--g2b,rgba(255,255,255,.3));box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header.top .logo .pini{display:grid;place-items:center;background:var(--fg);color:var(--bg);font:800 13px var(--body)}
+header.top .logo .pnm{display:flex;flex-direction:column;min-width:0;line-height:1.1}
+header.top .logo .pnm b{font:800 15.5px var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fg)}
+header.top .logo .pnm small{font:600 11.5px var(--body);color:var(--muted)}
+/* título: maior, alinhado com os cards */
+body.ag3 #v-hoje>.hero h2.d,body.ag3 #v-checkin>.hero h2.d{font-size:40px!important;line-height:1!important;letter-spacing:-.8px}
+body.ag3 #v-hoje>.hero,body.ag3 #v-checkin>.hero{margin:18px 4px 16px!important}
+body.ag3 #v-hoje>.hero .sub,body.ag3 #v-checkin>.hero .sub{margin:0 0 4px!important}
+</style>
+<style id="skin2c">
+body.ag3 #v-hoje #aula .agfull{display:none!important}
+body.ag3 #v-hoje #aula .bt9{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important}body.ag3 #v-hoje #aula .bt9 .cf9{grid-column:auto!important}body.ag3 #v-hoje #aula .bt9>:only-of-type,body.ag3 #v-hoje #aula .bt9>:first-child:nth-last-child(2):not(.cf9){grid-column:1/-1}
+#agbox{display:block;width:100%;text-align:left;margin:12px 0 0;padding:14px 14px 12px;border-radius:24px;background:var(--g2);border:1px solid var(--g2b);box-shadow:var(--g2sh);-webkit-backdrop-filter:blur(24px) saturate(160%);backdrop-filter:blur(24px) saturate(160%);color:var(--fg);font-family:var(--body);cursor:pointer}
+#agbox .agh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+#agbox .agh b{display:block;font:800 15px var(--body)}#agbox .agh small{display:block;font:600 12px var(--body);color:var(--muted);margin-top:2px}
+#agbox .agh em{font:700 12.5px var(--body);font-style:normal;white-space:nowrap;padding:6px 10px;border-radius:99px;background:var(--fg);color:var(--bg)}
+#agbox .agds{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:12px}
+#agbox .agd{display:flex;flex-direction:column;align-items:center;padding:7px 0 6px;border-radius:13px;background:var(--g2);border:1px solid var(--g2b)}
+#agbox .agd small{font:700 9.5px var(--body);color:var(--muted)}#agbox .agd b{font:800 14px var(--body);margin-top:1px}
+#agbox .agd i{width:6px;height:6px;border-radius:3px;margin-top:4px;background:transparent}#agbox .agd i.c{background:var(--grn)}#agbox .agd i.w{background:var(--amb)}
+#agbox .agd.t{background:var(--fg);color:var(--bg);border-color:transparent}#agbox .agd.t small{color:inherit;opacity:.7}
+#agbox .agd.p{opacity:.45}
 </style>
 </body></html>
