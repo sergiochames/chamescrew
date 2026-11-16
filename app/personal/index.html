@@ -5373,6 +5373,21 @@ new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim .sheet')
    if(!d||!n||!b||b.disabled){c.style.transition='transform .25s,opacity .25s';c.style.transform='';c.style.opacity='';return}
    c.style.transition='transform .18s,opacity .18s';c.style.transform=`translateX(${d>0?-120:120}px)`;c.style.opacity='0';
    setTimeout(()=>{S.a2ix=(S.a2ix||0)+d;draw();const nc=document.getElementById('a2x');if(nc){nc.style.transition='none';nc.style.transform=`translateX(${d>0?90:-90}px)`;nc.style.opacity='0';requestAnimationFrame(()=>{nc.style.transition='transform .26s cubic-bezier(.2,.8,.2,1),opacity .26s';nc.style.transform='';nc.style.opacity=''})}},170)});}
+/* montador: lista enxuta (ajuste depois do print) */
+{const st=document.createElement('style');st.textContent=`
+.tcard2 .ex2w{margin:0!important;border-radius:0!important;background:transparent!important;border-bottom:0!important}.tcard2 .ex2w:not(.open):not(.swiping) .trash{visibility:hidden}.tcard2 .swc{background:var(--card)!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;padding:0!important;min-height:0!important}
+.tcard2 .ex2w:last-of-type .swc{border-bottom:0!important}
+.tcard2 .ex2{padding:11px 0!important;gap:9px!important;min-height:0!important;background:transparent!important}
+.tcard2 .ex2 b{font:700 14px/1.25 Manrope,sans-serif!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+.tcard2 .ex2 .num{width:20px!important;height:20px!important;font-size:10.5px!important;border-radius:7px!important}
+.tcard2 .ex2 .mbm{flex-direction:row!important;align-items:baseline!important;gap:6px!important}
+.tcard2 .ex2 .mbm b{font:800 13px Manrope,sans-serif!important;opacity:.9}.tcard2 .ex2 .mbm small{font:700 11.5px Manrope,sans-serif!important}
+.tcard2 .ex2 .hand,.tcard2 .ex2 .grip{opacity:.35;transform:scale(.85)}
+.mbx{width:26px!important;height:26px!important;background:transparent!important;opacity:.5;margin-left:2px!important}.mbx svg{width:12px!important;height:12px!important}
+.mbdays button{padding:6px 0!important;border-radius:14px!important}.mbdays button b{font-size:11.5px!important}.mbdays button i{font-size:9px!important}
+.tcard2 .mbadd{margin-top:10px}
+.bsave .row2{display:grid!important;grid-template-columns:auto 1fr!important;gap:8px}.bsave [data-mbfav]{padding:0 16px!important;font-size:0!important;gap:0!important}.bsave [data-mbfav] .mbi{width:20px;height:20px}
+#app .bsave{margin-top:6px}#app .mbobs{margin-bottom:84px}`;document.head.appendChild(st)}
 /* agenda mais compacta (ajuste fino) */
 {const st=document.createElement('style');st.textContent=`body.ag2 #a2h{margin-top:6px}body.ag2 #a2h .d2{margin-top:8px}body.ag2 .a2sec{margin:18px 2px 8px}body.ag2 #app>.vseg{margin-top:4px!important}body.ag2 #app>.cfg82{margin-top:14px}body.ag2 #app>section.card.a2keep{margin-top:12px}body.ag2 #a2x.a2k{margin-top:14px}body.ag2 #a2t{margin-top:0}body.ag2 #a2w{margin-top:0}`;document.head.appendChild(st)}
 /* ===== Montador do aluno, mais simples: lista de treinos → treino aberto (mesmas funções de antes) ===== */
