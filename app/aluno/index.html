@@ -340,7 +340,7 @@ a.btn{text-decoration:none;color:inherit;display:inline-flex;align-items:center;
 .rdisc > span{ position:relative; z-index:2; }
 .rdisc.lock{ border:2px dashed var(--line); color:var(--muted); background:none; }
 .rdisc.ghost{ opacity:.28; filter:saturate(.6); }
-.rt0{ background:radial-gradient(circle at 34% 28%,#8a7a6e,#4e433b 60%,#2f2824); color:#efe6dd; box-shadow:inset 0 0 0 3px #2a231f, inset 0 2px 7px rgba(255,220,190,.18); }
+.rt0{ background:radial-gradient(circle at 32% 26%,#eef1f5 0,#a9b1bc 22%,#6b7480 55%,#3b424c 100%); color:#fff; box-shadow:inset 0 0 0 3px #c9d0d8, inset 0 0 0 5px #4a525d, inset 0 3px 8px rgba(255,255,255,.45), 0 4px 14px rgba(70,80,95,.35); }
 .rt1{ background:linear-gradient(140deg,rgba(255,255,255,.85),rgba(255,255,255,0) 45%,rgba(40,70,100,.22)), repeating-linear-gradient(90deg,#e3e9ee 0 1px,#bfcad3 1px 3px); color:#16222e; box-shadow:inset 0 0 0 3px #f7fafc, inset 0 0 0 5px #7d8b98; }
 .rt2{ background:conic-gradient(from 210deg,#fff4b8,#c99512,#fff8d6,#9c7208,#f3cf55,#b8880e,#fff4b8); color:#2e2000; box-shadow:inset 0 0 0 3px #fff6c9, inset 0 0 0 6px #7a5806, inset 0 0 0 8px #f0cf62, 0 0 16px rgba(240,190,60,.35); }
 .rt3{ background:conic-gradient(from 30deg,#ff5577,#8a0f2a,#e0234e,#5c0618,#ff7a92,#a3122f,#ff5577); color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.4); box-shadow:inset 0 0 0 3px rgba(255,255,255,.55), inset 0 0 0 6px #5c0618, 0 0 22px rgba(224,35,78,.55); }
@@ -6110,7 +6110,7 @@ function renderLvX(){const p=$('#mp-lv');if(!p)return;let x=$('#lvx');if(!x){x=d
 /* conquistas: as mais perto em destaque */
 function renderNear(){const p=$('#mp-cq');if(!p||!window.RMEDS)return;let x=$('#near');if(!x){x=document.createElement('div');x.id='near';p.insertBefore(x,p.firstChild)}
   const ms=window.RMEDS().filter(m=>!m.secret).map(m=>{const t=window.rtier(m),v=(window.RMEDV()[m.id])||0,nx=m.th[t+1];return {m,t,v,nx,r:nx?v/nx:0}}).filter(o=>o.nx).sort((a,b)=>b.r-a.r).slice(0,3);
-  x.innerHTML=`<p class="lbl" style="margin:4px 2px 8px">Mais perto de ganhar</p><div class="near">${ms.map(o=>`<button class="nr" data-rmed="${o.m.id}">${window.rdiscX(window.MEDX[o.m.id]||o.m.icon,Math.min(4,o.t+1),64)}<span><b>${o.m.name}</b><small>faltam ${o.nx-o.v} ${o.m.unit||''} pro ${window.TIERSX[Math.min(4,o.t+1)]}</small><i class="bar"><u style="width:${Math.round(o.r*100)}%"></u></i></span></button>`).join('')}</div><p class="lbl" style="margin:18px 2px 8px">Todas</p>`}
+  x.innerHTML=`<p class="lbl" style="margin:4px 2px 8px">Mais perto de ganhar</p><div class="near">${ms.map(o=>`<button class="nr" data-rmed="${o.m.id}">${window.rdiscX(window.MEDX[o.m.id]||(()=>{const h=RA.disc(o.m,0),i=h.indexOf('<span class="ic">');return i<0?o.m.icon:h.slice(i+17,h.indexOf('</span>',i))})(),Math.min(4,o.t+1),64)}<span><b>${o.m.name}</b><small>faltam ${o.nx-o.v} ${o.m.unit||''} pro ${window.TIERSX[Math.min(4,o.t+1)]}</small><i class="bar"><u style="width:${Math.round(o.r*100)}%"></u></i></span></button>`).join('')}</div><p class="lbl" style="margin:18px 2px 8px">Todas</p>`}
 const _rc23=typeof renderCase==='function'?renderCase:null;
 mTab('lv');
 paySheet=function(){window.openRenewX()};
