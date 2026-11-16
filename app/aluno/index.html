@@ -2664,9 +2664,12 @@ $('#exs').addEventListener('click',e=>{
 
 /* bonequinho */
 function openDemo(ex){
+  if(ex.yt){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.name}</p>
+    <a class="btn solid wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">▶ Ver o vídeo do exercício</a>
+    <p class="meta" style="margin-top:8px">Vídeo escolhido pelo seu personal. Abre no YouTube.</p>`);return}
   sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 6px">${ex.name}</p>
     <canvas class="fig" id="fig" width="720" height="480" aria-label="Animação de um boneco executando ${ex.name}"></canvas>
-    <p class="meta">Animação ilustrativa. No app real, a execução pode ser gravada pelo próprio Sérgio.</p>`,s=>{
+    <p class="meta">Animação ilustrativa.</p>`,s=>{
     const cv=s.querySelector('#fig'),g=cv.getContext('2d');const css=getComputedStyle(document.documentElement);const t0=performance.now();
     (function frame(now){if(s.dataset.closed)return;const fg=css.getPropertyValue('--fg').trim()||'#000',mu=css.getPropertyValue('--muted').trim()||'#888';
       const ph=(1-Math.cos((now-t0)/1000*Math.PI*0.9))/2;g.clearRect(0,0,720,480);g.lineCap='round';g.lineJoin='round';
@@ -5964,6 +5967,15 @@ function swapTema(root,from,to){if(from===to)return;const A=FORM(from),B=FORM(to
 new MutationObserver(ms=>{if(temaNow==='Matilha')return;ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1&&!n.closest('#ob .tour'))swapTema(n,'Matilha',temaNow)}))}).observe(document.body,{childList:true,subtree:true});
 const _ag11=applyGame;applyGame=function(){_ag11();if(CFG.tema!==temaNow){swapTema(document.body,temaNow,CFG.tema);temaNow=CFG.tema}};
 window.__gameRefresh=()=>refreshAll();
+function gnApply(root){const n=window.__GNOME;if(!n)return;const a=FORM(CFG.tema).minha;if(a!==n)swapText(root,a,n)}
+new MutationObserver(ms=>{if(!window.__GNOME)return;ms.forEach(m=>m.addedNodes.forEach(x=>{if(x.nodeType===1)gnApply(x)}))}).observe(document.body,{childList:true,subtree:true});
+{const _ag13=applyGame;applyGame=function(){_ag13();gnApply(document.body)}}
+/* sair do treino sem encerrar: avisa antes */
+document.addEventListener('click',e=>{if(!document.body.classList.contains('tr-on')||window.__trLeave)return;const bk=e.target.closest('#tr-back'),tb=e.target.closest('.tabs button[data-go]');
+  if(!bk&&!(tb&&tb.dataset.go!=='treino'))return;e.stopImmediatePropagation();e.preventDefault();const el=bk||tb;
+  sheet(`<span class="lbl">Treino em andamento</span><p class="d" style="font-size:36px;margin:4px 0 8px">Você não encerrou seu treino</p><p class="meta">Se sair agora, o treino fica sem finalizar e não conta no seu dia.</p>
+    <button class="btn solid wide" data-close style="margin-top:12px">Continuar treinando</button><button class="btn wide" id="trlv" style="margin-top:8px">Sair sem encerrar</button>`,s=>{const x=[...s.querySelectorAll('[data-close]')].pop();if(x&&!x.classList.contains('solid'))x.remove();
+    s.querySelector('#trlv').onclick=()=>{s.remove();window.__trLeave=1;try{if(!bk){const t=document.querySelector('#tr-back');t&&t.click()}el.click()}finally{window.__trLeave=0}}})},true);
 /* nomes dos levels do tema escolhido pelo personal (mesmos nomes do app do personal) */
 const LVNM={Matilha:['Recruta','Consistente','Atleta','Casca Grossa','Elite','Prestígio'],Olimpo:['Mortal','Oráculo','Lenda','Imortal','Divindade','Olimpo'],'Constelação':['Faísca','Estrela','Cometa','Galáxia','Supernova','Universo']};
 let lvNow='Matilha';
@@ -6180,10 +6192,10 @@ O.addEventListener('click',e=>{const b=e.target.closest('[data-p]');if(!b)return
 
 /* ===== v47: minhas metas (só do aluno) ===== */
 {const K='cc_metas',dk=d=>d.toISOString().slice(0,10),TODAY=dk(new Date());
- const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}},sv=()=>{try{localStorage.setItem(K,JSON.stringify(M))}catch(e){}};
+ const ld=()=>{try{return JSON.parse(localStorage.getItem(K))}catch(e){return null}},sv=()=>{M.at=Date.now();try{localStorage.setItem(K,JSON.stringify(M))}catch(e){}try{window.__metasPush&&window.__metasPush(M)}catch(e){}};
  let M=ld();if(!M||!M.items){M=window.__RD?{v:2,items:[],days:{},share:false}:{v:2,items:[{id:'b',t:'Alongar 10 min',k:'ck'},{id:'c',t:'Tomar a vitamina',k:'ck'}],days:{},share:false};if(!window.__RD)for(let i=1;i<=4;i++){const d=new Date();d.setDate(d.getDate()-i);M.days[dk(d)]={c:true,b:i<2}}sv()}
  if(!M.v){M.items=M.items.filter(x=>!(x.id==='a'&&x.k==='agua'&&x.t==='Beber 2,5 L de água'));M.v=2;sv()}
- let ED=false,NK='ck';
+ let ED=false,NK='ck';window.__metasIO={get:()=>M,load:m=>{M=m;try{localStorage.setItem(K,JSON.stringify(M))}catch(e){}try{draw()}catch(e){}}};
  const done=(it,day)=>{const v=(M.days[day]||{})[it.id];return it.k==='agua'?(v||0)>=it.g:!!v};
  const streak=it=>{let n=0;const d=new Date();if(!done(it,TODAY))d.setDate(d.getDate()-1);for(let i=0;i<60;i++){if(done(it,dk(d))){n++;d.setDate(d.getDate()-1)}else break}return n};
  const CK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
@@ -6533,7 +6545,13 @@ const [{data:CL,error:e2},{data:FX}]=await Promise.all([
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
 if(e2)return fail('Não deu para carregar suas aulas.');window.__CL=CL||[];window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
 /* tema da gamificação escolhido pelo personal */
-try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t}catch(_){}
+try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t;if(g&&g.nome)window.__GNOME=String(g.nome).slice(0,22)}catch(_){}
+/* metas do aluno guardadas na conta (não só no aparelho) */
+try{const io=window.__metasIO;if(io){const srv=P.setup&&P.setup.metas,loc=io.get();let t=null;
+  const push=m=>{clearTimeout(t);t=setTimeout(async()=>{try{const c=JSON.parse(JSON.stringify(m)),ks=Object.keys(c.days||{}).sort();ks.slice(0,Math.max(0,ks.length-70)).forEach(k=>delete c.days[k]);
+    const {data}=await sb.from('profiles').select('setup').eq('id',uid).single();await sb.from('profiles').update({setup:Object.assign({},(data&&data.setup)||{},{metas:c})}).eq('id',uid)}catch(_){}},800)};
+  if(srv&&srv.items&&(!loc||!loc.items||!loc.items.length||(srv.at||0)>=(loc.at||0)))io.load(srv);else if(loc&&loc.items&&loc.items.length)push(loc);
+  window.__metasPush=push}}catch(_){}
 try{const {data:lcs}=await PF.locs;window.__LOCS=(lcs||[]).filter(Boolean)}catch(_){window.__LOCS=[]}
 if(!window.__LOC0)window.__LOC0=(window.__LOCS||[])[0]||'';
 try{LOCAL=window.__LOC0}catch(_){}try{const A=window.ALOCX;if(A){A.length=0;(window.__LOC0?[window.__LOC0]:window.__LOCS).forEach(x=>A.push(x))}}catch(_){}try{PLOCS.length=0;window.__LOCS.forEach(x=>PLOCS.push(x))}catch(_){}
@@ -6926,7 +6944,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   P.forEach(w=>{const k=w.letter,days=w.exercises.days||[];ORD.push(k);MUS[k]=[];FIXN[k]=days.length?DS[days[0]]:'';
     PLANS[k]={title:'Treino '+k,focus:w.title||('Treino '+k),day:days.length?days.map(d=>DL[d]).join(' e '):'quando puder',
       ex:w.exercises.ex.filter(e=>!e.cd).map(e=>{const S=(e.s&&e.s.length?e.s:[[0,10]]),reps=String(S[0][1]||10),rn=parseInt(reps)||10,lp=lastSets(e.n);
-        return {name:e.n,sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
+        return {name:e.n,yt:/^https?:\/\//i.test(e.yt||'')?e.yt:'',sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
           tg:S.some(z=>+z[0]>0)?S.map(z=>[+z[0]||0,rn]):undefined}})}});
   const WKP=[0,1,2,3,4,5,6].map(i=>{const k=ORD.find(k=>(P.find(w=>w.letter===k).exercises.days||[]).includes(i));return k?{k}:(cf.cardio||[]).includes(i)?{c:1}:{r:1}});
   const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-TI),we=new Date(ws.getTime()+6*864e5),inW=d=>d>=ymd(ws)&&d<=ymd(we);
@@ -7120,7 +7138,7 @@ try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 
-R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{if(window.CFG&&CFG.tema!=='Matilha'&&window.__gameRefresh)window.__gameRefresh()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);setTimeout(unCover,450);
+R1.agAll();try{R1.sumRender&&R1.sumRender()}catch(_){}try{if(window.CFG&&(CFG.tema!=='Matilha'||window.__GNOME)&&window.__gameRefresh)window.__gameRefresh()}catch(_){}try{go('hoje')}catch(_){}setTimeout(()=>{const t=document.querySelector('.tabs button[data-go="hoje"]');if(t)t.click();window.scrollTo(0,0)},60);setTimeout(unCover,450);
 document.body.classList.remove('rl-wait');document.body.classList.add('rl');document.getElementById('rl-ld').remove();
 })().catch(e=>{console.error(e);const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 </script>

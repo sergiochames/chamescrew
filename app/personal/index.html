@@ -1630,8 +1630,8 @@ function useTplSheet(id){const f=FAVW.find(z=>z.id===id);
     <p class="note">${f.kind==='semana'?'A semana inteira entra no lugar da semana do aluno.':'O treino entra como a próxima letra do aluno.'} Vai sem cargas: o aluno começa com as dele.</p>
     ${ACT().map(x=>`<button class="who" data-tu="${esc(x.n)}"><span class="av0">${ini(x.n)}</span><span style="min-width:0"><b>${esc(x.n)}</b><small>${weekOf(x).plans.length?weekOf(x).plans.map((p,i)=>L8[i]+' '+p.name).join(' • '):'Sem treino ainda'}</small></span><span class="quota">usar ›</span></button>`).join('')}
     <button class="btn" data-close>Fechar</button>`,sh=>sh.addEventListener('click',e=>{const b=e.target.closest('[data-tu]');if(!b)return;const x=stu(b.dataset.tu),w=weekOf(x);
-      const go=()=>{if(f.kind==='semana'){w.plans=f.plans.map(p=>({name:p.name,days:[...p.days],ex:strip(p.ex)}));w.cardio=[...(f.cardio||[])];w.cd=cp2(f.cd||{})}else w.plans.push({name:f.p.name,days:[],ex:strip(f.p.ex)});
-        sh.remove();T2.tpl=null;T2.view='alunos';T2.stu=x.n;T2.sel=f.kind==='semana'?0:w.plans.length-1;draw();toast(f.kind==='semana'?`Semana aplicada em ${x.n.split(' ')[0]}`:`${f.p.name} entrou para ${x.n.split(' ')[0]}. Toque num dia para encaixar.`)};
+      const go=()=>{if(f.kind==='semana'){w.plans=f.plans.map(p=>({name:p.name,days:[...p.days],ex:strip(p.ex)}));w.cardio=[...(f.cardio||[])];w.cd=cp2(f.cd||{})}else w.plans.push({name:f.name||f.p.name,days:[],ex:strip(f.p.ex)});
+        sh.remove();T2.tpl=null;T2.view='alunos';T2.stu=x.n;T2.sel=f.kind==='semana'?0:w.plans.length-1;draw();toast(f.kind==='semana'?`Semana aplicada em ${x.n.split(' ')[0]}`:`${f.name||f.p.name} entrou para ${x.n.split(' ')[0]}. Toque num dia para encaixar.`)};
       if(f.kind==='semana'&&w.plans.length){sh.remove();sheet(`<span class="lbl">${esc(x.n)} já tem treino</span><h3 class="d" style="font-size:26px">Como usar “${esc(f.name)}”?</h3>
         <div class="info">Hoje: ${w.plans.map((p,i)=>LT(w,i)+' '+esc(p.name)).join(' • ')}</div>
         <button class="opt2" data-wu="add"><b>➕ Só acrescentar os treinos</b><small>Os treinos atuais continuam. Os novos entram sem dia, e você encaixa depois.</small></button>
@@ -1764,7 +1764,7 @@ const naD=i=>(i>=5?'no ':'na ')+DLL[i].toLowerCase();
 const BODY={'Perna':['Quadríceps','Posterior','Panturrilha','Adutores'],'Glúteo':['Glúteo','Abdutores'],'Peito':['Peito'],'Costas':['Costas','Trapézio'],'Ombro':['Ombro'],'Braços':['Bíceps','Tríceps','Antebraço'],'Core':['Abdômen','Oblíquos','Lombar']};
 const bodyOf=ex=>Object.keys(BODY).filter(k=>ex.some(e=>BODY[k].includes(musOf(e.n))));
 function tplPick(title,done){let q='',P=[];
-  const items=[...FAVW.filter(f=>f.kind!=='semana'&&f.p&&f.p.ex.length).map(f=>({name:f.p.name||f.name,sub:f.name!==(f.p.name||f.name)?f.name:'Treino',ex:f.p.ex,tags:f.tags||[]})),
+  const items=[...FAVW.filter(f=>f.kind!=='semana'&&f.p&&f.p.ex.length).map(f=>({name:f.name||f.p.name,sub:'Treino pronto',ex:f.p.ex,tags:f.tags||[]})),
     ...FAVW.filter(f=>f.kind==='semana').flatMap(f=>f.plans.map((p,i)=>({p,i})).filter(({p})=>p.ex.length).map(({p,i})=>({name:p.name||('Treino '+L8[i]),sub:'Do programa '+f.name+' • '+L8[i],ex:p.ex,tags:f.tags||[]})))];
   const inP=(L,path)=>L.filter(x=>path.every(v=>x.tags.includes(v)));
   const list=()=>{let L,head='';
@@ -2505,6 +2505,7 @@ function gameHTML(){const T=GTEMA[GAME.tema],P=GAME.pre==='custom'?null:GPRE[GAM
     <button class="btn solid" data-gaccept>Ativar gamificação</button></div>`;
   return `<label class="sw gon"><span><b>Gamificação ligada</b><br><small class="note">Desligada, some de todos os alunos. Ninguém perde o que já conquistou.</small></span><input type="checkbox" data-gon ${GAME.on?'checked':''}></label>
   ${GAME.on?`<section class="card"><span class="lbl">1. Tema</span><p class="cdesc">O visual das insígnias e o nome do ranking.</p><div class="gth3">${Object.entries(GTEMA).map(([k,t])=>`<button class="gtc" data-gt3="${k}" aria-pressed="${GAME.tema===k}"><span class="gmini">${badge(k,2)}</span><b>${t.n}</b><small>${t.lv[0]} → ${t.lv[4]}</small></button>`).join('')}</div>
+    <label class="lbl" for="gnome" style="margin-top:12px;display:block">Nome que o aluno vê</label><input class="inp" id="gnome" data-gnome maxlength="22" value="${esc(GAME.nome||'')}" placeholder="${({orig:'Minha matilha',olimpo:'Meu Olimpo',const:'Minha constelação'})[GAME.tema]||'Minha matilha'}"><p class="note" style="margin:4px 0 8px">Em branco, usa o nome do tema.</p>
     <div class="glv">${T.lv.map((n,i)=>`<div><span class="gmini sm">${badge(GAME.tema,i)}</span><small>${n}</small></div>`).join('')}</div></section>
   <section class="card"><span class="lbl">2. Dificuldade</span><p class="cdesc">Quanto o aluno precisa se dedicar para subir. A frequência já vem certa em cada modo.</p>
     ${GAME.pre==='custom'?`<div class="gmode cus sel"><b>✎ Personalizado</b><small>Montado por você no passo a passo</small></div>
@@ -2542,6 +2543,7 @@ function gamePage(){const s=sheet(`<span class="lbl">Configurações</span><h3 c
       if((b=e.target.closest('[data-gmt]'))){const k=b.dataset.gmt;GAME.med[k]=!GAME.med[k];if(!MEDC.some(m=>GAME.med[m.id])){GAME.med[k]=true;toast('Deixe pelo menos uma medalha');return}re();return}
       if((b=e.target.closest('[data-gpz]'))){przSheet(+b.dataset.gpz,re);return}
       if((b=e.target.closest('[data-gpf]'))){GAME.przFor[b.dataset.gpf]=!GAME.przFor[b.dataset.gpf];re();return}});
+    s.addEventListener('input',e=>{if(e.target.matches('[data-gnome]'))GAME.nome=e.target.value.replace(/[<>]/g,'').slice(0,22).trim()});
     s.addEventListener('change',e=>{if(e.target.matches('[data-gon]')){GAME.on=e.target.checked;setTimeout(re,0)}if(e.target.matches('[data-grk]')){GAME.rank=e.target.checked;setTimeout(re,0);toast(GAME.rank?'Ranking ligado':'Ranking desligado')}})})}
 function przSheet(i,done){const T=GTEMA[GAME.tema],P={...PRZ[i]};
   const body=()=>Object.entries(PRZT).map(([k,[ic,n,ph]])=>`<div class="przr${P[k]!==undefined?' on':''}"><label class="sw" style="background:none;padding:0"><span>${ic} <b>${n}</b></span><input type="checkbox" data-pzk="${k}" ${P[k]!==undefined?'checked':''}></label>${P[k]!==undefined?`<input class="inp" data-pzv="${k}" value="${esc(P[k])}" placeholder="${ph}" ${k==='desc'||k==='aula'||k==='rem'?'inputmode="numeric"':''} style="margin:0">`:''}</div>`).join('');
@@ -4637,7 +4639,7 @@ function progSheet(){const P0={...PROG};
   fin:'<rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',ass:'<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',
   aj:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/>'};
  const ic=k=>(I[k]?`<span class="cic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${I[k]}</svg></span>`:cic(k));
- CFGP.alunos={t:'Alunos e gamificação',g:['g-game','g-alunos']};CFGP.fin={t:'Financeiro',g:['g-precos']};CFGP.ass={t:'Assinatura e IA',g:['g-ia']};
+ CFGP.alunos={t:'Indicação e gamificação',g:['g-game','g-alunos']};CFGP.fin={t:'Financeiro',g:['g-precos']};CFGP.ass={t:'Assinatura e IA',g:['g-ia']};
  const part=k=>{cfgPart(k==='agenda'?'disp':k);const sh=[...document.querySelectorAll('.scrim .sheet')].pop();if(!sh)return;const h=sh.querySelector('h3.d');if(k==='perfil')h.textContent='Meu perfil';
    if(k==='agenda'){h.textContent='Agenda';sh.querySelectorAll('button').forEach(x=>{if(/anamnese/i.test(x.textContent))x.hidden=true});const r=sh.querySelector('[data-rules]');if(r)r.hidden=false;const st=sh.querySelector('.stick');if(st)st.hidden=false}
    if(k==='alunos'){const bd=sh.querySelector('[data-bdayc]');if(bd)bd.hidden=true;const ga=sh.querySelector('#g-alunos');if(ga)ga.hidden=true;const gg=sh.querySelector('#g-game');if(gg)gg.hidden=false}
@@ -4649,13 +4651,16 @@ function progSheet(){const P0={...PROG};
   <button class="cfg" data-c2="tr">${ic('tr')}<span><b>Treinos</b><small>Treinos prontos, exercícios favoritos e progressão de carga</small></span><i>›</i></button>
   <button class="cfg" data-c2="ac">${ic('ac')}<span><b>Acompanhamento</b><small>Anamnese, check-in do dia e check-in da semana</small></span><i>›</i></button>
   <button class="cfg" data-c2="msg">${ic('msg')}<span><b>Mensagens</b><small>Boas-vindas, convite, foto do mês e aniversário</small></span><i>›</i></button>
-  <button class="cfg" data-c2="alunos">${ic('al')}<span><b>Alunos e gamificação</b><small>Medalhas, ranking, temporada e indicação</small></span><i>›</i></button>
+  <button class="cfg" data-c2="alunos">${ic('al')}<span><b>Indicação e gamificação</b><small>Indicação, medalhas, ranking e temporada</small></span><i>›</i></button>
   <button class="cfg" data-c2="fin">${ic('fin')}<span><b>Financeiro</b><small>Preços, planos, avulsa e recebimentos • abre a aba Financeiro</small></span><i>›</i></button>
   <button class="cfg" data-c2="ass">${ic('ass')}<span><b>Assinatura e IA</b><small>${PLANOS[PLN.atual].n} • plano, cobrança e sua IA</small></span><i>›</i></button>
+  <button class="cfg" data-c2="team">${ic('al')}<span><b>Equipe</b><small>Login próprio para quem trabalha com você</small></span><i>›</i></button>
   <button class="cfg" data-c2="aj">${ic('aj')}<span><b>Ajuda</b><small>Tutorial de 5 passos pelo app</small></span><i>›</i></button>
   <button class="cfg" data-c2="out">${ic('out')}<span><b>Sair da conta</b><small>${esc(session.user.email||'')}</small></span><i>›</i></button></div>
   <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',async e=>{const b=e.target.closest('[data-c2]');if(!b)return;const k=b.dataset.c2;s.remove();
-   if(k==='tr'||k==='ac')treinoHub(k);else if(k==='msg')msgList();else if(k==='aj')tutP(0);else if(k==='fin'){S.tab='fin';draw()}else if(k==='out'){await saveNow();await sb.auth.signOut();location.replace('/app/')}else part(k)}))};
+   if(k==='team')teamSheet();else if(k==='tr'||k==='ac')treinoHub(k);else if(k==='msg')msgList();else if(k==='aj')tutP(0);else if(k==='fin'){S.tab='fin';draw()}else if(k==='out'){await saveNow();await sb.auth.signOut();location.replace('/app/')}else part(k)}))};
+ {const _cmP=cfgMenu;cfgMenu=function(){_cmP.apply(this,arguments);const sh=[...document.querySelectorAll('.scrim .sheet')].pop();if(!sh)return;
+   const kill=PERM.own?[]:['ass','team',...(PERM.trn?[]:['tr','ac']),...(PERM.fin?[]:['fin'])];kill.forEach(k=>sh.querySelectorAll('[data-c2="'+k+'"]').forEach(x=>x.remove()))}}
  /* voltar das telas internas para o menu novo */
  document.addEventListener('click',e=>{if(e.target.closest('[data-cfgback]')){e.stopImmediatePropagation();e.preventDefault();const sc=e.target.closest('.scrim');if(sc)sc.remove();cfgMenu()}},true);
 }
@@ -5271,6 +5276,21 @@ memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=r
      confirmBox(`Remover ${esc((nm||'').split(' ')[0])}?`,'Perde o acesso na hora. O que ele fez continua no histórico.','Sim, remover',async()=>{const {error}=await sb.rpc('team_remove',{p_id:M.id});if(error)return toast('Não removeu: '+error.message);toast('Removido da equipe');teamSheet()})}})};
 
 
+
+/* ===== Financeiro: avulsa fica junto do presencial; some o bloco antigo "Receber pagamentos" (agora é "Forma de receber") ===== */
+{const _drF=draw;draw=function(){_drF();if(S.tab!=='fin')return;try{const r=app.querySelector('#fin-rec');if(r)r.remove();
+  const av=app.querySelector('#fin-planos [data-avulsa]'),pr=app.querySelector('#fin-pres');if(av&&pr){pr.appendChild(av);av.style.marginTop='10px'}}catch(_){}}}
+/* ===== Agenda: depois de mexer numa aula, a tela fica na mesma semana, dia e altura ===== */
+{let LK=null,P0=null;const scr=()=>document.querySelector('.scroller')||document.scrollingElement;
+ const NAV='[data-wo],[data-w3d],[data-w3h],[data-w3att],[data-view],[data-gday],[data-pkgo],[data-mday],[data-fday],[data-tab],.w3rul button,[data-a2nav]';
+ const KEEP='.wb,[data-fev],.ev,.scrim,.mvbar,.cbox,#undo-chip,.toast';
+ window.addEventListener('pointerdown',e=>{const t=e.target;if(t.closest(NAV)){LK=null;return}
+   if(S.tab==='agenda'&&S.view==='semana'&&t.closest('.wb,[data-fev]')&&!t.closest('.scrim')){LK={wo:S.wo,w3:S.w3,t:Date.now()};P0=[e.clientX,e.clientY];return}
+   if(!t.closest(KEEP))LK=null},true);
+ window.addEventListener('pointermove',e=>{if(!LK||!P0||document.querySelector('.ghost'))return;const dx=e.clientX-P0[0],dy=e.clientY-P0[1];if(Math.abs(dx)>30&&Math.abs(dx)>Math.abs(dy))LK=null},true);
+ window.addEventListener('pointerup',()=>{P0=null},true);
+ const _drA=draw;draw=function(){if(LK&&S.tab==='agenda'&&S.view==='semana'&&Date.now()-LK.t<120000&&(S.wo!==LK.wo||S.w3!==LK.w3)){S.wo=LK.wo;S.w3=LK.w3;const el=scr(),y=el?el.scrollTop:0;_drA();const el2=scr();if(el2&&y)el2.scrollTop=y;return}_drA()}}
+
 /* ===== montar treino: botãozinho "Desfazer" depois de cada mudança ===== */
 {const UND=[];let snap=null,key=null,tmo=null;
  const inB=()=>S.tab==='treinos'&&!!(T2.stu||T2.tpl);
@@ -5290,7 +5310,7 @@ memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=r
    if(now&&now!==s0){UND.push(s0);if(UND.length>20)UND.shift();show()}},80)};
  document.addEventListener('pointerdown',before,true);document.addEventListener('focusin',before,true);
  document.addEventListener('click',after,true);document.addEventListener('change',after,true);
- const st=document.createElement('style');st.textContent=`#undo-chip{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 158px);z-index:60;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--fg);color:var(--bg);font:inherit;font-size:12.5px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .18s,transform .18s}#undo-chip.on{opacity:1;transform:none;pointer-events:auto}#undo-chip span{font-size:15px;line-height:1}`;document.head.appendChild(st)}
+ const st=document.createElement('style');st.textContent=`#undo-chip{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:60;display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--fg);font:inherit;font-size:12.5px;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.18);opacity:0;transform:translate(-50%,-8px);pointer-events:none;transition:opacity .18s,transform .18s}#undo-chip.on{opacity:1;transform:translate(-50%,0);pointer-events:auto}#undo-chip span{font-size:15px;line-height:1}`;document.head.appendChild(st)}
 
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
 lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';

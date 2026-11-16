@@ -173,6 +173,9 @@ async function teamInvite(){R.innerHTML='<div class="ld">Abrindo seu convite…<
     if(!data.session){$('#er').textContent='Acesso criado. Confirme pelo e-mail e depois entre.';return}
     route()}}
 async function teamJoin(){try{const {error}=await sb.rpc('team_join',{p_code:TEAMC});if(error){toast(error.message);return false}}catch(_){return false}try{history.replaceState(null,'','/app/')}catch(_){}return true}
+function wrongRole(r){const al=r==='aluno';R.innerHTML=`<div class="scr" style="text-align:center"><p class="q">Essa conta é de ${al?'aluno':'personal'}</p><p class="qs">Você entrou por "${al?'Sou personal':'Sou aluno'}", mas esse e-mail é de uma conta de ${al?'aluno':'personal'}.</p>
+  <div class="cta"><button class="b1" id="go">Abrir o app ${al?'do aluno':'do personal'}</button><button class="b2 nb" id="out">Sair e entrar com outra conta</button></div></div>`;
+  $('#go').onclick=()=>al?route():location.replace('/app/personal/');$('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()}}
 function removed(){R.innerHTML=`<div class="scr" style="text-align:center"><p class="q">Acesso encerrado</p><p class="qs">Seu acesso à equipe foi removido. Se foi engano, fale com quem te convidou.</p><div class="cta"><button class="b1" id="out">Sair da conta</button></div></div>`;$('#out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}}
 const saveDraft=()=>{try{localStorage.setItem('cc_draft',JSON.stringify(ST.d))}catch(_){}};
 
@@ -204,7 +207,7 @@ function login(){R.innerHTML=`<div class="scr"><div class="nav"><button class="b
   $('#fg').onclick=()=>{$('#er').innerHTML=`Fale com o ${PN} que ele redefine sua senha. <a class="link" href="https://wa.me/${WA_DUV}?text=${encodeURIComponent('Oi, '+PN+'! Esqueci minha senha do app.')}" target="_blank" rel="noopener">Abrir WhatsApp</a>`};
   $('#go').onclick=async()=>{const em=$('#em').value.trim(),pw=$('#pw').value;if(!em||!pw){$('#er').textContent='Preencha e-mail e senha.';return}
     $('#go').disabled=true;const {error}=await sb.auth.signInWithPassword({email:em,password:pw});$('#go').disabled=false;
-    if(error){$('#er').textContent=/Invalid/i.test(error.message)?'E-mail ou senha não conferem.':'Não deu para entrar agora. Tente de novo.';return}route()}}
+    if(error){$('#er').textContent=/Invalid/i.test(error.message)?'E-mail ou senha não conferem.':'Não deu para entrar agora. Tente de novo.';return}ST.just=TEAMC?null:ST.mode;route()}}
 
 /* ---------- convite ---------- */
 function askCode(){R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk">‹</button></div><p class="q">Seu convite</p><p class="qs">Abra o link que o ${PN} mandou no seu WhatsApp, ou digite o código de 6 letras. Se um amigo te indicou, pode digitar o código dele.</p>
@@ -417,6 +420,7 @@ async function route(){const {data:{session}}=await sb.auth.getSession();if(!ses
   if(TEAMC){const ok=await teamJoin();if(ok){location.replace('/app/personal/');return}}
   await linkRef();
   ST.user=session.user;const {data:p}=await sb.from('profiles').select('*').eq('id',ST.user.id).single();ST.prof=p||{};
+  if(p&&ST.just){const m=ST.just;ST.just=null;if(m==='personal'&&p.role==='aluno')return wrongRole('aluno');if(m!=='personal'&&p.role==='equipe')return wrongRole('equipe')}
   if(p&&p.role==='equipe'){location.replace('/app/personal/');return}
   if(p&&p.role==='removido'){removed();return}
   if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}
