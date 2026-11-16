@@ -5463,6 +5463,10 @@ document.addEventListener('click',e=>{const t=e.target;let b;if(S.tab!=='treinos
 .sheet .serl input,.sheet .serl .repbtn{height:38px!important;padding:6px 10px!important;font-size:14px!important}.sheet .serl .sn{font-size:13px!important}
 .sheet .addser{padding:8px!important;font-size:13px!important;min-height:0!important}.sheet .serh{font-size:16px!important}`;document.head.appendChild(st)}
 
+/* modelos da biblioteca: o que você monta no programa/treino fica no modelo (dias, treinos novos, cardio) */
+function favSync(){try{FAVW.forEach(f=>{if(!f.w)return;if(f.kind==='semana'){f.plans=f.w.plans;f.cardio=f.w.cardio;f.cd=f.w.cd}else if(f.w.plans&&f.w.plans[0])f.p=f.w.plans[0]})}catch(_){}}
+{const _drFS=draw;draw=function(){favSync();_drFS()}}
+{const _snFS=snapshot;snapshot=function(){favSync();return _snFS.apply(this,arguments)}}
 /* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
 {const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}
