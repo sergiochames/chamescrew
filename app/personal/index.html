@@ -5270,6 +5270,28 @@ memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=r
      if(I)return confirmBox('Cancelar o convite?','O link para de funcionar.','Sim, cancelar',async()=>{await sb.from('team_invites').delete().eq('code',I.code);teamSheet()});
      confirmBox(`Remover ${esc((nm||'').split(' ')[0])}?`,'Perde o acesso na hora. O que ele fez continua no histórico.','Sim, remover',async()=>{const {error}=await sb.rpc('team_remove',{p_id:M.id});if(error)return toast('Não removeu: '+error.message);toast('Removido da equipe');teamSheet()})}})};
 
+
+/* ===== montar treino: botãozinho "Desfazer" depois de cada mudança ===== */
+{const UND=[];let snap=null,key=null,tmo=null;
+ const inB=()=>S.tab==='treinos'&&!!(T2.stu||T2.tpl);
+ const kOf=()=>T2.tpl?'t:'+T2.tpl:'s:'+T2.stu;
+ const ser=()=>{try{const w=CUR();return JSON.stringify({plans:w.plans,cardio:w.cardio,cd:w.cd,mode:w.mode,single:w.single,start:w.start,end:w.end})}catch(_){return null}};
+ const chip=()=>{let c=document.getElementById('undo-chip');if(!c){c=document.createElement('button');c.id='undo-chip';c.type='button';c.innerHTML='<span aria-hidden="true">↶</span> Desfazer';c.onclick=undo;document.body.appendChild(c)}return c};
+ const hide=()=>{const c=document.getElementById('undo-chip');if(c)c.classList.remove('on');clearTimeout(tmo)};
+ const show=()=>{const c=chip();c.classList.add('on');clearTimeout(tmo);tmo=setTimeout(hide,7000)};
+ function undo(){if(!inB()||!UND.length)return hide();const o=JSON.parse(UND.pop()),w=CUR();
+   w.plans.splice(0,w.plans.length,...(o.plans||[]));w.cardio.splice(0,w.cardio.length,...(o.cardio||[]));
+   Object.keys(w.cd||{}).forEach(k=>delete w.cd[k]);Object.assign(w.cd||(w.cd={}),o.cd||{});
+   w.mode=o.mode;w.single=o.single;w.start=o.start?new Date(o.start):undefined;w.end=o.end?new Date(o.end):undefined;
+   draw();toast('Desfeito');UND.length?show():hide()}
+ const before=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#undo-chip'))return;if(!inB()){if(key){UND.length=0;key=null;hide()}return}
+   const k=kOf();if(k!==key){UND.length=0;key=k;hide()}if(snap==null)snap=ser()};
+ const after=e=>{if(e&&e.target&&e.target.closest&&e.target.closest('#undo-chip'))return;setTimeout(()=>{if(snap==null)return;const s0=snap;snap=null;if(!inB()||kOf()!==key)return;const now=ser();
+   if(now&&now!==s0){UND.push(s0);if(UND.length>20)UND.shift();show()}},80)};
+ document.addEventListener('pointerdown',before,true);document.addEventListener('focusin',before,true);
+ document.addEventListener('click',after,true);document.addEventListener('change',after,true);
+ const st=document.createElement('style');st.textContent=`#undo-chip{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 158px);z-index:60;display:flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;border:1px solid var(--line);background:var(--fg);color:var(--bg);font:inherit;font-size:12.5px;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .18s,transform .18s}#undo-chip.on{opacity:1;transform:none;pointer-events:auto}#undo-chip span{font-size:15px;line-height:1}`;document.head.appendChild(st)}
+
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
 lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
 S.tab='agenda';draw();if(!PS||!PS.data||PS.data.v!==2)saveNow();
