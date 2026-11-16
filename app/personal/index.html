@@ -4295,9 +4295,9 @@ document.addEventListener('click',()=>setTimeout(sync,150),true);
 
 /* ---------- treinos ---------- */
 function wkFromDB(id){const R=WKS.filter(w=>w.user_id===id),cf=R.find(w=>w.letter==='_cfg'),P=R.filter(w=>w.letter!=='_cfg').sort((a,b)=>(a.position||0)-(b.position||0));
-  const c=(cf&&cf.exercises)||{};return {plans:P.map(w=>({name:w.title||('Treino '+w.letter),days:(w.exercises&&w.exercises.days)||[],ex:(w.exercises&&w.exercises.ex)||[]})),cardio:c.cardio||[],cd:c.cd||{},mode:c.mode||'livre',single:c.single,start:c.start?new Date(c.start):undefined,end:c.end?new Date(c.end):undefined}}
+  const c=(cf&&cf.exercises)||{};return {plans:P.map(w=>({name:w.title||('Treino '+w.letter),days:(w.exercises&&w.exercises.days)||[],ex:(w.exercises&&w.exercises.ex)||[],obs:(w.exercises&&w.exercises.obs)||''})),cardio:c.cardio||[],cd:c.cd||{},mode:c.mode||'livre',single:c.single,start:c.start?new Date(c.start):undefined,end:c.end?new Date(c.end):undefined}}
 async function saveWk(x){const w=x.wk;if(!w||!x._id)return;if(w.plans.length&&!w.end){w.start=new Date(TD);w.end=addD(TD,42)}const L='ABCDEFGHIJ';
-  const rows=w.plans.map((p,i)=>({user_id:x._id,letter:L[i],title:p.name,focus:p.name,position:i,exercises:{days:p.days||[],ex:p.ex||[]},updated_by:ME.id}));
+  const rows=w.plans.map((p,i)=>({user_id:x._id,letter:L[i],title:p.name,focus:p.name,position:i,exercises:{days:p.days||[],ex:p.ex||[],obs:p.obs||''},updated_by:ME.id}));
   rows.push({user_id:x._id,letter:'_cfg',title:'config',focus:'',position:99,exercises:{cardio:w.cardio||[],cd:w.cd||{},mode:w.mode||'livre',single:!!w.single,start:w.start?new Date(w.start).toISOString():null,end:w.end?new Date(w.end).toISOString():null},updated_by:ME.id});
   const d=await sb.from('workouts').delete().eq('user_id',x._id);if(d.error){toast('Não salvou o treino: '+d.error.message);return}
   const {error}=await sb.from('workouts').insert(rows);if(error){toast('Não salvou o treino: '+error.message);return}
@@ -5375,6 +5375,94 @@ new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim .sheet')
    setTimeout(()=>{S.a2ix=(S.a2ix||0)+d;draw();const nc=document.getElementById('a2x');if(nc){nc.style.transition='none';nc.style.transform=`translateX(${d>0?90:-90}px)`;nc.style.opacity='0';requestAnimationFrame(()=>{nc.style.transition='transform .26s cubic-bezier(.2,.8,.2,1),opacity .26s';nc.style.transform='';nc.style.opacity=''})}},170)});}
 /* agenda mais compacta (ajuste fino) */
 {const st=document.createElement('style');st.textContent=`body.ag2 #a2h{margin-top:6px}body.ag2 #a2h .d2{margin-top:8px}body.ag2 .a2sec{margin:18px 2px 8px}body.ag2 #app>.vseg{margin-top:4px!important}body.ag2 #app>.cfg82{margin-top:14px}body.ag2 #app>section.card.a2keep{margin-top:12px}body.ag2 #a2x.a2k{margin-top:14px}body.ag2 #a2t{margin-top:0}body.ag2 #a2w{margin-top:0}`;document.head.appendChild(st)}
+/* ===== Montador do aluno, mais simples: lista de treinos → treino aberto (mesmas funções de antes) ===== */
+const MBI={back:'<path d="M15 18l-6-6 6-6"/>',chev:'<path d="M9 6l6 6-6 6"/>',plus:'<path d="M12 5v14M5 12h14"/>',ex:'<path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/>',star:'<path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/>',ai:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>',heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',set:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'};
+const mbi=k=>`<svg class="mbi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${MBI[k]}</svg>`;
+const MBD=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],MBD1=['S','T','Q','Q','S','S','D'];
+const mbMin=P=>{let s=0;(P.ex||[]).forEach(e=>{const n=(e.s&&e.s.length)||3;s+=n*(45+(+e.rest||60))});return Math.max(5,Math.round(s/60/5)*5)};
+const mbSum=e=>{const S=(e.s&&e.s.length?e.s:[[0,10]]),rs=[...new Set(S.map(z=>z[1]))];return `${S.length}×${rs.join('/')}${e.rest?' • '+e.rest+'s':''}`};
+function mbList(x,w){const L='ABCDEFGHIJ';
+  app.innerHTML=`<div class="bhead"><button class="bback" data-bback aria-label="Voltar"><span>‹</span>Alunos</button><div style="flex:1;min-width:0"><span class="lbl">Treino • ${esc(x.mode||'')}</span><b class="bhn">${esc(x.n)}</b></div><button class="mini anqb" data-anq>Anamnese</button></div>
+   <div class="mbh"><span>Treinos ${esc(x.n.split(' ')[0])==='' ?'':'de '+esc(x.n.split(' ')[0])}</span><em>${w.plans.reduce((a,p)=>a+p.days.length,0)}x por semana</em></div>
+   ${w.plans.map((p,j)=>`<button class="mbc" data-mbo="${j}"><span class="mbl">${L[j]}</span><span class="mbt"><b>${esc(p.name)}</b><small>${p.ex.length} ${p.ex.length===1?'exercício':'exercícios'}${p.ex.length?' • ~'+mbMin(p)+' min':''}</small><span class="mbd">${MBD1.map((d,i)=>`<i class="${p.days.includes(i)?'on':''}">${d}</i>`).join('')}</span></span>${mbi('chev')}</button>`).join('')}
+   <div class="mbc mbcd"><span class="mbl o">${mbi('heart')}</span><span class="mbt"><b>Cardio</b><small>${w.cardio.length?w.cardio.length+'x • '+esc((w.cd[w.cardio[0]]||{}).t||'Corrida')+' • '+((w.cd[w.cardio[0]]||{}).min||30)+' min':'Toque nos dias para colocar'}</small><span class="mbd">${MBD1.map((d,i)=>`<i class="${w.cardio.includes(i)?'on':''}" data-mbcd="${i}" role="button">${d}</i>`).join('')}</span></span>${w.cardio.length?`<button class="mbe" data-bcd="${w.cardio[0]}" aria-label="Editar cardio">Editar</button>`:''}</div>
+   <button class="btn mbnew" data-mbnew>${mbi('plus')}Novo treino</button>
+   ${w.plans.some(p=>p.ex.length)?`<button class="mbaj" data-mbvol><span class="mbvm">${(()=>{try{return bodyHeat(volOf(w))}catch(_){return ''}})()}</span><span><b>Equilíbrio da semana</b><small>${(()=>{try{return volSummary(w)}catch(_){return 'Volume por músculo'}})()}</small></span>${mbi('chev')}</button>`:''}
+   <button class="mbaj" data-mbaj>${mbi('set')}<span><b>Ajustes da semana</b><small>${w.start?fmtD(w.start)+' → '+fmtD(effEnd(x))+' • ':''}${w.mode==='fixo'?'dia fixo':w.mode==='seq'?'segue a fila':'aluno escolhe o treino'}</small></span>${mbi('chev')}</button>
+   <div class="bsave"><button class="btn solid" data-bdone>Pronto</button></div>`}
+function mbPost(x,w){const P=w.plans[T2.sel];if(!P)return;
+  const bb=app.querySelector('[data-bback]');if(bb){bb.removeAttribute('data-bback');bb.dataset.mbback='1';bb.innerHTML='<span>‹</span>Treinos'}
+  const aq=app.querySelector('[data-anq]');if(aq)aq.remove();
+  ['.wkc','.proto','[data-aibuild]','[data-vol]','[data-bpick]','[data-btpl]'].forEach(q=>app.querySelectorAll(q).forEach(n=>n.hidden=true));
+  const fv=app.querySelector('[data-bfav]');if(fv)fv.hidden=true;
+  const th=app.querySelector('.tcard2 .th');if(th){const h=th.querySelector('h2'),l=th.querySelector('.lbl');
+    if(h){const i=document.createElement('input');i.className='mbname';i.value=P.name;i.setAttribute('aria-label','Nome do treino');i.addEventListener('input',()=>{P.name=i.value.slice(0,40)});i.addEventListener('blur',()=>{if(!P.name.trim())P.name='Treino '+'ABCDEFGHIJ'[T2.sel];i.value=P.name});h.replaceWith(i)}
+    if(l)l.remove()}
+  const card=app.querySelector('.tcard2');if(card){
+    const dc=document.createElement('div');dc.className='mbdays';dc.innerHTML=MBD.map((d,i)=>`<button data-mbday="${i}" aria-pressed="${P.days.includes(i)}">${d}</button>`).join('');th?th.after(dc):card.prepend(dc);
+    card.querySelectorAll('.ex2').forEach(b=>{const e=P.ex[+b.dataset.bex];if(!e)return;const sm=b.querySelector('small'),bt=b.querySelector('b');
+      if(bt)bt.innerHTML=esc(e.n);if(sm)sm.textContent=[e.obs?e.obs:'',ytId&&ytId(e.yt)?'vídeo':''].filter(Boolean).join(' • ');if(sm&&!sm.textContent)sm.remove();
+      if(!b.querySelector('.mbm')){const m=document.createElement('span');m.className='mbm';m.textContent=mbSum(e);b.appendChild(m)}});
+    card.querySelectorAll('.lkbar button').forEach(b=>b.textContent='Conjugados • toque para separar');
+    const sb=card.querySelector('[data-sortbox]');const ad=document.createElement('button');ad.className='btn solid mbadd';ad.dataset.mbadd='1';ad.innerHTML=mbi('plus')+'Adicionar';(sb||card).after?(sb?sb.after(ad):card.appendChild(ad)):0;
+    const ob=document.createElement('div');ob.className='mbobs';ob.innerHTML=`<label class="lbl" for="mbobs">Observações do treino</label><textarea id="mbobs" rows="2" placeholder="Ex.: aquecer 10 min na esteira antes">${esc(P.obs||'')}</textarea>`;card.after(ob);ob.querySelector('textarea').addEventListener('input',ev=>{P.obs=ev.target.value.slice(0,500)})}
+  const bs=app.querySelector('.bsave');if(bs)bs.innerHTML=`<div class="row2"><button class="btn" data-mbfav>${mbi('star')}Salvar na biblioteca</button><button class="btn solid" data-mbback>Pronto</button></div>`}
+{const _dB=drawBuilder;drawBuilder=function(){if(!T2.stu||T2.tpl){T2.open=null;return _dB()}
+  if(T2._ostu!==T2.stu){T2._ostu=T2.stu;T2.open=null}const x=stu(T2.stu),w=CUR();try{fixL(w)}catch(_){}
+  if(w.single){return _dB()}
+  if(T2.open==null||T2.open>=w.plans.length){T2.open=null;return mbList(x,w)}
+  T2.sel=T2.open;T2.vd=null;_dB();try{mbPost(x,w)}catch(err){console.warn('mb',err)}}}
+document.addEventListener('click',e=>{const t=e.target;let b;if(S.tab!=='treinos'||!T2.stu||T2.tpl)return;
+  const w=CUR(),x=stu(T2.stu);
+  if((b=t.closest('[data-mbo]'))){e.stopImmediatePropagation();T2.open=+b.dataset.mbo;draw();const sc=document.querySelector('.scroller');if(sc)sc.scrollTop=0;return}
+  if((b=t.closest('[data-mbback]'))){e.stopImmediatePropagation();T2.open=null;draw();if(x&&x._id)saveWk(x);return}
+  if((b=t.closest('[data-mbnew]'))){e.stopImmediatePropagation();w.plans.push({name:'Treino '+'ABCDEFGHIJ'[w.plans.length],days:[],ex:[],obs:''});T2.open=w.plans.length-1;draw();return}
+  if((b=t.closest('[data-mbday]'))){e.stopImmediatePropagation();const P=w.plans[T2.sel],i=+b.dataset.mbday;if(!P)return;
+    if(P.days.includes(i)){P.days=P.days.filter(d=>d!==i);draw();return}
+    if(w.cardio.includes(i))w.cardio=w.cardio.filter(d=>d!==i);conflict(w,T2.sel,i,undefined,()=>draw());return}
+  if((b=t.closest('[data-mbcd]'))){e.stopImmediatePropagation();const i=+b.dataset.mbcd;
+    if(w.cardio.includes(i)){w.cardio=w.cardio.filter(d=>d!==i);draw();return}
+    const k=w.plans.findIndex(p=>p.days.includes(i));const go=()=>{w.plans.forEach(p=>p.days=p.days.filter(d=>d!==i));w.cardio.push(i);w.cardio.sort();cdOf(w,i);draw()};
+    if(k>=0)confirmBox('Trocar por cardio?',`${MBD[i]} tem ${esc(w.plans[k].name)}. O treino fica guardado, só sai desse dia.`,'Sim, cardio',go);else go();return}
+  if((b=t.closest('[data-mbadd]'))){e.stopImmediatePropagation();const P=w.plans[T2.sel];
+    sheet(`<span class="lbl">${esc(P?P.name:'Treino')}</span><h3 class="d">Adicionar</h3>
+     <button class="mbopt" data-mbq="[data-bpick]"><span class="mbic">${mbi('ex')}</span><span><b>Exercício</b><small>Da lista, por músculo ou buscando</small></span></button>
+     <button class="mbopt" data-mbq="[data-btpl]"><span class="mbic">${mbi('star')}</span><span><b>Treino pronto</b><small>Da sua biblioteca, com as pastas</small></span></button>
+     <button class="mbopt" data-mbq="[data-aibuild]"><span class="mbic">${mbi('ai')}</span><span><b>Montar com IA</b><small>Fale, escreva ou mande um PDF</small></span></button>
+     <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',ev=>{const o=ev.target.closest('[data-mbq]');if(!o)return;s.remove();const h=app.querySelector(o.dataset.mbq);if(h)h.click()}));return}
+  if((b=t.closest('[data-mbvol]'))){e.stopImmediatePropagation();const tmp=document.createElement('button');tmp.hidden=true;tmp.setAttribute('data-vol','');app.appendChild(tmp);tmp.click();tmp.remove();return}
+  if((b=t.closest('[data-mbfav]'))){e.stopImmediatePropagation();const h=app.querySelector('[data-bfav]');if(h)h.click();return}
+  if((b=t.closest('[data-mbaj]'))){e.stopImmediatePropagation();
+    sheet(`<span class="lbl">${esc(x.n)}</span><h3 class="d">Ajustes da semana</h3>
+     ${w.plans.length?`<button class="mbopt" data-mbq2="per"><span><b>Período do treino</b><small>${w.start?fmtD(w.start)+' → '+fmtD(effEnd(x)):'Começa quando você salvar'}</small></span></button>`:''}
+     <button class="mbopt" data-mbq2="modes"><span><b>Treino do dia</b><small>${w.mode==='fixo'?'Dia fixo':w.mode==='seq'?'Segue a fila':'Aluno escolhe'}</small></span></button>
+     <button class="mbopt" data-mbq2="copy"><span><b>Copiar uma semana</b><small>De um programa pronto ou de outro aluno</small></span></button>
+     <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',ev=>{const o=ev.target.closest('[data-mbq2]');if(!o)return;s.remove();const k=o.dataset.mbq2,tmp=document.createElement('button');tmp.hidden=true;tmp.setAttribute({per:'data-bper',modes:'data-bmodes',copy:'data-bcopy',vol:'data-vol'}[k],'');app.appendChild(tmp);tmp.click();tmp.remove()}));return}
+},true);
+{const st=document.createElement('style');st.textContent=`.mbi{width:18px;height:18px;flex:none}
+.mbh{display:flex;justify-content:space-between;align-items:center;margin:4px 2px 0;font:800 12px Manrope,sans-serif;color:var(--muted)}.mbh em{font-style:normal;padding:4px 9px;border-radius:999px;border:1px solid var(--line)}
+.mbc{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:20px;border:1px solid var(--line);background:color-mix(in srgb,var(--fg) 5%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);color:inherit;text-align:left;font:inherit}
+.mbc .mbl{width:42px;height:42px;border-radius:14px;flex:none;display:grid;place-items:center;background:var(--fg);color:var(--bg);font:900 17px Manrope,sans-serif}.mbc .mbl.o{background:color-mix(in srgb,var(--fg) 10%,transparent);color:inherit}
+.mbt{flex:1;min-width:0}.mbt b{display:block;font-size:15px}.mbt small{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.mbd{display:flex;gap:4px;margin-top:7px}.mbd i{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:10px;font-weight:800;color:var(--muted);border:1px solid var(--line)}.mbd i.on{background:var(--fg);color:var(--bg);border-color:transparent}
+.mbcd .mbd i{width:26px;height:26px;cursor:pointer}.mbe{flex:none;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:none;color:inherit;font:800 12px Manrope,sans-serif}
+.mbnew,.mbadd{display:flex!important;align-items:center;justify-content:center;gap:6px}
+.mbaj{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:18px;border:1px solid var(--line);background:none;color:inherit;text-align:left;font:inherit}.mbaj span{flex:1}.mbaj .mbvm{flex:none!important;display:flex;gap:2px;height:40px}.mbaj .mbvm svg{height:40px;width:auto}.mbaj b{display:block;font-size:13.5px}.mbaj small{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.mbname{width:100%;font:800 20px Manrope,sans-serif;color:inherit;background:transparent;border:1px solid transparent;border-radius:12px;padding:6px 8px;margin-left:-8px}.mbname:focus{outline:none;border-color:var(--line);background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.mbdays{display:flex;gap:5px;flex-wrap:wrap;margin:2px 0 6px}.mbdays button{padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--muted);font:800 12px Manrope,sans-serif}.mbdays button[aria-pressed=true]{background:var(--fg);color:var(--bg);border-color:transparent}
+.tcard2 .ex2{display:flex!important;align-items:center;gap:10px}.tcard2 .ex2 .mico{display:none!important}.tcard2 .ex2 .num{width:22px!important;height:22px!important;font-size:11px!important;flex:none}.tcard2 .ex2 b{font-size:14px!important}.tcard2 .ex2 small{font-size:11.5px!important;opacity:.8}.tcard2 .ex2 .mbm{margin-left:auto;font:800 12px Manrope,sans-serif;color:var(--muted);white-space:nowrap;padding-left:8px}
+.tcard2 .ex2>span:not(.num):not(.mico):not(.mbm){flex:1;min-width:0}.tcard2 .ex2 .go,.tcard2 .ex2>i{display:none}
+.tcard2 .ex2w.lk .swc{box-shadow:inset 3px 0 0 #7fe0a8}.tcard2 .lkbar button{color:#7fe0a8!important;font-weight:800!important;font-size:11.5px!important}
+.mbobs{display:flex;flex-direction:column;gap:6px;padding:12px 14px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--fg) 4%,transparent)}.mbobs textarea{background:none;border:0;color:inherit;font:600 14px Manrope,sans-serif;resize:vertical;min-height:44px;outline:none}
+.mbopt{display:flex;align-items:center;gap:12px;width:100%;padding:13px;border-radius:18px;border:1px solid var(--line);background:color-mix(in srgb,var(--fg) 4%,transparent);color:inherit;text-align:left;font:inherit}.mbopt b{display:block;font-size:14.5px}.mbopt small{display:block;font-size:12px;color:var(--muted);font-weight:600}.mbic{width:38px;height:38px;border-radius:12px;background:var(--fg);color:var(--bg);display:grid;place-items:center;flex:none}
+.bsave .row2 .btn{display:flex;align-items:center;justify-content:center;gap:6px}
+.mbaj .mbvm small,.mbaj .mbvm span,.mbaj .mbvm b{display:none!important}.mbaj .mbvm{overflow:hidden;max-width:58px}
+.mbdays{flex-wrap:nowrap!important;gap:4px!important}.mbdays button{padding:7px 0!important;flex:1;min-width:0;font-size:11.5px!important}
+/* editar exercício mais enxuto */
+.sheet .serc{gap:6px!important;padding:10px 12px!important}.sheet .serl{gap:6px!important}.sheet .serl>*{min-height:0!important}
+.sheet .serl input,.sheet .serl .repbtn{height:38px!important;padding:6px 10px!important;font-size:14px!important}.sheet .serl .sn{font-size:13px!important}
+.sheet .addser{padding:8px!important;font-size:13px!important;min-height:0!important}.sheet .serh{font-size:16px!important}`;document.head.appendChild(st)}
+
 /* selecionado sempre bem visível (claro e escuro) nas telas que abrem por cima */
 {const st=document.createElement('style');st.textContent=`.sheet .chip[aria-pressed="true"],.sheet .seg button[aria-pressed="true"],.sheet .fseg button[aria-pressed="true"],.sheet .vseg button[aria-pressed="true"],.sheet .bdy[aria-pressed="true"],.sheet [role=group] button[aria-pressed="true"]{background:var(--fg)!important;color:var(--bg)!important;border-color:var(--fg)!important;box-shadow:0 3px 10px rgba(0,0,0,.18)!important}
 .sheet .bdy[aria-pressed="true"] small,.sheet .bdy[aria-pressed="true"] i,.sheet .bdy[aria-pressed="true"] b{color:var(--bg)!important}

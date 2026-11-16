@@ -6548,6 +6548,10 @@ const [{data:CL,error:e2},{data:FX}]=await Promise.all([
   sb.from('classes').select('*').eq('student_id',uid).neq('status','reservada').gte('starts_at',m0.toISOString()).order('starts_at'),
   sb.from('fixed_slots').select('*').eq('student_id',uid).eq('active',true)]);
 if(e2)return fail('Não deu para carregar suas aulas.');window.__CL=CL||[];window.__LOC0=((FX||[]).find(f=>f.location)||{}).location||'';
+/* observação do treino (escrita pelo personal) embaixo do nome do treino */
+try{const upd=()=>{const t=document.getElementById('tr-title'),sub=document.getElementById('tr-sub');if(!t||!sub)return;const k=(t.textContent.match(/Treino ([A-J])$/)||[])[1],o=k&&window.__PLOBS&&window.__PLOBS[k];let el=document.getElementById('tr-obs');
+  if(!o){if(el)el.remove();return}if(!el){el=document.createElement('p');el.id='tr-obs';el.style.cssText='margin:8px 0 0;font-size:13.5px;font-weight:600;opacity:.8;line-height:1.4';sub.after(el)}if(el.textContent!==o)el.textContent=o};
+  new MutationObserver(upd).observe(document.body,{subtree:true,childList:true,characterData:true});setTimeout(upd,500)}catch(_){}
 /* tema da gamificação escolhido pelo personal */
 try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t;if(g&&g.nome)window.__GNOME=String(g.nome).slice(0,22)}catch(_){}
 /* metas do aluno guardadas na conta (não só no aparelho) */
@@ -6951,7 +6955,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   if(!P.length)return {uid,v:3,PLANS:{A:{title:'Treino A',focus:'',day:'',ex:[]}},ORD:['A'],MUS:{A:[]},FIXN:{A:''},TR:{done:{},last:{k:'A',when:''},on:false},TRLOG:{},WKP:[{r:1},{r:1},{r:1},{r:1},{r:1},{r:1},{r:1}],TK:'A',CFG:{modo:'livre',semTreino:true},WKTXT:''};
   const PLANS={},ORD=[],MUS={},FIXN={};
   P.forEach(w=>{const k=w.letter,days=w.exercises.days||[];ORD.push(k);MUS[k]=[];FIXN[k]=days.length?DS[days[0]]:'';
-    PLANS[k]={title:'Treino '+k,focus:w.title||('Treino '+k),day:days.length?days.map(d=>DL[d]).join(' e '):'quando puder',
+    (window.__PLOBS=window.__PLOBS||{})[k]=String((w.exercises&&w.exercises.obs)||'').trim();PLANS[k]={title:'Treino '+k,focus:w.title||('Treino '+k),day:days.length?days.map(d=>DL[d]).join(' e '):'quando puder',
       ex:w.exercises.ex.filter(e=>!e.cd).map(e=>{const S=(e.s&&e.s.length?e.s:[[0,10]]),reps=String(S[0][1]||10),rn=parseInt(reps)||10,lp=lastSets(e.n);
         return {name:e.n,yt:/^https?:\/\//i.test(e.yt||'')?e.yt:'',sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
           tg:S.some(z=>+z[0]>0)?S.map(z=>[+z[0]||0,rn]):undefined}})}});
