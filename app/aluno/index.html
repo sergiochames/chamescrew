@@ -3019,6 +3019,7 @@ const PLANS3=[{k:'mes',n:'Mensal',m:1,off:0,tag:'',end:'09/12/2026',note:'Paga m
 const MYOFF=[];
 let RN={p:'tri',pay:'pix',inst:1,auto:false};
 const R2=v=>'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const PAYC=()=>Object.assign({mode:'manual',pix_off:3,max_inst:12,auto_ok:true},window.__PAYCFG||{});const PIXF=()=>(+PAYC().pix_off||0)/100;
 function rnCalc(){const pl=PLANS3.find(x=>x.k===RN.p),full=PLN.base*pl.m,planOff=full*pl.off,my=Math.min(100,MYOFF.reduce((a,x)=>a+x[1],0))/100;
   const afterPlan=full-planOff,myOff=afterPlan*my,afterMy=afterPlan-myOff,pixOff=RN.pay==='pix'?afterMy*.03:0,total=Math.round((afterMy-pixOff)*100)/100;return{pl,full,planOff,myOff,pixOff,total,my}}
 function openRenew(){RN={p:PLN.cur,pay:'pix',inst:1,auto:!!window.__AUTOREN};if(window.__asaas)window.__asaas({action:'quote',plan:PLN.cur||'mes',method:'pix'}).then(r=>{if(!r||!r.q)return;MYOFF.length=0;r.q.discounts.forEach(d=>MYOFF.push([d.nome||'Desconto',+d.pct||0]));try{WAL.items.length=0;r.q.discounts.forEach(d=>WAL.items.push({o:d.nome||'Desconto',pct:+d.pct||0,ok:1}));walFix()}catch(_){}window.__AUTOREN=RN.auto=!!r.auto_renew;if($('#rnw')&&!$('#rnw .rn-pix,#rnw .rn-load'))rnDraw()}).catch(()=>{});let el=$('#rnw');if(!el){el=document.createElement('div');el.id='rnw';el.className='fx';el.setAttribute('role','dialog');el.setAttribute('aria-label','Renovar plano');document.body.appendChild(el)}rnDraw();el.scrollTop=0}
@@ -3032,12 +3033,12 @@ function rnDraw(){const el=$('#rnw');const c=rnCalc(),my=MYOFF.reduce((a,x)=>a+x
    <div class="rn-my"><span class="d">${my}%</span><div><b>Seu desconto de renovação</b><small>${MYOFF.map(x=>x[0]+' '+x[1]+'%').join(' + ')}</small></div></div>
    <p class="lbl" style="margin:18px 0 8px">Escolha o plano</p>${PLANS3.map(card).join('')}
    <p class="lbl" style="margin:18px 0 8px">Forma de pagamento</p>
-   <div class="seg2" style="margin:0"><button data-rnpay="pix" aria-pressed="${RN.pay==='pix'}">Pix • −3%</button><button data-rnpay="card" aria-pressed="${RN.pay==='card'}">Cartão de crédito</button></div>
-   ${RN.pay==='card'&&maxI>1&&!RN.auto?`<div class="chips" style="margin-top:10px">${Array.from({length:maxI},(_,i)=>i+1).map(i=>`<button class="chip" aria-pressed="${RN.inst===i}" data-rni="${i}">${i}x ${R2(c.total/i)}</button>`).join('')}</div>`:''}
-   ${RN.pay==='card'?`<label class="rn-auto"><input type="checkbox" data-rn-auto ${RN.auto?'checked':''}><span><b>Renovar automático</b><small>O Asaas cobra no cartão a cada ${c.pl.m===1?'mês':c.pl.m+' meses'}. Você desliga quando quiser.</small></span></label>`:''}
+   <div class="seg2" style="margin:0${PAYC().mode==='auto'?'':';grid-template-columns:1fr'}"><button data-rnpay="pix" aria-pressed="${RN.pay==='pix'}">Pix${PIXF()?' • −'+Math.round(PIXF()*100)+'%':''}</button>${PAYC().mode==='auto'?`<button data-rnpay="card" aria-pressed="${RN.pay==='card'}">Cartão de crédito</button>`:''}</div>
+   ${RN.pay==='card'&&!RN.auto&&(+PAYC().max_inst||1)>1?`<label class="rn-inst"><span>Parcelar em</span><select data-rnsel>${Array.from({length:Math.min(12,+PAYC().max_inst||1)},(_,i)=>i+1).map(i=>`<option value="${i}" ${RN.inst===i?'selected':''}>${i}x de ${R2(c.total/i)}${i>1?' sem juros':''}</option>`).join('')}</select></label>`:''}
+   ${RN.pay==='card'&&PAYC().auto_ok!==false?`<label class="rn-auto"><input type="checkbox" data-rn-auto ${RN.auto?'checked':''}><span><b>Renovar automático</b><small>O Asaas cobra no cartão a cada ${c.pl.m===1?'mês':c.pl.m+' meses'}. Você desliga quando quiser.</small></span></label>`:''}
    <div class="rn-sum"><div><span>${c.pl.n} cheio (${c.pl.m}x ${R2(PLN.base)})</span><span>${R2(c.full)}</span></div>
      ${c.planOff?`<div><span>Desconto do plano</span><span>−${R2(c.planOff)}</span></div>`:''}<div><span>Seu desconto (${my}%)</span><span>−${R2(c.myOff)}</span></div>
-     ${c.pixOff?`<div><span>Desconto do Pix (3%)</span><span>−${R2(c.pixOff)}</span></div>`:''}
+     ${c.pixOff?`<div><span>Desconto do Pix (${Math.round(PIXF()*100)}%)</span><span>−${R2(c.pixOff)}</span></div>`:''}
      <div class="tot"><span>Total</span><span>${R2(c.total)}</span></div><p class="meta" style="font-size:12.5px;margin:4px 0 0">Válido até ${c.pl.end}. Você economiza ${R2(c.full-c.total)}.</p></div>
    <button class="btn solid wide" data-rn-go style="margin-top:14px">${RN.pay==='pix'?`Gerar Pix de ${R2(c.total)}`:`Continuar para o cartão • ${RN.auto?'automático':RN.inst+'x'}`}</button>
    <p class="meta" style="font-size:12px;text-align:center;margin:8px 0 0">Pagamento pelo Asaas. Assim que cair, o plano renova sozinho.</p>`}
@@ -3050,8 +3051,8 @@ async function rnStart(method,w){const c=rnCalc(),el=$('#rnw');
   const p=r.pay,tot=R2(+p.amount);
   if(method==='pix'){try{w&&w.close()}catch(_){}el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Pix</span></div>
     <div class="rn-pix"><span class="lbl" style="display:block;margin-top:16px">${c.pl.n} • ${tot}</span><p class="d" style="font-size:44px;margin:4px 0 12px">Pague com Pix</p>
-    ${p.pix_img?`<img class="rn-qr" alt="QR Code do Pix" src="data:image/png;base64,${p.pix_img}">`:''}
-    ${p.pix_payload?`<button class="btn solid wide" data-rn-copy="${p.pix_payload}" style="margin-top:12px">Copiar código Pix</button>`:`<a class="btn solid wide" href="${p.invoice_url}" target="_blank" rel="noopener" style="margin-top:12px;display:block;text-align:center">Abrir o Pix</a>`}
+    ${p.pix_payload?`<button class="btn solid wide" data-rn-copy="${p.pix_payload}" style="margin-top:4px">Copiar código Pix</button><p class="meta" style="font-size:13px;text-align:center;margin:8px 0 0">Depois abra o app do seu banco → Pix → <b>Copia e cola</b>.</p>`:`<a class="btn solid wide" href="${p.invoice_url}" target="_blank" rel="noopener" style="margin-top:4px;display:block;text-align:center">Abrir o Pix</a>`}
+    ${p.pix_img?`<details class="rn-qrd"><summary>Pagar de outro celular (mostrar QR Code)</summary><img class="rn-qr" alt="QR Code do Pix" src="data:image/png;base64,${p.pix_img}"></details>`:''}
     <div class="rn-wait"><i></i>Esperando o pagamento. O plano renova sozinho quando o Pix cair.</div></div>`}
   else{try{if(w&&!w.closed)w.location.href=p.invoice_url}catch(_){}
     el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Cartão</span></div>
@@ -3060,7 +3061,23 @@ async function rnStart(method,w){const c=rnCalc(),el=$('#rnw');
     <a class="btn solid wide" href="${p.invoice_url}" target="_blank" rel="noopener" style="margin-top:12px;display:block;text-align:center">Abrir página de pagamento</a>
     <div class="rn-wait"><i></i>Esperando a confirmação do cartão…</div></div>`}
   rnPoll(p.id)}
-function rnPix(){rnStart('pix')}
+function rnPix(){if(PAYC().mode==='auto')return rnStart('pix');rnManual()}
+document.addEventListener('change',e=>{const x=e.target.closest&&e.target.closest('[data-rnsel]');if(!x)return;RN.inst=+x.value||1;rnDraw()});
+function rnManual(){const c=rnCalc(),k=window.__PIX||'',PN=()=>window.PERS_NOME_X?window.PERS_NOME_X():'personal',el=$('#rnw');let proof=null;
+  el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-back>‹ Voltar</button><span style="flex:1"></span><span class="pill">Pix</span></div>
+   <div class="rn-pix"><span class="lbl" style="display:block;margin-top:16px">${c.pl.n} • ${R2(c.total)}</span><p class="d" style="font-size:44px;margin:4px 0 12px">Pague com Pix</p>
+   ${k?`<button class="btn solid wide" data-rn-copy="${k}">Copiar chave Pix do ${PN()}</button><p class="meta" style="font-size:13px;text-align:center;margin:8px 0 0">Pague <b>${R2(c.total)}</b> no app do seu banco.</p>`:`<p class="meta">O ${PN()} ainda não cadastrou a chave Pix. Fale com ele.</p>`}
+   <div class="block" style="margin-top:14px"><span class="lbl">Depois de pagar</span>
+   <label class="rn-pf"><input type="file" id="rnpf" accept="image/*,application/pdf" hidden><span id="rnpft">📎 Anexar comprovante <small>(obrigatório)</small></span></label>
+   <button class="btn solid wide" id="rnpg" disabled style="margin-top:10px">Já paguei</button><p class="meta" style="font-size:12.5px;margin:8px 0 0">O ${PN()} confere no banco e o plano renova. Você recebe um aviso.</p></div></div>`;
+  const f=el.querySelector('#rnpf'),g=el.querySelector('#rnpg'),t=el.querySelector('#rnpft');
+  f.onchange=async()=>{const fl=f.files[0];if(!fl)return;if(fl.size>5242880){t.textContent='Arquivo muito grande (máx. 5 MB)';return}t.textContent='Enviando…';
+    try{const {data:{session:se}}=await window.__sbA.auth.getSession();const uid=se.user.id,ext=(fl.name.split('.').pop()||'jpg').toLowerCase().slice(0,4),path=uid+'/'+Date.now()+'.'+ext;
+      const {error}=await window.__sbA.storage.from('receipts').upload(path,fl,{contentType:fl.type||'image/jpeg',upsert:false});if(error)throw error;proof=path;t.textContent='✓ Comprovante anexado • trocar';g.disabled=false}catch(e){t.textContent='Não enviou. Tente de novo.'}};
+  g.onclick=async()=>{if(!proof)return toast('Anexe o comprovante');g.disabled=true;g.textContent='Enviando…';
+    const r=await window.__asaas({action:'manual',plan:RN.p,freq:RN.f===undefined?PLN.f:RN.f,proof});
+    if(!r||!r.pay){g.disabled=false;g.textContent='Já paguei';return toast('Não deu: '+((r&&r.error)||'tente de novo'))}
+    el.innerHTML=`<div class="rn-ok"><div class="rn-ck">✓</div><span class="lbl">Comprovante enviado</span><p class="d" style="font-size:44px;margin:6px 0">Tudo certo</p><p class="meta">O ${PN()} confere no banco e o plano renova. Você recebe um aviso aqui no app.</p><button class="btn solid wide" data-rn-x style="margin-top:14px">Voltar ao app</button></div>`}}
 function rnCard(){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}rnStart('card',w)}
 function rnDone(){const c=rnCalc();PLN.cur=RN.p;PLN.ends=c.pl.end.slice(0,5)+'/'+c.pl.end.slice(8);
   const conf=Array.from({length:22},(_,i)=>`<i class="conf" style="left:${(i*41)%100}%;background:${['#f3d38a','#fff','#9fb6c9','#d98b98'][i%4]};animation-delay:${(i%8)*.12}s"></i>`).join('');
@@ -4491,7 +4508,7 @@ function walFix(){WAL.items.forEach(x=>{if(x.val===undefined)x.val=Math.round(x.
 const walAvail=()=>Math.round(WAL.items.filter(x=>x.ok).reduce((a,x)=>a+x.val,0)*100)/100;
 /* conta única, usada pela tela e pelos testes */
 function calcPkg(o){const P=PLANS3.find(x=>x.k===o.p),full=FREQ[o.f].p*P.m,planOff=Math.round(full*P.off*100)/100,afterPlan=full-planOff,
-  used=Math.min(o.wal,afterPlan),afterMy=afterPlan-used,pixOff=o.pay==='pix'?Math.round(afterMy*.03*100)/100:0,total=Math.round((afterMy-pixOff)*100)/100;
+  used=Math.min(o.wal,afterPlan),afterMy=afterPlan-used,pixOff=o.pay==='pix'?Math.round(afterMy*PIXF()*100)/100:0,total=Math.round((afterMy-pixOff)*100)/100;
   return {pl:P,full,planOff,afterPlan,myOff:used,used,left:Math.round((o.wal-used)*100)/100,pixOff,total,eq:afterPlan?used/afterPlan:0,my:0}}
 rnCalc=function(){return calcPkg({p:RN.p,f:RN.f===undefined?PLN.f:RN.f,wal:walAvail(),pay:RN.pay})};
 const _rd24=rnDraw;rnDraw=function(){_rd24();const el=$('#rnw');if(!el)return;const c=rnCalc(),W=walAvail();
@@ -6632,9 +6649,11 @@ if(me){me.innerHTML=avH();if(P.avatar_url)me.style.padding='0';me.onclick=()=>{c
 /* ===== Asaas: pagamento real (cobrança criada no servidor) ===== */
 window.__asaas=async function(body){const {data:{session:se}}=await sb.auth.getSession();const r=await fetch(CFG2.supabaseUrl+'/functions/v1/asaas',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(se&&se.access_token),apikey:CFG2.supabaseKey},body:JSON.stringify(body)});const j=await r.json().catch(()=>({error:'erro '+r.status}));return j};
 try{window.__AUTOREN=!!(P&&P.auto_renew)}catch(_){}
+window.__sbA=sb;sb.rpc('public_prices').then(({data})=>{window.__PAYCFG=Object.assign({mode:'manual',pix_off:3,max_inst:12,auto_ok:true},(data&&data.pay)||{})}).catch(()=>{});
 {const st=document.createElement('style');st.textContent=`.rn-qr{display:block;width:220px;height:220px;margin:6px auto 0;border-radius:18px;background:#fff;padding:10px}
 .rn-wait,.rn-load{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:12px;font-weight:700;font-size:13.5px;margin-top:14px}.rn-load{margin-top:22px}
 .rn-wait i,.rn-load i{flex:none;width:18px;height:18px;border-radius:50%;border:2.5px solid color-mix(in srgb,currentColor 20%,transparent);border-top-color:#8fd19e;animation:rnsp 1s linear infinite}@keyframes rnsp{to{transform:rotate(360deg)}}
+.rn-inst{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-top:10px;font-weight:700;font-size:14px}.rn-inst select{font:inherit;font-size:14px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:transparent;color:inherit}.rn-qrd{margin-top:14px;text-align:center}.rn-qrd summary{font-size:13px;font-weight:700;opacity:.7;text-decoration:underline;cursor:pointer;list-style:none}.rn-pf{display:block;border:1.5px dashed var(--line);border-radius:14px;padding:12px;text-align:center;font-weight:700;font-size:14px;margin-top:8px;cursor:pointer}.rn-pf small{opacity:.6;font-weight:600}
 .rn-auto{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;cursor:pointer}.rn-auto input{margin-top:3px;width:18px;height:18px;flex:none}.rn-auto b{display:block;font-size:14.5px}.rn-auto small{display:block;font-size:12.5px;opacity:.65;font-weight:600;margin-top:2px}`;document.head.appendChild(st)}
 window.__openSigned=async function(bucket,path,msg){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,600);if(error||!data){try{w&&w.close()}catch(_){}return toast(msg||'Não abriu')}if(w&&!w.closed){try{w.location.href=data.signedUrl;return}catch(_){}}location.href=data.signedUrl};
 const DE=v=>String(v||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

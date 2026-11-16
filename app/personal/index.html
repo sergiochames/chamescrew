@@ -3390,7 +3390,7 @@ const _gs5=gearSheet;gearSheet=function(){_gs5();const sh=document.querySelector
 const _dr6=draw;draw=function(){if(!has('game')){if(GAME.on){GAME._was=1;GAME.on=false}}else if(GAME._was){GAME.on=true;GAME._was=0}_dr6()};
 const _dfin=drawFin;drawFin=function(){_dfin();const top=app.querySelector('.row.top');if(!top)return;
   const card=has('auto')&&PAY.mode==='asaas'?`<section class="card balc"><div><span class="lbl">Disponível para sacar</span><b class="d">${brc(RCV.saldo)}</b><small>+ ${brc(RCV.receber)} já pago no cartão, aguardando repasse</small></div><div class="balb"><button class="btn solid" data-sacar>Sacar</button><button class="mini" data-grecv>Recebimentos</button></div></section>`
-   :`<button class="nbar przb" data-grecv><span class="nb">💳</span><span style="min-width:0"><b>Recebimentos ${lockTag('auto')}</b><small>${has('auto')?'Em breve: cobrança automática e saque pelo Asaas':'Cobrança automática e saque pelo app no plano Pro'}</small></span><span class="go">›</span></button>`;
+   :`<button class="nbar przb" data-grecv><span class="nb">💳</span><span style="min-width:0"><b>Forma de receber</b><small>${window.__paySum?esc(window.__paySum()):'Pix manual ou automático pelo Asaas'}</small></span><span class="go">›</span></button>`;
   top.insertAdjacentHTML('afterend',card)};
 document.addEventListener('click',e=>{if(e.target.closest('[data-sacar]')){e.stopPropagation();saqueSheet()}if(e.target.closest('[data-grecv]')&&!has('auto')){e.stopPropagation();planUp('auto')}},true);
 draw();
@@ -4146,10 +4146,10 @@ function zeroState(){const Z={STU:[],LOG:[],LOCS:[],INF:[],ANSW:[],PROMO:[],ENTR
 let XEV=[];
 if(PS&&PS.data&&PS.data.v===2){const D=PS.data;zeroState();for(const k in REF)if(D[k]!==undefined)fill(REF[k],dec(D[k]));try{if(D.T2fav){T2.fav.clear();D.T2fav.forEach(x=>T2.fav.add(x))}if(D.T2mine){T2.mine.length=0;D.T2mine.forEach(x=>T2.mine.push(dec(x)))}}catch(_){}XEV=D.XEV||[]}
 else zeroState();
-if(PAY.mode==='asaas')PAY.mode='manual';
+PAY.mode=(PRICE.pay&&PRICE.pay.mode==='auto')?'asaas':'manual';
 /* Asaas aparece, mas fica desligado até a Etapa C */
 const ASW='O Asaas entra em breve. Por enquanto o financeiro fica no manual.';
-try{Object.defineProperty(PAY,'mode',{configurable:true,enumerable:false,get:()=>'manual',set:v=>{if(v==='asaas')setTimeout(()=>toast(ASW),60)}});
+try{Object.defineProperty(PAY,'mode',{configurable:true,enumerable:false,get:()=>(PRICE.pay&&PRICE.pay.mode==='auto')?'asaas':'manual',set:()=>{}});
   Object.defineProperty(RCV,'con',{configurable:true,enumerable:false,get:()=>false,set:()=>{}});
   const _t=toast;toast=function(m){if(/Asaas ligado|Conta Asaas conec/i.test(String(m)))return;return _t.apply(this,arguments)}}catch(e){console.error(e)}
 try{if(PERS.anmDef!=null&&ANM.some(a=>a.id==PERS.anmDef))ANMdef=PERS.anmDef}catch(_){}
@@ -4407,7 +4407,7 @@ function accessCard(){if(S.tab!=='alunos')return;const ap=document.getElementByI
     if(e.target.closest('[data-rlnew]')){X._codeOld=1;await getCode();toast('Link novo gerado. O anterior parou de valer.')}}catch(er){toast('Não deu: '+er.message)}})}
 
 /* ---------- Asaas aparece, mas ainda não liga ---------- */
-window.addEventListener('click',e=>{const b=e.target.closest('[data-rcv="asaas"]');if(!b)return;e.stopPropagation();e.preventDefault();toast('O Asaas entra em breve. Por enquanto o financeiro fica no manual.');const s=b.closest('.scrim');if(s)s.remove();PAY.mode='manual';NEWP.done.receber=1;draw()},true);
+/* (Etapa C) o botão do Asaas agora abre a Forma de receber */
 
 
 /* ---------- financeiro manual: cobrança do plano e renovação ---------- */
@@ -5152,6 +5152,68 @@ const _draw=draw;
 draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{ag2()}catch(e){console.error(e)}try{ag2wm()}catch(e){console.error(e)}try{pkApply()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
   try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0);setTimeout(linkCheck,0);setTimeout(()=>{try{finCheck()}catch(e){console.error(e)}},0)};
 const redraw=async()=>{try{await fetchAll();await loadBLK();apply()}catch(e){toast('Erro ao atualizar')}draw()};
+
+/* ===== Forma de receber (Manual / Automático pelo Asaas) + pagamentos do app no Financeiro ===== */
+const PCFG=()=>Object.assign({mode:'manual',pix_off:3,max_inst:12,auto_ok:true},PRICE.pay||{});
+const asaasP=async body=>{try{const {data:{session:s}}=await sb.auth.getSession();const r=await fetch(CF.supabaseUrl+'/functions/v1/asaas',{method:'POST',headers:{'Content-Type':'application/json',apikey:CF.supabaseKey,Authorization:'Bearer '+(s&&s.access_token)},body:JSON.stringify(body)});return await r.json()}catch(e){return {error:'Sem conexão'}}};
+function payCfgSheet(){const C=PCFG();let mode=C.mode==='auto'?'auto':'manual',st=null;
+  const body=()=>{const c=PCFG();return mode==='auto'?`<div class="pc-card"><div class="pc-ok" id="pcst"><i>…</i><span>Verificando o Asaas…</span></div>
+      <p class="note" style="margin:8px 0 0">Pix e cartão caem sozinhos. O plano libera e aparece no Financeiro como pago, sem comprovante.</p>
+      <label class="pc-tg"><span><b>Permitir renovar automático</b><small>O aluno escolhe deixar o cartão cobrando a cada ciclo. Ele desliga quando quiser.</small></span><input type="checkbox" id="pcau" ${c.auto_ok!==false?'checked':''}></label>
+      <label class="pc-tg"><span><b>Parcelar no cartão em até</b><small>O aluno escolhe dentro desse limite</small></span><select class="inp pc-sel" id="pcmi">${Array.from({length:12},(_,i)=>i+1).map(n=>`<option value="${n}" ${+c.max_inst===n?'selected':''}>${n}x</option>`).join('')}</select></label></div>`
+    :`<div class="pc-card"><label class="lbl" for="pck">Sua chave Pix</label><input class="inp" id="pck" value="${esc(PERS.pix||'')}" placeholder="Chave aleatória, e-mail ou celular" autocomplete="off">
+      <p class="note" style="margin:8px 0 0">O aluno paga no seu Pix e <b>anexa o comprovante</b> (obrigatório). Você confere no seu banco e confirma no Financeiro. Cartão: crie o link na sua maquininha e mande no WhatsApp.</p></div>`};
+  const common=()=>{const c=PCFG();return `<label class="pc-tg" style="margin-top:12px"><span><b>Desconto no Pix</b><small>Aparece para o aluno na renovação</small></span><select class="inp pc-sel" id="pcpo">${[0,1,2,3,4,5,7,10].map(n=>`<option value="${n}" ${+c.pix_off===n?'selected':''}>${n?n+'%':'Sem'}</option>`).join('')}</select></label>`};
+  sheet(`<span class="lbl">Configurações › Financeiro</span><h3 class="d">Forma de receber</h3><p class="note" style="margin-top:0">Como os seus alunos pagam aulas e renovações.</p>
+    <div class="seg pc-seg"><button data-pm="manual" aria-pressed="${mode==='manual'}">Manual</button><button data-pm="auto" aria-pressed="${mode==='auto'}">Automático</button></div>
+    <div id="pcb">${body()}</div><div id="pcc">${common()}</div>
+    <div class="row2" style="margin-top:14px"><button class="btn" data-close>Fechar</button><button class="btn solid" id="pcs">Salvar</button></div>`,s=>{
+    const ping=async()=>{const el=s.querySelector('#pcst');if(!el)return;if(!st)st=await asaasP({action:'ping'});const g=st&&st.ok&&st.status&&st.status.general;const e=s.querySelector('#pcst');if(!e)return;
+      e.innerHTML=!st||!st.ok?`<i class="no">!</i><span>Não falou com o Asaas${st&&st.error?': '+esc(st.error):''}</span>`:g==='APPROVED'?`<i>✓</i><span>Asaas conectado • conta aprovada</span>`:`<i class="wt">…</i><span>Asaas conectado • aguardando aprovação da conta. Pix e cartão liberam quando aprovar.</span>`};
+    s.addEventListener('click',e=>{const b=e.target.closest('[data-pm]');if(!b)return;mode=b.dataset.pm;s.querySelectorAll('[data-pm]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));s.querySelector('#pcb').innerHTML=body();ping()});
+    ping();
+    s.querySelector('#pcs').onclick=async()=>{const c=PCFG(),g=id=>s.querySelector(id);const nv={mode,pix_off:+((g('#pcpo')||{}).value||c.pix_off),max_inst:g('#pcmi')?+g('#pcmi').value:c.max_inst,auto_ok:g('#pcau')?g('#pcau').checked:c.auto_ok};
+      if(mode==='manual'){const k=(g('#pck')||{}).value;if(k!==undefined)PERS.pix=String(k).trim();if(!PERS.pix)return toast('Coloque a sua chave Pix')}
+      PRICE.pay=nv;PAY.mode=mode==='auto'?'asaas':'manual';s.remove();await saveNow();toast(mode==='auto'?'Automático pelo Asaas ligado':'Modo manual ligado');const o=document.getElementById('rl-pix');if(o)o.remove();if(S.tab==='fin')draw()}})}
+/* o modo do Financeiro segue sempre a configuração salva */
+/* o cartão do Financeiro vira "Forma de receber" */
+window.__paySum=()=>{const c=PCFG(),k=PERS.pix||'';return c.mode==='auto'?`Automático • Asaas • Pix${+c.pix_off?' −'+c.pix_off+'%':''} e cartão até ${c.max_inst}x`:(k?'Manual • Pix '+(k.length>14?k.slice(0,6)+'…'+k.slice(-4):k)+' • comprovante obrigatório':'Manual • cadastre sua chave Pix')};
+pixCard=function(){return;if(S.tab!=='fin')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-pix'))return;const c=PCFG(),k=PERS.pix||'';
+  const b=document.createElement('button');b.className='rlp';b.id='rl-pix';b.style.cssText='width:100%;text-align:left';
+  b.innerHTML=`<span class="n">${c.mode==='auto'?'AUTO':'PIX'}</span><span style="flex:1"><b>Forma de receber • ${c.mode==='auto'?'Automático':'Manual'}</b><small>${c.mode==='auto'?`Asaas • Pix${+c.pix_off?' −'+c.pix_off+'%':''} e cartão até ${c.max_inst}x`:(k?'Pix '+esc(k.length>14?k.slice(0,6)+'…'+k.slice(-4):k)+' • comprovante obrigatório':'Cadastre sua chave Pix')}</small></span><span>›</span>`;
+  const ref=ap.querySelector('.brand');ref&&ref.nextSibling?ap.insertBefore(b,ref.nextSibling):ap.prepend(b);b.onclick=payCfgSheet};
+window.addEventListener('click',e=>{const b=e.target.closest('[data-grecv],[data-rcv="asaas"],[data-sacar]');if(!b)return;e.stopImmediatePropagation();e.preventDefault();const s=b.closest('.scrim');if(s)s.remove();payCfgSheet()},true);
+
+/* pagamentos feitos pelo app (Asaas ou Pix manual com comprovante) entram na lista de cobranças */
+let PAYS=[];
+async function payAppSync(){try{const {data}=await sb.from('payments').select('*').in('status',['pago','informado']).gte('created_at',new Date(Date.now()-75*864e5).toISOString()).order('created_at',{ascending:false});PAYS=data||[];let ch=false;
+  const PLN={mes:'mensal',tri:'trimestral',sem:'semestral'},MT=p=>p.method==='pix_manual'?'Pix manual':p.method==='pix'?'Pix • Asaas':'Cartão'+(p.installments>1?' '+p.installments+'x':'')+' • Asaas';
+  PAYS.forEach(p=>{if(p.kind!=='renova')return;const X=stuById(p.student_id);if(!X)return;const ref='ap:'+p.id;let c=CHG.find(z=>z.ref===ref);const paid=p.status==='pago',dd=new Date(p.paid_at||p.created_at);
+    if(!c){c={n:X.n,pl:'Renovação '+(PLN[p.plan_key]||'')+' • '+MT(p),v:+p.amount,st:paid?'pago':'aberto',d:paid?'pago em '+ddmm(dd):'avisou que pagou • confira no banco',ref,_ok:1,_ap:p.id};CHG.unshift(c);ch=true}
+    else if(paid&&c.st!=='pago'){c.st='pago';c.d='pago em '+ddmm(dd);c._ok=1;ch=true}
+    if(paid)CHG.forEach(z=>{if(z.ref&&z.ref.startsWith('ren:'+p.student_id+':')&&z.st!=='pago'){z.st='pago';z.d='pago pelo app';z._ok=1;ch=true}})});
+  if(ch){saveSoon();if(S.tab==='fin'&&!document.querySelector('.scrim'))draw()}}catch(_){}}
+setTimeout(payAppSync,1500);setInterval(payAppSync,60000);
+/* confirmar Pix manual: confere no banco, vê o comprovante e confirma (o plano renova sozinho) */
+window.addEventListener('click',e=>{const b=e.target.closest('[data-cash]');if(!b)return;const c=CHG.find(x=>x.n===b.dataset.cash&&x.st!=='pago');if(!c||!c._ap)return;e.stopPropagation();e.preventDefault();
+  const p=PAYS.find(z=>z.id===c._ap)||{};
+  sheet(`<span class="lbl">Confirmar pagamento</span><h3 class="d">${esc(c.n.split(' ')[0])} • ${brl(c.v)}</h3><p class="note">${esc(c.pl)}</p>
+    <div class="info warn" style="margin:10px 0"><b>Confira no seu banco antes de confirmar.</b> Comprovante pode ser falso. Só confirme se o dinheiro caiu.</div>
+    ${p.proof?'<button class="btn wide" id="pcpv">Ver comprovante</button>':''}
+    <div class="row2" style="margin-top:12px"><button class="btn" data-close>Agora não</button><button class="btn solid" id="pcok">Caiu, confirmar</button></div>`,s=>{
+    const v=s.querySelector('#pcpv');if(v)v.onclick=async()=>{let w=null;try{w=window.open('about:blank','_blank')}catch(_){}const {data}=await sb.storage.from('receipts').createSignedUrl(p.proof,600);if(!data){try{w&&w.close()}catch(_){}return toast('Não abriu o comprovante')}if(w&&!w.closed)w.location.href=data.signedUrl;else location.href=data.signedUrl};
+    s.querySelector('#pcok').onclick=async ev=>{ev.currentTarget.disabled=true;const {error}=await sb.rpc('confirm_pay',{p_id:c._ap});if(error){ev.currentTarget.disabled=false;return toast('Não confirmou: '+error.message)}
+      c.st='pago';c.d='pago em '+ddmm(new Date())+' • confirmado por você';c._ok=1;s.remove();saveSoon();toast(c.n.split(' ')[0]+' renovado');try{await sync()}catch(_){draw()}}})},true);
+/* ficha do aluno: renovação automática (o personal vê e pode desligar; quem liga é o aluno) */
+try{const _ss=stuSheet;stuSheet=function(n){_ss.apply(this,arguments);try{const X=stu(n),p=X&&STUD.find(z=>z.id===X._id);if(!p)return;const sh=[...document.querySelectorAll('.scrim')].pop();const box=sh&&sh.querySelector('.sheet');if(!box)return;
+  const el=document.createElement('div');el.className='pc-card';el.style.marginTop='12px';
+  el.innerHTML=`<label class="pc-tg" style="margin:0"><span><b>Renovar automático</b><small>${p.auto_renew?'Ligado pelo aluno • cartão no Asaas cobra a cada ciclo':'Desligado • só o aluno liga, ao pagar no cartão'}</small></span>${p.auto_renew?'<button class="mini" id="pcoff">Desligar</button>':'<span class="quota">desligado</span>'}</label>`;
+  const anc=box.querySelector('.row2');anc?box.insertBefore(el,anc):box.appendChild(el);
+  const off=el.querySelector('#pcoff');if(off)off.onclick=()=>confirmBox('Desligar a renovação automática?','O cartão do aluno para de ser cobrado. Ele continua com o plano até o fim e renova pelo app quando quiser.','Desligar',async()=>{const r=await asaasP({action:'auto',on:false,student:p.id});if(r.error)return toast('Não desligou: '+r.error);p.auto_renew=false;toast('Renovação automática desligada')})}catch(_){}}}catch(_){}
+{const st=document.createElement('style');st.textContent=`.pc-seg{display:grid!important;grid-template-columns:1fr 1fr;margin:12px 0 4px}.pc-seg button[aria-pressed=true]{background:var(--fg)!important;color:var(--bg)!important}.pc-card{border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:12px}
+.pc-ok{display:flex;gap:10px;align-items:center;font-weight:700;font-size:13.5px}.pc-ok i{flex:none;width:26px;height:26px;border-radius:50%;background:#8fd19e;color:#0b0c0f;display:grid;place-items:center;font-style:normal;font-weight:900}.pc-ok i.wt{background:#e2c27e}.pc-ok i.no{background:#ff6b5e;color:#fff}
+.pc-tg{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;cursor:pointer}.pc-tg b{display:block;font-size:14px}.pc-tg small{display:block;font-size:12px;opacity:.65;font-weight:600;margin-top:2px}.pc-tg input[type=checkbox]{width:22px;height:22px;flex:none}.pc-sel{width:auto!important;min-width:82px;flex:none;padding:8px 10px!important}`;document.head.appendChild(st)}
+
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
 lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
 S.tab='agenda';draw();if(!PS||!PS.data||PS.data.v!==2)saveNow();
