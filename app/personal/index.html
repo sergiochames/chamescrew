@@ -3233,7 +3233,7 @@ function reSheet(d0,h0){const e=(S.ev[d0]||[]).find(x=>x.h===h0&&!x.gc);if(!e)re
     s.addEventListener('click',ev=>{const b=ev.target.closest('[data-rd],[data-rh],[data-rcal],[data-rcm],[data-rcd]');if(!b)return;const a=b.dataset;
       if(a.rd!==undefined){d=+a.rd;fd=null;h=null}if(a.rh!==undefined){h=+a.rh;typed=''}if(a.rcal!==undefined)cal=!cal;if(a.rcm)cm=Math.max(0,cm+ +a.rcm);
       if(a.rcd!==undefined){const df=+a.rcd,wi=TODAY+df;if(wi<=6){d=wi;fd=null}else{fd=addD(TD,df);d=(fd.getDay()+6)%7}h=null;cal=false}re()});
-    s.addEventListener('change',ev=>{if(ev.target.id!=='rtt')return;typed=ev.target.value;const [H,M]=typed.split(':').map(Number);if(!isNaN(H)){h=H+(M||0)/60;re()}});
+    s.addEventListener('change',ev=>{if(ev.target.id!=='rtt')return;typed=ev.target.value;const [H,M]=typed.split(':').map(Number);if(isNaN(H))return;h=H+(M||0)/60;s.querySelectorAll('[data-rh]').forEach(b=>b.setAttribute('aria-pressed','false'));const y=s.querySelector('.sheet').scrollTop;const tmp=document.createElement('div');tmp.innerHTML=body();const nb=tmp.querySelector('.bsum'),ob=s.querySelector('#reb .bsum');if(nb&&ob)ob.replaceWith(nb);s.querySelector('.sheet').scrollTop=y});
     s.querySelector('#rok').onclick=()=>{if(h===null){toast('Escolha o horário');return}
       if(fd){const L=S.ev[d0];L.splice(L.indexOf(e),1);(S.far=S.far||[]).push({dt:fd,h,n:e.n,loc:e.loc});document.querySelectorAll('.scrim').forEach(x=>x.remove());draw();utoast(`${esc(e.n.split(' ')[0])} foi para ${WD[d]} ${fd.getDate()}/${MES[fd.getMonth()]} às ${hh(h)}. ${EL(e.n)} recebe o aviso.`,()=>{S.far.pop();(S.ev[d0]=S.ev[d0]||[]).push(e);draw()});return}
       if(moveEv(d0,h0,d,h))document.querySelectorAll('.scrim').forEach(x=>x.remove())}})}
@@ -4882,16 +4882,19 @@ function pkMove(id){const c=pkCls(id);if(!c)return;const d0=new Date(c.starts_at
   let sel=d0>now?new Date(d0.getFullYear(),d0.getMonth(),d0.getDate()):days[0],h=null,typed='',sure=false;
   const free=dt=>HOURS.filter(x=>{const at=new Date(dt.getFullYear(),dt.getMonth(),dt.getDate(),x);return at>now&&pkWork(at)&&!CLS.some(z=>z.id!==id&&z.status!=='cancelada'&&Math.abs(new Date(z.starts_at)-at)<36e5)});
   const target=()=>h===null?null:new Date(sel.getFullYear(),sel.getMonth(),sel.getDate(),Math.floor(h),Math.round((h%1)*60));
-  const body=()=>{const H=free(sel),t=target(),cl=t&&pkClash(c,t);
+  const dyn=()=>{const t=target(),cl=t&&pkClash(c,t);return t?`<div class="pk-mv"><div class="pk-bx old"><small>Era</small><b>${pkL(d0)} • ${pkH(d0)}</b></div><span class="pk-ar">→</span><div class="pk-bx new"><small>Vai para</small><b>${pkL(t)} • ${pkH(t)}</b></div></div>${cl?`<div class="pk-meta"><span class="w">Já tem ${esc(pkFirst(cl.student_id))} às ${pkH(new Date(cl.starts_at))}</span></div>`:''}`:''};
+  const body=()=>{const H=free(sel);
     return `<span class="pk-sec">Dia</span><div class="pk-days">${days.map(dt=>`<button class="pk-d${pkSame(dt,d0)?' org':''}" data-pkd="${+dt}" aria-pressed="${pkSame(dt,sel)}"><small>${pkSame(dt,t0)?'Hoje':DOW[dt.getDay()]}</small><b>${dt.getDate()}</b><i>${pkSame(dt,d0)?'atual':free(dt).length+' livres'}</i></button>`).join('')}</div>
     <span class="pk-sec">Horário livre</span>${H.length?`<div class="pk-hs">${H.map(x=>`<button class="pk-h" data-pkh="${x}" aria-pressed="${h===x&&!typed}">${hh(x)}</button>`).join('')}</div>`:'<div class="pk-none">Nenhum horário livre nesse dia. Use "outro horário" abaixo.</div>'}
     <div class="pk-tw"><span><b>Outro horário</b><small>Qualquer minuto, ex.: 08:20</small></span><input id="pkt" type="time" step="60" value="${typed}" aria-label="Outro horário"></div>
-    ${t?`<div class="pk-mv"><div class="pk-bx old"><small>Era</small><b>${pkL(d0)} • ${pkH(d0)}</b></div><span class="pk-ar">→</span><div class="pk-bx new"><small>Vai para</small><b>${pkL(t)} • ${pkH(t)}</b></div></div>${cl?`<div class="pk-meta"><span class="w">Já tem ${esc(pkFirst(cl.student_id))} às ${pkH(new Date(cl.starts_at))}</span></div>`:''}`:''}`};
+    <div id="pkdyn">${dyn()}</div>`};
   sheet(`<span class="lbl">Remarcar aula</span><h3 class="d">${esc(nameOf(c.student_id))}</h3><div id="pkmb" style="display:flex;flex-direction:column;gap:10px">${body()}</div>
     <div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="pkmok" disabled>Remarcar</button></div>`,s=>{
     const ok=s.querySelector('#pkmok');const re=()=>{const sc=s.querySelector('.sheet'),y=sc.scrollTop,dx=(s.querySelector('.pk-days')||{}).scrollLeft||0;s.querySelector('#pkmb').innerHTML=body();sc.scrollTop=y;const dz=s.querySelector('.pk-days');if(dz)dz.scrollLeft=dx;sure=false;const t=target();ok.disabled=!t;ok.textContent=t?`Remarcar para ${pkL(t)} às ${pkH(t)}`:'Remarcar'};
     s.addEventListener('click',e=>{const b=e.target.closest('[data-pkd],[data-pkh]');if(!b)return;e.stopPropagation();if(b.dataset.pkd){sel=new Date(+b.dataset.pkd);h=null;typed=''}if(b.dataset.pkh){h=+b.dataset.pkh;typed=''}re()});
-    s.addEventListener('change',e=>{if(e.target.id!=='pkt')return;typed=e.target.value;const [H,M]=typed.split(':').map(Number);if(!isNaN(H)){h=H+(M||0)/60;re()}});
+    s.addEventListener('change',e=>{if(e.target.id!=='pkt')return;typed=e.target.value;const [H,M]=typed.split(':').map(Number);if(isNaN(H))return;h=H+(M||0)/60;sure=false;
+      /* não redesenha o campo: o relógio do iPhone continua aberto até você tocar em ✓ */
+      s.querySelectorAll('[data-pkh]').forEach(b=>b.setAttribute('aria-pressed','false'));const dy=s.querySelector('#pkdyn');if(dy)dy.innerHTML=dyn();const t=target();ok.disabled=!t;ok.textContent=t?`Remarcar para ${pkL(t)} às ${pkH(t)}`:'Remarcar'});
     {const dz=s.querySelector('.pk-days .pk-d[aria-pressed=true]');if(dz)dz.scrollIntoView({inline:'center',block:'nearest'})}
     ok.onclick=async()=>{const t=target();if(!t)return;if(t<new Date())return toast('Esse horário já passou');if(Math.abs(t-d0)<6e4)return toast('É o mesmo horário');
       if(pkClash(c,t)&&!sure){sure=true;ok.textContent='Tem aula nesse horário. Toque de novo para confirmar';return}
