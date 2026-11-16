@@ -147,6 +147,33 @@ function refSignup(RQ,r){R.innerHTML=`<div class="scr"><div class="nav"><button 
     if(error){$('#er').textContent=/registered|exists/i.test(error.message)?'Esse e-mail já tem conta. Volte e toque em Entrar.':'Não deu para criar agora: '+error.message;return}
     if(!data.session){$('#er').textContent='Conta criada. Confirme pelo e-mail e depois entre.';return}
     ST.d={name:nm,phone:''};saveDraft();try{history.replaceState(null,'','/app/')}catch(_){}route()}}
+/* ---------- convite da equipe (secretária, estagiário…) ---------- */
+const TEAMC=(qp.get('eq')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
+async function teamInvite(){R.innerHTML='<div class="ld">Abrindo seu convite…</div>';let t=null;try{const {data}=await sb.rpc('team_invite_info',{p_code:TEAMC});t=data}catch(_){}
+  const out=()=>{try{history.replaceState(null,'','/app/')}catch(_){}location.replace('/app/')};
+  if(!t){R.innerHTML=`<div class="scr"><p class="q">Convite não encontrado</p><p class="qs">Esse convite já foi usado ou foi cancelado. Peça um novo para quem te convidou.</p><div class="cta"><button class="b1" id="lg">Já tenho acesso • Entrar</button><button class="b2 nb" id="bk2">Voltar</button></div></div>`;$('#lg').onclick=login;$('#bk2').onclick=out;return}
+  const nm=(t.name||'').split(' ')[0];
+  R.innerHTML=`<div class="scr wl"><div class="gl"></div><span class="br">CHAMES CREW</span><span class="ey" style="margin-top:44px">EQUIPE${t.owner?' DO '+esc(t.owner).toUpperCase():''}</span>
+  <h1 style="font-size:clamp(50px,16vw,70px)">${nm?`Bem-vindo(a),<br><span>${esc(nm)}</span>`:'Bem-vindo(a)'}</h1>
+  <p class="qs" style="margin-top:14px">${t.owner?esc(t.owner)+' te colocou na equipe. ':''}Crie seu acesso com o seu e-mail e uma senha só sua.</p>
+  <span class="lb">Seu nome</span><input class="in" id="nm" autocomplete="name" placeholder="Nome e sobrenome" value="${esc(t.name||'')}">
+  <span class="lb">Seu e-mail</span><input class="in" id="em" type="email" autocomplete="email" inputmode="email" placeholder="seu@email.com">
+  <span class="lb">Crie uma senha</span><div class="pw"><input class="in" id="pw" type="password" autocomplete="new-password" placeholder="Pelo menos 8 caracteres"><button id="sh" type="button">mostrar</button></div>
+  <span class="lb">Confirme a senha</span><div class="pw"><input class="in" id="pw2" type="password" autocomplete="new-password" placeholder="Digite a mesma senha de novo"></div>
+  <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">Criar meu acesso</button><button class="b2 nb" id="lg">Já tenho conta • Entrar</button></div></div>`;
+  $('#lg').onclick=login;
+  $('#sh').onclick=()=>{const k=$('#pw').type==='password'?'text':'password';$('#pw').type=k;$('#pw2').type=k;$('#sh').textContent=k==='password'?'mostrar':'esconder'};
+  $('#go').onclick=async()=>{const n=$('#nm').value.trim(),em=$('#em').value.trim().toLowerCase(),pw=$('#pw').value,pw2=$('#pw2').value;
+    if(n.split(/\s+/).length<2){$('#er').textContent='Coloque nome e sobrenome.';return}
+    if(!/^\S+@\S+\.\S+$/.test(em)){$('#er').textContent='Confira o e-mail.';return}if(pw.length<8){$('#er').textContent='A senha precisa ter pelo menos 8 caracteres.';return}
+    if(pw!==pw2){$('#er').textContent='As senhas não estão iguais. Digite de novo.';$('#pw2').value='';$('#pw2').focus();return}
+    $('#go').disabled=true;$('#go').textContent='Criando…';
+    const {data,error}=await sb.auth.signUp({email:em,password:pw,options:{data:{team:TEAMC,name:n}}});$('#go').disabled=false;$('#go').textContent='Criar meu acesso';
+    if(error){$('#er').textContent=/registered|exists/i.test(error.message)?'Esse e-mail já tem conta. Toque em Entrar.':'Não deu para criar agora: '+error.message;return}
+    if(!data.session){$('#er').textContent='Acesso criado. Confirme pelo e-mail e depois entre.';return}
+    route()}}
+async function teamJoin(){try{const {error}=await sb.rpc('team_join',{p_code:TEAMC});if(error){toast(error.message);return false}}catch(_){return false}try{history.replaceState(null,'','/app/')}catch(_){}return true}
+function removed(){R.innerHTML=`<div class="scr" style="text-align:center"><p class="q">Acesso encerrado</p><p class="qs">Seu acesso à equipe foi removido. Se foi engano, fale com quem te convidou.</p><div class="cta"><button class="b1" id="out">Sair da conta</button></div></div>`;$('#out').onclick=async()=>{await sb.auth.signOut();location.replace('/app/')}}
 const saveDraft=()=>{try{localStorage.setItem('cc_draft',JSON.stringify(ST.d))}catch(_){}};
 
 /* ---------- entrada ---------- */
@@ -386,10 +413,12 @@ async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try
   $('#rf').onclick=()=>home();$('#out').onclick=async()=>{await sb.auth.signOut();ST.user=null;welcome()}}
 
 /* ---------- rota ---------- */
-async function route(){const {data:{session}}=await sb.auth.getSession();if(!session){ST.code?openInvite():REFQ?refLanding():welcome();return}
+async function route(){const {data:{session}}=await sb.auth.getSession();if(!session){TEAMC?teamInvite():ST.code?openInvite():REFQ?refLanding():welcome();return}
+  if(TEAMC){const ok=await teamJoin();if(ok){location.replace('/app/personal/');return}}
   await linkRef();
   ST.user=session.user;const {data:p}=await sb.from('profiles').select('*').eq('id',ST.user.id).single();ST.prof=p||{};
   if(p&&p.role==='equipe'){location.replace('/app/personal/');return}
+  if(p&&p.role==='removido'){removed();return}
   if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}
     const [{data:fx},{data:lc},{data:pz},{data:wh}]=await Promise.all([sb.from('fixed_slots').select('id').eq('student_id',ST.user.id).limit(1),sb.rpc('public_locs'),sb.rpc('public_prices'),sb.rpc('public_wh')]);PRICE=pz||{};WHD=wh||{};await refDesc();
     LOCS=(lc||[]).filter(Boolean);ST.hasFx=!!(fx&&fx.length);STEPS=ST.hasFx?STEPS0.filter(k=>k!=='local'&&k!=='dias'):STEPS0.slice();step(Math.min(ST.d.step||0,STEPS.length-1));return}

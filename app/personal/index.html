@@ -4098,6 +4098,8 @@ const ld=document.getElementById('rl-ld'),fail=t=>{try{window.__unCover&&window.
 const {data:{session}}=await sb.auth.getSession();if(!session){location.replace('/app/?p=1');return}
 const {data:ME}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
 if(!ME||ME.role!=='equipe'){location.replace('/app/');return}
+/* equipe: o dono vê tudo; cada pessoa da equipe usa o app do dono, com o que ele liberou */
+const OWN=ME.team_owner||ME.id,PERM=ME.team_owner?Object.assign({trn:false,fin:false},ME.team_perm||{}):{trn:true,fin:true,own:true};window.__PERM=PERM;
 const pad=n=>String(n).padStart(2,'0'),DOW=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],PERI={manha:['Manhã',6,12],tarde:['Tarde',12,18],noite:['Noite',18,22]};
 const today=new Date();today.setHours(0,0,0,0);const wk0=new Date(today.getFullYear(),today.getMonth(),today.getDate()-((today.getDay()+6)%7));
 const wiOf=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-wk0)/864e5);
@@ -4113,7 +4115,7 @@ async function fetchAll(){const G=q=>Promise.resolve(q).then(r=>r,e=>({data:null
     sb.from('classes').select('*').gte('starts_at',from).lte('starts_at',to).order('starts_at'),
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).eq('archived',false).order('created_at',{ascending:false}),
     sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position'),
-    sb.from('pstate').select('*').eq('owner',ME.id).maybeSingle(),sb.from('invites').select('code,profile_id,used_by,created_at').not('profile_id','is',null),
+    sb.from('pstate').select('*').eq('owner',OWN).maybeSingle(),sb.from('invites').select('code,profile_id,used_by,created_at').not('profile_id','is',null),
     sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
     sb.from('daily_checkins').select('user_id,day,answers').gte('day',iso(new Date(Date.now()-42*864e5))),
     sb.from('week_closes').select('*').gte('week_start',iso(new Date(Date.now()-70*864e5))).order('week_start',{ascending:false})]);
@@ -4161,12 +4163,12 @@ function snapshot(){const D={v:2};for(const k in REF)D[k]=enc(REF[k]);try{D.T2fa
   XEV=keep;D.XEV=XEV;return JSON.stringify(D)}
 async function saveNow(){clearTimeout(saveT);try{PERS.anmDef=ANMdef}catch(_){}if(saving){saveT=setTimeout(saveNow,500);return}let j;try{j=snapshot()}catch(e){console.error('snapshot',e);return}if(j===lastSaved)return;saving=true;
   /* outra aba/aparelho salvou depois que esta abriu: recarrega em vez de sobrescrever */
-  try{const r=await sb.from('pstate').select('updated_at').eq('owner',ME.id).maybeSingle();const su=r.data&&r.data.updated_at;if(r.error){saving=false;return}
+  try{const r=await sb.from('pstate').select('updated_at').eq('owner',OWN).maybeSingle();const su=r.data&&r.data.updated_at;if(r.error){saving=false;return}
     if(su&&PSAT&&new Date(su).getTime()>new Date(PSAT).getTime()+500){saving=false;stale();return}}catch(_){saving=false;return}
-  const now=new Date().toISOString();const {error}=await sb.from('pstate').upsert({owner:ME.id,data:JSON.parse(j),updated_at:now});saving=false;if(error){console.error(error);toast('Não salvou: '+error.message);return}lastSaved=j;PSAT=now}
+  const now=new Date().toISOString();const {error}=await sb.from('pstate').upsert({owner:OWN,data:JSON.parse(j),updated_at:now});saving=false;if(error){console.error(error);toast('Não salvou: '+error.message);return}lastSaved=j;PSAT=now}
 let PSAT=(PS&&PS.updated_at)||null,STALE=false;
 function stale(){if(STALE)return;STALE=true;toast('Você mexeu no app em outro aparelho. Atualizando…');setTimeout(()=>location.reload(),1200)}
-document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||STALE)return;try{const r=await sb.from('pstate').select('updated_at').eq('owner',ME.id).maybeSingle();const su=r.data&&r.data.updated_at;if(su&&PSAT&&new Date(su).getTime()>new Date(PSAT).getTime()+500)stale()}catch(_){}});
+document.addEventListener('visibilitychange',async()=>{if(document.visibilityState!=='visible'||STALE)return;try{const r=await sb.from('pstate').select('updated_at').eq('owner',OWN).maybeSingle();const su=r.data&&r.data.updated_at;if(su&&PSAT&&new Date(su).getTime()>new Date(PSAT).getTime()+500)stale()}catch(_){}});
 const saveSoon=()=>{clearTimeout(saveT);saveT=setTimeout(saveNow,900)};
 ['click','input','change'].forEach(ev=>document.addEventListener(ev,()=>setTimeout(saveSoon,50),true));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveNow()});
@@ -5193,7 +5195,7 @@ async function payAppSync(){try{const {data}=await sb.from('payments').select('*
     else if(paid&&c.st!=='pago'){c.st='pago';c.d='pago em '+ddmm(dd);c._ok=1;ch=true}
     if(paid)CHG.forEach(z=>{if(z.ref&&z.ref.startsWith('ren:'+p.student_id+':')&&z.st!=='pago'){z.st='pago';z.d='pago pelo app';z._ok=1;ch=true}})});
   if(ch){saveSoon();if(S.tab==='fin'&&!document.querySelector('.scrim'))draw()}}catch(_){}}
-setTimeout(payAppSync,1500);setInterval(payAppSync,60000);
+if(PERM.fin){setTimeout(payAppSync,1500);setInterval(payAppSync,60000)}
 /* confirmar Pix manual: confere no banco, vê o comprovante e confirma (o plano renova sozinho) */
 window.addEventListener('click',e=>{const b=e.target.closest('[data-cash]');if(!b)return;const c=CHG.find(x=>x.n===b.dataset.cash&&x.st!=='pago');if(!c||!c._ap)return;e.stopPropagation();e.preventDefault();
   const p=PAYS.find(z=>z.id===c._ap)||{};
@@ -5213,6 +5215,58 @@ try{const _ss=stuSheet;stuSheet=function(n){_ss.apply(this,arguments);try{const 
 {const st=document.createElement('style');st.textContent=`.pc-seg{display:grid!important;grid-template-columns:1fr 1fr;margin:12px 0 4px}.pc-seg button[aria-pressed=true]{background:var(--fg)!important;color:var(--bg)!important}.pc-card{border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:12px}
 .pc-ok{display:flex;gap:10px;align-items:center;font-weight:700;font-size:13.5px}.pc-ok i{flex:none;width:26px;height:26px;border-radius:50%;background:#8fd19e;color:#0b0c0f;display:grid;place-items:center;font-style:normal;font-weight:900}.pc-ok i.wt{background:#e2c27e}.pc-ok i.no{background:#ff6b5e;color:#fff}
 .pc-tg{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;cursor:pointer}.pc-tg b{display:block;font-size:14px}.pc-tg small{display:block;font-size:12px;opacity:.65;font-weight:600;margin-top:2px}.pc-tg input[type=checkbox]{width:22px;height:22px;flex:none}.pc-sel{width:auto!important;min-width:82px;flex:none;padding:8px 10px!important}`;document.head.appendChild(st)}
+
+
+/* ===== Equipe: logins reais (o dono escolhe o que cada pessoa pode mexer) ===== */
+function permApply(){if(PERM.own)return;
+  document.querySelectorAll('.tabs [data-tab]').forEach(b=>{const t=b.dataset.tab;b.style.display=(t==='treinos'&&!PERM.trn)||(t==='fin'&&!PERM.fin)?'none':''});
+  if(!PERM.trn&&S.tab==='alunos'&&A2.open){let hide=false;[...app.children].forEach(el=>{if(el.classList.contains('fgrp'))hide=/treino e evolu/i.test(el.textContent);if(hide)el.style.display='none'});
+    app.querySelectorAll('.qacts button,.qacts a').forEach(b=>{if(/^\s*Treino\s*$/i.test(b.textContent))b.style.display='none'})}}
+{const _drP=draw;draw=function(){if(!PERM.own&&((S.tab==='treinos'&&!PERM.trn)||(S.tab==='fin'&&!PERM.fin)))S.tab='agenda';_drP();try{permApply()}catch(_){}}}
+document.addEventListener('click',e=>{if(PERM.own)return;const t=e.target.closest('.tabs [data-tab]');if(t&&((t.dataset.tab==='treinos'&&!PERM.trn)||(t.dataset.tab==='fin'&&!PERM.fin))){e.stopImmediatePropagation();e.preventDefault()}},true);
+{const _gsT=gearSheet;gearSheet=function(){_gsT.apply(this,arguments);const sh=document.querySelector('.scrim:last-of-type .sheet');if(!sh)return;
+  if(!PERM.own){const kill=['[data-gsub]','[data-gpriv]','[data-gteam]'];if(!PERM.trn)kill.push('[data-rltr]','[data-ganm]','[data-game]');kill.forEach(k=>sh.querySelectorAll(k).forEach(x=>x.remove()));return}
+  const g=sh.querySelector('[data-gteam] small');if(g)g.textContent=TM.length?`${TM.length} ${TM.length===1?'pessoa':'pessoas'} • login próprio`:'Login próprio para quem trabalha com você'}}
+let TM=[],TI=[];
+async function teamLoad(){try{const [a,b]=await Promise.all([sb.from('profiles').select('id,name,phone,team_perm').eq('team_owner',ME.id).eq('role','equipe').order('name'),sb.from('team_invites').select('*').is('used_by',null).order('created_at',{ascending:false})]);TM=a.data||[];TI=b.data||[]}catch(_){}}
+if(PERM.own)teamLoad();
+const permTxt=p=>['Agenda','alunos',...(p&&p.trn?['treinos']:[]),...(p&&p.fin?['financeiro']:[])].join(', ').replace(/, ([^,]*)$/,' e $1');
+const tmLink=c=>APP+'?eq='+c;
+const tmMsg=(nm,c)=>`Oi${nm?', '+nm.split(' ')[0]:''}! Aqui é ${PERS.name}. Te coloquei na equipe do app. Toca no link, coloca seu e-mail e cria sua senha: ${tmLink(c)}`;
+function tmWa(ph,txt){const d=String(ph||'').replace(/\D/g,''),n=d&&d.length<=11?'55'+d:d;const u=`https://wa.me/${n}?text=${encodeURIComponent(txt)}`;try{const w=window.open(u,'_blank');if(!w)location.href=u}catch(_){location.href=u}}
+teamSheet=async function(){if(!PERM.own)return;if(typeof has==='function'&&!has('team')){planUp('team');return}await teamLoad();
+  sheet(`<span class="lbl">Configurações › Conta</span><h3 class="d">Equipe</h3>
+   <p class="note" style="margin:0">Cada pessoa entra com o próprio login, no próprio aparelho. Você escolhe o que cada uma pode mexer e nunca passa a sua senha.</p>
+   <div class="who sel"><span class="av0">${ini(PERS.name)}</span><span style="min-width:0"><b>${esc(PERS.name)} (você)</b><small>Dono • acesso total</small></span></div>
+   ${TM.map(m=>`<div class="who"><span class="av0">${ini(m.name||'?')}</span><span style="min-width:0"><b>${esc(m.name||'Sem nome')}</b><small>${permTxt(m.team_perm)}</small></span><button class="mini" data-tme="${m.id}">Editar</button></div>`).join('')}
+   ${TI.map(i=>`<div class="who"><span class="av0">${ini(i.name||'?')}</span><span style="min-width:0"><b>${esc(i.name||'Convite')}</b><small>Convite enviado • ${permTxt(i.perm)}</small></span><button class="mini" data-tie="${i.code}">Editar</button></div>`).join('')}
+   <button class="btn solid" data-tmadd>+ Convidar pessoa</button><button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',e=>{const a=e.target.closest('[data-tmadd]'),m=e.target.closest('[data-tme]'),i=e.target.closest('[data-tie]');
+    if(a){s.remove();memberSheet(null)}if(m){s.remove();memberSheet({id:m.dataset.tme})}if(i){s.remove();memberSheet({code:i.dataset.tie})}}))};
+memberSheet=function(ref){const M=ref&&ref.id?TM.find(x=>x.id===ref.id):null,I=ref&&ref.code?TI.find(x=>x.code===ref.code):null,isN=!M&&!I;
+  const p=Object.assign({trn:true,fin:false},M?M.team_perm:I?I.perm:{}),nm=M?M.name:I?I.name:'',ph=M?M.phone:I?I.phone:'';
+  sheet(`<span class="lbl">Equipe</span><h3 class="d">${isN?'Convidar pessoa':esc(nm||'Sem nome')}</h3>
+   ${isN?`<input class="inp" id="mn" placeholder="Nome e sobrenome">${phoneField('mc','')}`:I?`<p class="note" style="margin:0">Convite ainda não aceito.</p>`:''}
+   <span class="lbl">O que pode mexer</span>
+   <div class="pc-card" style="padding-top:2px">
+    <label class="pc-tg"><span><b>Agenda e alunos</b><small>Marcar aulas, cadastrar e editar alunos</small></span><input type="checkbox" checked disabled></label>
+    <label class="pc-tg"><span><b>Treinos e acompanhamento</b><small>Montar treino, check-ins, evolução e medalhas</small></span><input type="checkbox" id="mpt" ${p.trn?'checked':''}></label>
+    <label class="pc-tg"><span><b>Financeiro</b><small>Pagamentos, preços e forma de receber. Ligue só se for de confiança.</small></span><input type="checkbox" id="mpf" ${p.fin?'checked':''}></label></div>
+   <div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="mok">${isN?'Mandar convite':'Salvar'}</button></div>
+   ${I?`<button class="lnk" id="mre" style="align-self:center">Mandar o convite de novo</button>`:''}
+   ${isN?'':`<button class="lnk" id="mdel" style="align-self:center;color:var(--bad)">${I?'Cancelar convite':'Remover da equipe'}</button>`}`,s=>{
+   const perm=()=>({trn:s.querySelector('#mpt').checked,fin:s.querySelector('#mpf').checked});
+   s.querySelector('#mok').onclick=async()=>{const b=s.querySelector('#mok');b.disabled=true;
+     if(isN){const n=s.querySelector('#mn').value.trim(),f=s.querySelector('#mc').value.replace(/\D/g,'');if(n.split(/\s+/).length<2){b.disabled=false;return toast('Escreva nome e sobrenome')}if(f.length<10){b.disabled=false;return toast('Coloque o WhatsApp da pessoa')}
+       const c=Array.from(crypto.getRandomValues(new Uint8Array(8)),x=>'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[x%32]).join('');
+       const {error}=await sb.from('team_invites').insert({code:c,owner:ME.id,name:n,phone:f,perm:perm()});if(error){b.disabled=false;return toast('Não salvou: '+error.message)}
+       s.remove();tmWa(f,tmMsg(n,c));toast('Convite pronto no seu WhatsApp');teamLoad();return}
+     if(I){const {error}=await sb.from('team_invites').update({perm:perm()}).eq('code',I.code);if(error){b.disabled=false;return toast('Não salvou: '+error.message)}}
+     else{const {error}=await sb.rpc('team_set',{p_id:M.id,p_perm:perm()});if(error){b.disabled=false;return toast('Não salvou: '+error.message)}}
+     s.remove();toast('Salvo');teamSheet()};
+   const re=s.querySelector('#mre');if(re)re.onclick=()=>tmWa(I.phone,tmMsg(I.name,I.code));
+   const d=s.querySelector('#mdel');if(d)d.onclick=()=>{s.remove();
+     if(I)return confirmBox('Cancelar o convite?','O link para de funcionar.','Sim, cancelar',async()=>{await sb.from('team_invites').delete().eq('code',I.code);teamSheet()});
+     confirmBox(`Remover ${esc((nm||'').split(' ')[0])}?`,'Perde o acesso na hora. O que ele fez continua no histórico.','Sim, remover',async()=>{const {error}=await sb.rpc('team_remove',{p_id:M.id});if(error)return toast('Não removeu: '+error.message);toast('Removido da equipe');teamSheet()})}})};
 
 window.__rl={saveNow,STUD:()=>STUD,CLS:()=>CLS,redraw};
 lastSaved=PS&&PS.data&&PS.data.v===2?snapshot():'';
