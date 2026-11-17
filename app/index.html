@@ -339,27 +339,31 @@ const DOWC=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];co
 async function needAnam(){try{const [{data:t},{data:a}]=await Promise.all([sb.rpc('public_anm'),sb.from('anam_answers').select('id').eq('user_id',ST.user.id).limit(1)]);return t&&!(a&&a.length)?t:null}catch(_){return null}}
 function anamQs(t){const Q=[];
   if(Array.isArray(t.sec)){const kind=q=>/Onde quer melhorar/.test(q)?'body':/médico|dor no peito|desmaiou|ósseo|medicação|Cirurgias/.test(q)?'yn':/Horas de sono|vezes por semana/.test(q)?'num':/Objetivo principal/.test(q)?'obj':/Melhor horário/.test(q)?'hor':'txt';
-    t.sec.forEach((sc,i)=>(sc[1]||[]).forEach((q,j)=>{if(!(t.off||[]).includes(i+':'+j))Q.push({s:sc[0],q,t:kind(q)})}))}
+    t.sec.forEach((sc,i)=>(sc[1]||[]).forEach((q,j)=>{if(!(t.off||[]).includes(i+':'+j))Q.push({s:sc[0],q,t:kind(q),req:1,why:/médico|dor no peito|desmaiou|ósseo|medicação|Cirurgias/.test(q),min:/Horas de sono/.test(q)?0:/vezes por semana/.test(q)?1:null,max:/Horas de sono/.test(q)?24:/vezes por semana/.test(q)?7:null})}))}
   else (t.form||[]).forEach(x=>Q.push({s:'',q:x.q,t:x.t,o:x.opts||[],other:!!x.other}));
   const O={body:['Glúteo','Pernas','Braços','Abdômen','Costas','Peito','Ombros'],obj:['Ganhar massa','Emagrecer','Saúde','Performance'],hor:['Manhã','Tarde','Noite'],yn:['Sim','Não']};
   return Q.map(x=>{const t2=x.t;if(O[t2])return {...x,o:O[t2],t:t2==='body'?'check':t2==='yn'?'yn':'one'};if(t2==='multi')return {...x,t:'one'};if(t2==='check')return {...x,t:'check'};if(t2==='num')return {...x,t:'num'};if(t2==='par'||t2==='long')return {...x,t:'par'};return {...x,t:'txt'}})}
-async function anamFlow(tpl){const Q=anamQs(tpl),A=Q.map(q=>q.t==='check'?[]:'');let k=0;if(!Q.length){location.replace('/app/aluno/');return}
+async function anamFlow(tpl){const Q=anamQs(tpl),A=Q.map(q=>q.t==='check'?[]:''),W=Q.map(()=>'');let k=0;if(!Q.length){location.replace('/app/aluno/');return}
+  const DK='anam_draft_'+(ST.user&&ST.user.id)+'_'+(tpl.id||'');const dsave=()=>{try{localStorage.setItem(DK,JSON.stringify({n:Q.length,k,A,W}))}catch(_){}};
+  try{const d=JSON.parse(localStorage.getItem(DK)||'null');if(d&&d.n===Q.length&&Array.isArray(d.A)){d.A.forEach((v,i)=>{A[i]=v});(d.W||[]).forEach((v,i)=>{W[i]=v});k=Math.min(d.k||0,Q.length-1)}}catch(_){}
   const pg=()=>{const q=Q[k],v=A[k];
     R.innerHTML=`<div class="scr"><div class="nav"><button class="bk" id="bk" ${k===0?'style="visibility:hidden"':''}>‹</button><span class="bar"><i style="width:${Math.round((k+1)/Q.length*100)}%"></i></span><span>${k+1}/${Q.length}</span><span></span></div>
     <span class="lb" style="margin-top:6px">${esc(tpl.n||'Anamnese')}${q.s?' • '+esc(q.s):''}</span><p class="q" style="font-size:34px">${esc(q.q)}</p>
-    ${q.t==='one'||q.t==='yn'||q.t==='check'?`${q.t==='check'?'<p class="qs">Pode marcar mais de uma.</p>':''}<div class="seg" style="grid-template-columns:repeat(${q.o.length<=3?q.o.length:2},1fr)">${[...q.o,...(q.other?['Outro']:[])].map(o=>`<button data-o="${esc(o)}" class="${(q.t==='check'?v.includes(o):v===o)?'on':''}">${esc(o)}</button>`).join('')}</div>${q.other&&(q.t==='check'?v.includes('Outro'):v==='Outro')?'<input class="in" id="oth" placeholder="Escreva aqui" style="margin-top:10px">':''}`
+    ${q.t==='one'||q.t==='yn'||q.t==='check'?`${q.t==='check'?'<p class="qs">Pode marcar mais de uma.</p>':''}<div class="seg" style="grid-template-columns:repeat(${q.o.length<=3?q.o.length:2},1fr)">${[...q.o,...(q.other?['Outro']:[])].map(o=>`<button data-o="${esc(o)}" class="${(q.t==='check'?v.includes(o):v===o)?'on':''}">${esc(o)}</button>`).join('')}</div>${q.other&&(q.t==='check'?v.includes('Outro'):v==='Outro')?'<input class="in" id="oth" placeholder="Escreva aqui" style="margin-top:10px">':''}${q.why&&v==='Sim'?`<input class="in" id="why" value="${esc(W[k])}" placeholder="Qual? Conte em poucas palavras" style="margin-top:10px">`:''}`
      :q.t==='num'?`<input class="in" id="ai" inputmode="decimal" value="${esc(v)}" placeholder="Digite um número">`
-     :q.t==='par'?`<textarea class="in" id="ai" placeholder="Escreva aqui">${esc(v)}</textarea>`:`<input class="in" id="ai" value="${esc(v)}" placeholder="Escreva aqui">`}
+     :q.t==='par'?`<textarea class="in" id="ai" placeholder="${q.req?'Escreva aqui. Se não tiver, escreva Nenhuma':'Escreva aqui'}">${esc(v)}</textarea>`:`<input class="in" id="ai" value="${esc(v)}" placeholder="${q.req?'Escreva aqui. Se não tiver, escreva Nenhuma':'Escreva aqui'}">`}
     <p class="err" id="er"></p><div class="cta"><button class="b1" id="go">${k===Q.length-1?'Enviar anamnese':'Continuar'}</button></div></div>`;
-    R.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const o=b.dataset.o;if(q.t==='check'){A[k]=v.includes(o)?v.filter(x=>x!==o):[...v,o]}else A[k]=o;pg()});
-    $('#bk').onclick=()=>{if(k>0){k--;pg()}};
+    R.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const o=b.dataset.o;if(q.t==='check'){A[k]=v.includes(o)?v.filter(x=>x!==o):[...v,o]}else A[k]=o;dsave();pg()});
+    $('#bk').onclick=()=>{const ai=$('#ai');if(ai)A[k]=ai.value.trim();const wy=$('#why');if(wy)W[k]=wy.value.trim();if(k>0){k--;dsave();pg()}};
     $('#go').onclick=async()=>{const ai=$('#ai');if(ai)A[k]=ai.value.trim();const oth=$('#oth');
-      const val=A[k];if(q.t!=='txt'&&q.t!=='par'&&(Array.isArray(val)?!val.length:!String(val).trim()))return err('Responda para continuar.');
+      const val=A[k];if((q.req||(q.t!=='txt'&&q.t!=='par'))&&(Array.isArray(val)?!val.length:!String(val).trim()))return err('Responda para continuar.');
+      if(q.t==='num'){const nv=parseFloat(String(val).replace(',','.'));if(!/^\d+([.,]\d+)?$/.test(String(val).trim())||isNaN(nv))return err('Digite só números.');if(q.min!=null&&nv<q.min||q.max!=null&&nv>q.max)return err('Digite um valor entre '+q.min+' e '+q.max+'.');A[k]=String(nv).replace('.',',')}
+      const why=$('#why');if(q.why&&A[k]==='Sim'){W[k]=why?why.value.trim():W[k];if(!W[k])return err('Conte em poucas palavras qual.')}
       if(oth&&oth.value.trim()){A[k]=Array.isArray(val)?val.map(x=>x==='Outro'?'Outro: '+oth.value.trim():x):'Outro: '+oth.value.trim()}
-      if(k<Q.length-1){k++;pg();return}
+      if(k<Q.length-1){k++;dsave();pg();return}
       $('#go').disabled=true;$('#go').textContent='Enviando…';
-      const {error}=await sb.from('anam_answers').insert({user_id:ST.user.id,template_id:String(tpl.id||''),template_name:tpl.n||'Anamnese',answers:Q.map((x,i)=>({s:x.s,q:x.q,a:A[i]}))});
-      if(error){$('#go').disabled=false;$('#go').textContent='Enviar anamnese';return err('Não enviou: '+error.message)}
+      const {error}=await sb.from('anam_answers').insert({user_id:ST.user.id,template_id:String(tpl.id||''),template_name:tpl.n||'Anamnese',answers:Q.map((x,i)=>({s:x.s,q:x.q,a:(x.why&&A[i]==='Sim'&&W[i])?'Sim: '+W[i]:A[i]}))});
+      if(error){$('#go').disabled=false;$('#go').textContent='Enviar anamnese';return err('Não enviou: '+error.message)}try{localStorage.removeItem(DK)}catch(_){}
       R.innerHTML=`<div class="scr" style="text-align:center"><div class="okc">✓</div><p class="q" style="margin-top:0">Anamnese enviada!</p><p class="qs">O ${PN} usa suas respostas para montar seu treino.</p><div class="cta"><a class="b1" href="/app/aluno/" style="display:grid;place-items:center;text-decoration:none">Entrar no app</a></div></div>`};
     window.scrollTo(0,0)};pg()}
 async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try{await sb.rpc('expire_reservations')}catch(_){}
