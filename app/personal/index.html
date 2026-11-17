@@ -4475,6 +4475,8 @@ function finCheck(){let ch=false;
   CLS.forEach(c=>{if(c.kind!=='extra'||c.status==='pedido')return;const X=stuById(c.student_id);if(!X)return;const ref='ex:'+c.id,cur=CHG.find(z=>z.ref===ref);
     if(c.status==='cancelada'){if(cur&&cur.st!=='pago'){CHG.splice(CHG.indexOf(cur),1);ch=true}return}
     if(!cur){const d=new Date(c.starts_at);CHG.unshift({n:X.n,pl:'Aula extra • '+ddmm(d)+' '+pad(d.getHours())+'h',v:+PRICE.avulsa||0,st:'aberto',d:'vence '+ddmm(d),ref});ch=true}});
+  /* cobrança de aula extra em aberto cuja aula virou do plano (ou foi trocada) some */
+  CHG.slice().forEach(z=>{if(!z.ref||!z.ref.startsWith('ex:')||z.st==='pago')return;const c=CLS.find(k=>k.id===z.ref.slice(3));if(c&&c.kind!=='extra'&&c.status!=='pedido'){CHG.splice(CHG.indexOf(z),1);ch=true}});
   CHG.forEach(c=>{if(!c.ref||c.st!=='pago'||c._ok)return;c._ok=1;ch=true;if(!c.ref.startsWith('ren:'))return;const [,id,au]=c.ref.split(':'),X=stuById(id);if(!X)return;
     const d=new Date(au+'T12:00:00'),nd=new Date(d.getFullYear(),d.getMonth()+MON(X),d.getDate());
     sb.from('profiles').update({access_until:iso(nd)}).eq('id',id).then(async({error})=>{if(error)return toast('Não renovou: '+error.message);await sb.rpc('gen_classes',{p_student:id,p_weeks:9});toast(X.n.split(' ')[0]+' renovado até '+ddmm(nd));redraw()})});
