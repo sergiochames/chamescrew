@@ -6660,7 +6660,7 @@ try{sb.rpc('extra_em_aberto',{p_student:uid}).then(({data})=>{AG.xdebt=!!data})}
 try{(async()=>{const {data}=await sb.rpc('pausa_ativa');window.__PAUSA=data||null;const P=window.__PAUSA;if(!P)return;
   const D=x=>x?String(x).split('-').reverse().slice(0,2).join('/'):'';
   const put=()=>{const v=document.getElementById('v-hoje');if(!v)return false;let el=document.getElementById('pz-ban');if(!el){el=document.createElement('div');el.id='pz-ban';el.className='avb';const w=document.getElementById('week');w?w.insertAdjacentElement('afterend',el):v.prepend(el)}
-    el.innerHTML=P.status==='ativa'?`<b>Plano pausado${P.fim?' até '+D(P.fim):''}</b><span>Aulas, ciclo e medalhas ficam parados. ${P.fim?'O fim do plano foi estendido.':'Avise a equipe quando puder voltar.'}</span>`:`<b>${P.tipo==='viagem'?'Viagem':'Congelamento'} enviado</b><span>A equipe vai responder em breve.</span>`;return true};
+    el.innerHTML=P.status==='ativa'?`<b>Plano pausado${P.fim?' até '+D(P.fim):''}</b><span>Suas aulas ficam paradas. ${P.fim?'O fim do plano foi estendido.':'Avise a equipe quando puder voltar.'}</span>`:`<b>${P.tipo==='viagem'?'Viagem':'Congelamento'} enviado</b><span>A equipe vai responder em breve.</span>`;return true};
   let t=0;const iv=setInterval(()=>{if(put()||++t>20)clearInterval(iv)},500)})()}catch(_){}
 window.__pedirPausa=async(t,i,f,m)=>{try{const {error}=await sb.rpc('pedir_pausa',{p_tipo:t,p_ini:i,p_fim:f||null,p_motivo:m||null});return error||null}catch(e){return e}};
 window.__rkSave=async(p,on)=>{try{if(on!=null){await sb.rpc('rk_push',{p:{on:!!on}});return}
