@@ -2663,7 +2663,14 @@ $('#exs').addEventListener('click',e=>{
 });
 
 /* bonequinho */
+const EXV={'agachamento sumô com barra':'agachamento-sumo-com-barra','supino reto com barra':'supino-reto-com-barra','rosca direta com barra':'rosca-direta-com-barra','remada curvada com barra':'remada-curvada-com-barra'};
+const exVid=n=>{const k=String(n||'').trim().toLowerCase();return EXV[k]?'../ex/'+EXV[k]:''};
 function openDemo(ex){
+  const gv=exVid(ex.name);
+  if(gv){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.name}</p>
+    <video class="exv" src="${gv}.mp4" poster="${gv}.jpg" autoplay loop muted playsinline webkit-playsinline preload="auto" aria-label="Animação de ${ex.name}"></video>
+    <p class="meta" style="margin-top:8px">Animação ilustrativa.</p>${ex.yt?`<a class="btn wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:10px">▶ Ver o vídeo do seu personal</a>`:''}
+    <style>.exv{width:100%;display:block;border-radius:20px;background:#fff;aspect-ratio:480/436;object-fit:cover}</style>`,s=>{const v=s.querySelector('video');if(v){v.muted=true;const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{})}});return}
   if(ex.yt){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.name}</p>
     <a class="btn solid wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">▶ Ver o vídeo do exercício</a>
     <p class="meta" style="margin-top:8px">Vídeo escolhido pelo seu personal. Abre no YouTube.</p>`);return}
