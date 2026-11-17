@@ -6024,6 +6024,28 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-onbgo]')){e.sto
   if(e.target.closest('[data-newon]')){NEWP.flow=null}},true);
 window.__onbOpen=onbOpen;
 
+/* ===== jornada pós-cadastro: um próximo passo só ===== */
+(()=>{const st=document.createElement('style');st.textContent=`.jj{display:flex;flex-direction:column;gap:10px}.jj .jtr{display:flex;gap:6px}.jj .jtr i{flex:1;height:4px;border-radius:2px;background:var(--frost)}.jj .jtr i.on{background:var(--ok)}.jj .jtr i.cur{background:var(--fg);opacity:.7}.jj .jtl{display:flex;justify-content:space-between;font-size:11px;opacity:.55;margin-top:-4px}.jj .jtl span.cur{opacity:1;font-weight:600}.jj h2{margin:0;font:700 19px/1.2 var(--d,inherit)}.jj p{margin:0}.jj .jlb{font-size:12px;opacity:.6;font-weight:600}`;document.head.appendChild(st)})();
+let JINV=[],JLOAD=0;
+async function jLoad(){try{const {data}=await sb.from('invites').select('code,name,used_by,created_at').eq('created_by',ME.id).is('used_by',null).order('created_at',{ascending:false});JINV=data||[]}catch(_){JINV=[]}JLOAD=1}
+const jFirst=n=>String(n||'').trim().split(' ')[0];
+function jHTML(cur,title,sub,btns,cls){const L=['Convite','Aluno entra','Primeira aula'];return `<section class="card jj ${cls||''}" id="rl-j"><span class="jlb">${cur>2?'Pronto':'Próximo passo'}</span><div class="jtr">${L.map((_,i)=>`<i class="${i<cur?'on':i===cur?'cur':''}"></i>`).join('')}</div><div class="jtl">${L.map((t,i)=>`<span class="${i===cur?'cur':''}">${t}</span>`).join('')}</div><h2 class="d">${title}</h2><p class="note">${sub}</p>${btns||''}</section>`}
+{const _ev=emptyView;emptyView=function(tab){if(tab!=='agenda')return _ev(tab);
+  const head='<div class="row top"><div><span class="lbl">Agenda</span><h1 class="d">Bem-vindo</h1></div></div>';
+  if(!JLOAD){jLoad().then(()=>{try{draw()}catch(_){}});return head+jHTML(0,'Convide seu primeiro aluno','Mande o link no WhatsApp. Ele cria a conta e responde a anamnese sozinho.','<button class="btn solid" data-fs="aluno">Convidar aluno</button>','fsteps')}
+  if(JINV.length){const n=jFirst(JINV[0].name);return head+jHTML(1,'Convite criado',(n?'Falta '+esc(n)+' entrar no app.':'Falta o aluno entrar no app.')+' Quando ele criar a conta, você recebe um aviso.','<button class="btn" data-fs="aluno">Convidar outro aluno</button>','fsteps')}
+  return head+jHTML(0,'Convide seu primeiro aluno','Mande o link no WhatsApp. Ele cria a conta e responde a anamnese sozinho.','<button class="btn solid" data-fs="aluno">Convidar aluno</button>','fsteps')}}
+document.addEventListener('click',e=>{if(e.target.closest('[data-ivcp],[data-ivwa],[data-ivmany],[data-fs="aluno"]')&&NEWP.on)setTimeout(()=>jLoad().then(()=>{try{if(!document.querySelector('.scrim'))draw()}catch(_){}}),1200)},true);
+function jCard(){if(S.tab!=='agenda'||NEWP.on)return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-j'))return;const F=NEWP.flow=NEWP.flow||{};
+  const live=CLS.some(c=>['marcada','confirmada','feita'].includes(c.status))||(FXS&&FXS.length>0);let h='';
+  if(STU.length&&!live){if(!F.jshown){F.jshown=1;try{saveSoon()}catch(_){}}
+    const n=STU.length===1?jFirst(STU[0].n):'';
+    h=jHTML(2,n?'Marque a primeira aula de '+esc(n):'Marque a primeira aula','Toque num horário livre da agenda, ou use o botão abaixo. Pode ser uma aula avulsa ou de um horário fixo.','<button class="btn solid" data-rlmark>Marcar aula</button>')}
+  else if(live&&F.jshown&&!F.j1){h=jHTML(3,'Primeira aula na agenda','Daqui pra frente, pedidos de horário e cancelamentos chegam aqui para você decidir.','<button class="btn" data-jok>Entendi</button>','ok')}
+  if(!h)return;const d=document.createElement('div');d.innerHTML=h;const el=d.firstElementChild;const ref=ap.querySelector('#rl-ped')||ap.querySelector('#rl-req')||ap.querySelector('.brand');ref&&ref.nextSibling?ap.insertBefore(el,ref.nextSibling):ap.prepend(el)}
+document.addEventListener('click',e=>{if(e.target.closest('[data-jok]')){const F=NEWP.flow=NEWP.flow||{};F.j1=1;const c=document.getElementById('rl-j');if(c)c.remove();try{saveSoon()}catch(_){}}});
+{const _dJ=draw;draw=function(){_dJ.apply(this,arguments);try{jCard()}catch(e){console.error(e)}}}
+
 })().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);try{window.__unCover&&window.__unCover()}catch(_){}const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 {const st=document.createElement('style');st.textContent="html body.ag3 .wk3 .wb.rq{background:linear-gradient(180deg,#f3c76b,#e7aa3c)!important;border:0!important;color:#2b1d00!important;z-index:4;box-shadow:0 0 0 1.5px #f3c76b,0 6px 16px rgba(243,199,107,.32)!important}html body.ag3 .wk3 .wb.rq b,html body.ag3 .wk3 .wb.rq small,html body.ag3 .wk3 .wb.rq small span{color:#2b1d00!important;opacity:1}";document.head.appendChild(st)}
 </script>

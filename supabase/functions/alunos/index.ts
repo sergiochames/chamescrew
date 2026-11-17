@@ -32,6 +32,13 @@ Deno.serve(async (req) => {
       const { error } = await adm.auth.admin.updateUserById(inv.profile_id, { email, password: pw, email_confirm: true });
       if (error) return out({ error: /already|registered|exists/i.test(error.message) ? "Esse e-mail já tem conta. Use outro ou entre com ele." : error.message }, 400);
       await adm.from("invites").update({ used_by: inv.profile_id }).eq("code", code);
+      // aviso para quem convidou: o aluno entrou no app
+      try {
+        if (inv.created_by) {
+          const nm = String(inv.name || "Seu aluno").trim().split(" ")[0] || "Seu aluno";
+          await adm.from("notifications").insert({ user_id: inv.created_by, kind: "novo", title: nm + " entrou no app", body: "Agora é só marcar a primeira aula na agenda.", go: "agenda", ref: inv.profile_id });
+        }
+      } catch (_) { /* aviso é opcional */ }
       return out({ ok: true, email });
     }
 
