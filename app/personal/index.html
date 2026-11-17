@@ -4762,6 +4762,19 @@ async function loadPN(first){try{const {data}=await sb.from('notifications').sel
   if(!first&&fresh.length){toast('🔔 '+fresh[0].title);try{const wo=S.wo,w3=S.w3,dd=S.day;await fetchAll();apply();S.wo=wo;S.w3=w3;S.day=dd;if(!document.querySelector('.scrim'))draw()}catch(_){try{await sync0()}catch(__){}}}try{const b=document.querySelector('.pbell');if(b){const n=PNOT.filter(x=>x.new).length;let i=b.querySelector('i');if(n){if(!i){i=document.createElement('i');b.appendChild(i)}i.textContent=n}else if(i)i.remove()}}catch(_){}}catch(_){}}
 async function sync0(){try{await fetchAll();apply();draw()}catch(_){}}
 loadPN(true);setInterval(()=>loadPN(false),45000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')loadPN(false)});
+/* puxa mudanças das aulas feitas pelo aluno (confirmou, cancelou, pediu) sem precisar recarregar */
+let PULLING=0;
+async function pullCls(){if(PULLING||busy||document.visibilityState!=='visible'||(typeof STALE!=='undefined'&&STALE))return;
+  if(document.querySelector('.scrim,.cbox')||(document.activeElement&&document.activeElement.matches('input,textarea,select')))return;
+  PULLING=1;try{const from=new Date(wk0.getTime()-35*864e5).toISOString(),to=new Date(wk0.getTime()+70*864e5).toISOString();
+    const {data,error}=await sb.from('classes').select('id,status,starts_at,location').gte('starts_at',from).lte('starts_at',to);if(error||!data)return;
+    const sig=a=>a.map(c=>c.id+'|'+c.status+'|'+new Date(c.starts_at).getTime()+'|'+(c.location||'')).sort().join(',');
+    if(sig(data)===sig(CLS))return;
+    if(busy||document.querySelector('.scrim,.cbox'))return;
+    const wo=S.wo,w3=S.w3,dd=S.day,y=window.scrollY;await fetchAll();apply();S.wo=wo;S.w3=w3;S.day=dd;
+    if(!document.querySelector('.scrim,.cbox')){draw();window.scrollTo(0,y)}
+  }catch(_){}finally{PULLING=0}}
+setInterval(pullCls,20000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(pullCls,400)});
 document.addEventListener('click',e=>{if(!e.target.closest('[data-pnot]'))return;setTimeout(async()=>{const ids=PNOT.filter(x=>x.new&&x._id).flatMap(x=>x._mid?[x._id,x._mid]:[x._id]);if(!ids.length)return;await sb.from('notifications').update({read_at:new Date().toISOString()}).in('id',ids);PNOT.forEach(x=>x.new=0);try{draw()}catch(_){}},1500)},true);
 /* ---------- pedidos de horário dos alunos (quando o personal confirma cada pedido) ---------- */
 function pedCard(){if(S.tab!=='agenda'||NEWP.on)return;const P=CLS.filter(c=>c.status==='pedido'&&new Date(c.starts_at)>new Date());const ap=document.getElementById('app');if(!ap||!P.length||ap.querySelector('#rl-ped'))return;
