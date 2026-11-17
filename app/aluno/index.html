@@ -6710,7 +6710,7 @@ function agBox(){const V=document.getElementById('v-hoje'),au=document.getElemen
 {let tq=0;const run=()=>{clearTimeout(tq);tq=setTimeout(()=>{try{agBox()}catch(_){}},60)};const au=document.getElementById('aula');if(au)new MutationObserver(run).observe(au,{childList:true,subtree:true,characterData:true});document.addEventListener('click',e=>{if(e.target.closest('.tabs [data-go="hoje"]'))run()});run();setTimeout(run,1200);setTimeout(run,3000)}
 /* créditos e mudanças pela regra do personal (ciclo do plano) */
 {const okC=AG.canc.filter(c=>c.ok).sort((a,b)=>(KN[b.d]||0)-(KN[a.d]||0));AG.creds.length=0;for(let i=0;i<(CI.credits||0);i++){const c=okC[i];AG.creds.push({from:c?c.d:keyOf(dayN(now)),exp:dayN(endD),_id:c&&c.slot?c.slot._id:undefined})}
- const A=window.__CYA||1,m=now.getDate()>=A?now.getMonth()+1:(now.getMonth()||12),cc=AG.canc.filter(c=>c.ok).length;AG.remM[m]=Math.max(0,(CI.used||0)-Math.min(cc,CI.used||0));if(m===10)AG.rem=AG.remM[m]}
+ const A=window.__CYA||1,m=now.getDate()>=A?now.getMonth()+1:(now.getMonth()||12),cc=AG.canc.filter(c=>c.ok).length;AG.remM[m]=Math.max(0,(CI.used||0)-Math.min(cc,CI.used||0));AG.credM[m]=Math.min(cc,CI.used||0);if(m===10)AG.rem=AG.remM[m]}
 /* pedidos aguardando o personal */
 (CL||[]).filter(c=>c.status==='pedido').forEach(c=>{const d=new Date(c.starts_at),k=keyOf(dayN(d)),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:'pedido',note:c.note,k,h,kind:c.kind};
   if(c.note&&c.note.startsWith('mv:')){const x=AG.slots.find(z=>z._id===c.note.slice(3));if(x){x.pend={d:x.d,h:x.h,over:false,wasExtra:!!x.extra,mo:d.getMonth()+1};x.d=k;x.h=h;x._req=c.id}return}
