@@ -3041,7 +3041,7 @@ function rnDraw(){const el=$('#rnw');const c=rnCalc(),my=MYOFF.reduce((a,x)=>a+x
   const maxI=c.pl.m;
   el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-x>‹ Voltar</button><span style="flex:1"></span><span class="pill">pagamento seguro</span></div>
    <span class="lbl" style="display:block;margin-top:16px">Seu plano: ${PLANS3.find(x=>x.k===PLN.cur).n} • vence ${PLN.ends}</span><p class="d" style="font-size:44px;margin:4px 0 12px">Renovar plano</p>
-   ${window.__XOPEN?`<div class="avb red" style="margin-bottom:12px"><b>Você tem ${window.__XOPEN} aula${window.__XOPEN>1?'s':''} extra em aberto: ${R2(window.__XOPEN*(+AVU||0))}</b><span>Acerte com o ${PN()}. Isso é separado da renovação.</span></div>`:''}
+   ${window.__XOPEN?`<div class="avb red" style="margin-bottom:12px"><b>Você tem ${window.__XOPEN} aula${window.__XOPEN>1?'s':''} extra em aberto: ${R2(window.__XOPEN*(+AVU||0))}</b><span>Acerte com o ${PERS_NOME()}. Isso é separado da renovação.</span></div>`:''}
    <div class="rn-my"><span class="d">${my}%</span><div><b>Seu desconto de renovação</b><small>${MYOFF.map(x=>x[0]+' '+x[1]+'%').join(' + ')}</small></div></div>
    <p class="lbl" style="margin:18px 0 8px">Escolha o plano</p>${PLANS3.map(card).join('')}
    <p class="lbl" style="margin:18px 0 8px">Forma de pagamento</p>
