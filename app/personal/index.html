@@ -4260,7 +4260,9 @@ function apply(){
     (S.ev[wi]=S.ev[wi]||[]).push(Object.assign({h,n:nameOf(c.student_id),st,_res:c.status==='reservada',_id:c.id,_wi:wi,_h:h,_st:st,extra:c.kind==='extra',why:c.status==='cancelada'?(c.note==='credito'?'Guardou crédito':'Cancelou'):undefined},lid?{loc:lid}:{}))});
   XEV.forEach(x=>{const d=new Date(x.date+'T12:00:00'),wi=wiOf(d);if(wi<0||wi>6)return;(S.ev[wi]=S.ev[wi]||[]).push(dec(x.e))});
   /* aulas usadas no ciclo */
-  STU.forEach(X=>{if(!X._id)return;X.q[0]=CLS.filter(c=>c.student_id===X._id&&c.status!=='cancelada'&&new Date(c.starts_at)<=now).length});
+  const cycIni=(cd,ref)=>{if(!cd)return null;const d=new Date(ref);let y=d.getFullYear(),m=d.getMonth();if(d.getDate()<cd)m--;const dim=new Date(y,m+1,0).getDate();return new Date(y,m,Math.min(cd,dim))};
+  STU.forEach(X=>{if(!X._id)return;const pf=STUD.find(s=>s.id===X._id)||{},ini=cycIni(pf.cycle_day,now);
+    X.q[0]=CLS.filter(c=>{if(c.student_id!==X._id||c.status==='cancelada')return false;const t=new Date(c.starts_at);return t<=now&&(!ini||t>=ini)}).length});
   {const nn=CLS.filter(c=>['marcada','confirmada','reservada'].includes(c.status)&&new Date(c.starts_at)>now).sort((a,b)=>a.starts_at.localeCompare(b.starts_at))[0];window.__NXT=nn?{n:nameOf(nn.student_id),at:nn.starts_at}:null}
   window.__PEDS=CLS.filter(c=>c.status==='pedido'&&new Date(c.starts_at)>now).map(c=>{const o=c.note&&c.note.startsWith('mv:')?CLS.find(z=>z.id===c.note.slice(3)):null;
     return {id:c.id,at:new Date(c.starts_at),n:nameOf(c.student_id),sid:c.student_id,tp:o?'mv':c.kind==='credito'?'rep':c.kind==='extra'?'extra':'plano',fromId:o?o.id:null,from:o?new Date(o.starts_at):null,loc:c.location||''}})}
