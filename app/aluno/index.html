@@ -5052,13 +5052,13 @@ var RMED_SRC={carga:'Conta pelo treino: semanas com progressão de carga',resist
 (function(){const zi=RA.MEDALS.findIndex(m=>m.id==='zero');if(!RA.MEDALS.find(m=>m.id==='doce'))RA.MEDALS.splice(zi+1,0,{id:'doce',how:'Fique a semana sem doce fora do plano',cat:'Estilo de vida',name:'Zero doce',th:[1,3,6,12,24],unit:'semanas sem doce',icon:'<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16 18l-9-6 2 12-2 12 9-6Z M32 18l9-6-2 12 2 12-9-6Z" fill="currentColor" opacity=".75"/><ellipse cx="24" cy="24" rx="10" ry="9" fill="currentColor"/><path d="M19 19c3 2 7 2 10 0" stroke="#fff" stroke-width="2" fill="none" opacity=".5" stroke-linecap="round"/><path d="M8 42 41 7" stroke="#e0234e" stroke-width="4.5" stroke-linecap="round"/></svg>'});const z=RA.MEDALS.find(m=>m.id==='zero');z.th=[1,3,6,12,24];z.unit='semanas sem fast food';const l=RA.MEDALS.find(m=>m.id==='limite');l.th=[2,6,12,24,48];
   /* tudo semanal e personalizado por aluno */
   const S=window.STU,H={
-   tempo:['Faça check-in em 6 dos 7 dias. A folga pode ser qualquer dia.','semanas com check-in'],
+   tempo:['Faça check-in em 5 dos 7 dias. As folgas podem ser em qualquer dia.','semanas com check-in'],
    carga:['Suba a carga e cumpra as repetições em algum exercício na semana.','semanas progredindo a carga'],
    resist:[`Bata a sua meta de cardio da semana (a sua: ${S.cardio}x).`,'semanas com a meta de cardio'],
-   limite:[`Cumpra os seus treinos da semana (a sua meta: ${S.freq}x). Dia de descanso não conta contra.`,'semanas com os treinos em dia','Treino em dia'],
-   agua:[`Bata a sua meta de água (${window.aguaMeta().toLocaleString('pt-BR')} L) em 6 dos 7 dias.`,'semanas com a meta de água'],
-   alim:['Refeições no horário em 6 dos 7 dias.','semanas seguindo o plano'],
-   sono:['Durma 7h ou mais em 6 das 7 noites.','semanas dormindo 7h+'],
+   limite:[`Cumpra os seus treinos da semana (a sua meta: ${S.freq}x, até 4x contam). Dia de descanso não conta contra.`,'semanas com os treinos em dia','Treino em dia'],
+   agua:[`Bata a sua meta de água (${window.aguaMeta().toLocaleString('pt-BR')} L) em 5 dos 7 dias.`,'semanas com a meta de água'],
+   alim:['Complete todas as refeições da dieta em 5 dos 7 dias.','semanas seguindo o plano'],
+   sono:['Durma 7h ou mais em 5 das 7 noites.','semanas dormindo 7h+'],
    zero:['Fique 6 dos 7 dias sem fast food. A refeição livre usa a folga da semana.','semanas sem fast food'],
    doce:['Fique 5 dos 7 dias sem doce fora do plano.','semanas sem doce'],
    perfeita:['Feche todas as suas medalhas da semana.','semanas perfeitas']};
@@ -6588,6 +6588,7 @@ const uid=session.user.id;const R1=window.__RL1,R2=window.__RL2;
 const GO=q=>Promise.resolve(q).then(r=>r,e=>({data:null,error:e}));
 const pGen=GO(sb.rpc('gen_my_classes')),pExp=GO(sb.rpc('expire_reservations'));
 const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise.all([GO(sb.rpc('public_anm')),GO(sb.from('anam_answers').select('id').eq('user_id',uid).limit(1))]),
+  pz:GO(sb.rpc('minhas_pausas')),ml:GO(sb.from('meal_logs').select('day,meal_idx').eq('user_id',uid).not('done_at','is',null).gte('day',new Date(Date.now()-150*864e5).toISOString().slice(0,10)).limit(2000)),
   ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),pp:GO(sb.rpc('public_pers')),rk:GO(sb.rpc('public_rank')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
   pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
@@ -7025,6 +7026,7 @@ dietView(true);loadMeals().then(()=>{try{dietView(true)}catch(_){}_rd()});setInt
 window.__CYCG=()=>{const n=(window.__GM||{}).niv;return Array.isArray(n)&&n.length===4?[0,...n.map(Number)]:[0,3,6,12,24]};
 window.__PRZT=i=>{const P=(window.__GM||{}).prz;if(!Array.isArray(P)||!P.some(p=>p&&Object.keys(p).length))return null;const p=P[i]||{};return Object.entries(p).map(([k,v])=>k==='desc'?v+'% de desconto':k==='aula'?v+(v==1?' aula grátis':' aulas grátis'):k==='rem'?'+'+v+(v==1?' remarcação':' remarcações'):v).filter(Boolean).join(' + ')||'Só a insígnia'};
 try{if(window.__PRZT(1)!=null)RA.LEVELS.forEach((L,i)=>{if(i)L.perks=[window.__PRZT(i)]})}catch(_){}
+const MLD=await (async()=>{try{const r=await PF.ml;return r.data||[]}catch(_){return []}})(),PZH=await (async()=>{try{const r=await PF.pz;return Array.isArray(r.data)?r.data:[]}catch(_){return []}})();
 const CIC=await (async()=>{try{const r=await PF.cic;return r.data||{}}catch(_){return {}}})();
 const CISTD=[['treinou','Treinou hoje?',['Sim','Não','Dia de descanso'],'limite'],['intens','Como foi o treino?',['Leve','Moderado','Pesado','No limite'],null],['energia','Como está sua energia?',['Baixa','Ok','Alta'],null],['cardio','Fez cardio hoje?',['Não','Até 20 min','Mais de 20 min'],'resist'],['livre','Comeu fast food ou fez refeição livre?',['Não','Refeição livre','Fast food'],'zero'],['doce','Comeu doce fora do plano?',['Não','Um pouco','Sim'],'doce'],['agua','Bateu sua meta de água hoje?',['Não','Quase','Bati a meta'],'agua'],['sono','Quantas horas dormiu?',['Menos de 6h','6 a 7h','7h ou mais'],'sono']];
 const WSTD=[['carga','Como sentiu os treinos da semana?',['Leves demais','No ponto','Pesados demais']],['chegou','Como você chegou no fim da semana?',['Cansado','Normal','Bem disposto']],['dor','Sentiu alguma dor ou desconforto?',['Nenhuma','Leve','Moderada','Forte']],['rotina','Como foi sua rotina na semana?',['Tranquila','Normal','Puxada']],['nota','Que nota você dá para a sua semana?',['0','1','2','3','4','5','6','7','8','9','10']]];
@@ -7034,11 +7036,14 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   const clsDays=new Set((CL||[]).filter(c=>(c.status==='feita'||c.status==='confirmada')&&new Date(c.starts_at)<now).map(c=>ymd(new Date(c.starts_at))));
   const ciDays=new Map(DCS.map(c=>[c.day,c.answers||{}]));const trDays=new Set([...LOGS.map(l=>l.day),...clsDays,...[...ciDays].filter(([,a])=>a.treinou===0).map(([d])=>d)]);
   /* meta de check-ins: frequência do aluno (padrão) ou todo dia */
-  const META=((CIC.stu||{})[uid])||CIC.meta||'freq',TODO=META==='todo',GOAL=TODO?6:Math.min(7,freq),isRest=a=>a&&a.treinou===2;
-  R.CIM={meta:META,goal:GOAL,wkndOff:!TODO&&freq<6};
+  const META=((CIC.stu||{})[uid])||CIC.meta||'freq',TODO=META==='todo',GOAL=TODO?6:5,isRest=a=>a&&a.treinou===2;
+  R.CIM={meta:META,goal:GOAL,wkndOff:!TODO};
   {const dw=now.getDay(),hasFx=(FX||[]).length>0,clsT=(CL||[]).filter(c=>c.status!=='cancelada'&&ymd(new Date(c.starts_at))===TODAY);
    R.TRT=LOGS.some(l=>l.day===TODAY)||clsDays.has(TODAY);R.CLT=clsT.length?clsT[0].starts_at:null;R.WKND=dw===0||dw===6;
    R.OFFPLAN=(hasFx&&!clsT.length)||[...trDays].filter(d=>inW(d)&&d<TODAY).length>=freq}
+  /* refeições: dia completo = todos os grupos de refeição marcados */
+  const alimDays=new Set();{let GG=[];try{const PL=P.diet&&dPlan();if(PL)GG=mealGroups(PL.refeicoes)}catch(_){}
+   if(GG.length){const by={};MLD.forEach(r=>{(by[r.day]=by[r.day]||new Set()).add(r.meal_idx)});Object.entries(by).forEach(([d,st])=>{if(GG.every(g=>g.some(j=>st.has(j))))alimDays.add(d)})}}
   const complete=d=>trDays.has(d)&&ciDays.has(d)||(ciDays.has(d)&&(ciDays.get(d).treinou===2));
   const cnt=(f)=>[...ciDays.entries()].filter(([d,a])=>inW(d)&&f(a)).length;
   const cardioN=(((WK||[]).find(w=>w.letter==='_cfg')||{}).exercises||{}).cardio||[];
@@ -7050,8 +7055,8 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
     (W.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QW.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0,ty]);R.QWK.push('w_'+c.id)})}
    (CIC.custom||[]).forEach(c=>{const ty=c.type,op=ty==='yn'?['Sim','Não']:(ty==='multi'||ty==='check')?[...(c.opts||[]),...(c.outro?['Outro']:[])]:[];R.QD.push([c.t,op,(ty==='txt'||ty==='par'||ty==='num')?ty:null,c.outro?1:0,ty]);R.QK.push('c_'+c.id)})}
   R.STU={plan:P.diet?'ambos':'treino',pres:P.presencial!==false,freq,cardio:cardioN.length||0,peso:+P.weight_kg||70,hideW:false,quota:freq*4};
-  const el=TI,HT=TODO?el+1:Math.min(el+1,GOAL);R.WEEK={el,ci:{d:cnt(a=>TODO||!isRest(a)),t:GOAL},limite:{d:[...trDays].filter(inW).length,t:freq,nox:1},resist:{d:cnt(a=>a.cardio>0),t:Math.max(1,cardioN.length||2),nox:1},
-    zero:{d:cnt(a=>a.livre!=null&&a.livre!==2),t:HT},doce:{d:cnt(a=>a.doce===0),t:HT},agua:{d:cnt(a=>a.agua===2),t:HT},sono:{d:cnt(a=>a.sono===2),t:HT},alim:{d:0,t:HT}};
+  const el=TI,HT=TODO?el+1:Math.min(el+1,GOAL);R.WEEK={el,ci:{d:cnt(a=>true),t:GOAL},limite:{d:[...trDays].filter(inW).length,t:freq,nox:1},resist:{d:cnt(a=>a.cardio>0),t:Math.max(1,cardioN.length||2),nox:1},
+    zero:{d:cnt(a=>a.livre!=null&&a.livre!==2),t:HT},doce:{d:cnt(a=>a.doce===0),t:HT},agua:{d:cnt(a=>a.agua===2),t:HT},sono:{d:cnt(a=>a.sono===2),t:HT},alim:{d:[...alimDays].filter(inW).length,t:HT}};
   /* bolinhas da semana: dia completo */
   R.WKDOTS=[0,1,2,3,4,5,6].map(i=>{const d=ymd(new Date(ws.getTime()+i*864e5));if(d>TODAY)return '';return complete(d)?'on':(trDays.has(d)||ciDays.has(d))?'half':''});
   /* evolução semanal (7 semanas) */
@@ -7072,12 +7077,21 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   R.LV=lv;R.CYCN=cyc;R.CYLEFT=lv<4?CYC[lv+1]-cyc:0;R.CYPCT=lv<4?Math.round((cyc-CYC[lv])/(CYC[lv+1]-CYC[lv])*100):100;
   /* medalhas: semanas completas */
   const wks={};const wkOfD=d=>{const x=new Date(d+'T12:00:00');x.setDate(x.getDate()-((x.getDay()+6)%7));return ymd(x)};const W_=k=>wks[k]=wks[k]||{tr:0,cardio:0,ci:0,agua:0,sono:0,ff:0,doce:0,carga:false};
-  trDays.forEach(d=>W_(wkOfD(d)).tr++);ciDays.forEach((a,d)=>{const w=W_(wkOfD(d));if(TODO||!isRest(a))w.ci++;if(a.cardio>0)w.cardio++;if(a.agua===2)w.agua++;if(a.sono===2)w.sono++;if(a.livre===2)w.ff++;if(a.doce>0)w.doce++});
+  trDays.forEach(d=>W_(wkOfD(d)).tr++);ciDays.forEach((a,d)=>{const w=W_(wkOfD(d));w.ci++;if(a.cardio>0)w.cardio++;if(a.agua===2)w.agua++;if(a.sono===2)w.sono++;if(a.livre===2)w.ff++;if(a.doce>0)w.doce++});
   {const best={};LOGS.slice().sort((a,b)=>a.day.localeCompare(b.day)).forEach(l=>{const w=W_(wkOfD(l.day));(l.sets||[]).forEach(z=>{if(z.cardio||!z.n)return;const k=+z.kg||0;if(best[z.n]>0&&k>best[z.n])w.carga=true;best[z.n]=Math.max(best[z.n]||0,k)})})}
   const DN=Object.entries(wks).filter(([k])=>k<wsd),C=f=>DN.filter(([k,w])=>f(w,k)).length,closed=new Set(WCS.map(w=>w.week_start));
-  const TH=TODO?5:GOAL;R.RMV={doce:C(w=>w.ci>=TH&&w.doce===0),tempo:closed.size,carga:C(w=>w.carga),resist:C(w=>w.cardio>=2),limite:C(w=>w.tr>=Math.min(4,freq)),agua:C(w=>w.agua>=TH),alim:0,sono:C(w=>w.sono>=TH),zero:C(w=>w.ci>=TH&&w.ff===0),
-    destaque:(AW||[]).filter(a=>a.medal_id==='destaque').length,perfeita:C((w,k)=>w.ci>=(TODO?7:GOAL)&&w.tr>=Math.min(freq,4)&&closed.has(k)),recrutador:0};
-  R.MEDD={alim:0,uivo:ciDays.size,perfeita:[...ciDays.keys()].filter(complete).length,agua:[...ciDays.values()].filter(a=>a.agua===2).length,sono:[...ciDays.values()].filter(a=>a.sono===2).length,limite:trDays.size};
+  alimDays.forEach(d=>{W_(wkOfD(d)).alim=(W_(wkOfD(d)).alim||0)+1});
+  const TH=5,HASD=!!(P.diet&&(()=>{try{return !!dPlan()}catch(_){return false}})()),CT=Math.max(1,cardioN.length||2),LT=Math.min(4,freq);
+  /* regras da semana (justas): check-in 5 de 7, água/sono 5 de 7, doce até 2 dias, fast food até 1 dia, dieta 5 de 7 */
+  const MET={tempo:w=>w.ci>=TH,doce:w=>w.ci>=TH&&w.doce<=2,carga:w=>w.carga,resist:w=>w.cardio>=CT,limite:w=>w.tr>=LT,agua:w=>w.agua>=TH,alim:w=>(w.alim||0)>=TH,sono:w=>w.sono>=TH,zero:w=>w.ci>=TH&&w.ff<=1};
+  const OFFM=new Set(R.MOFF||[]);
+  MET.perfeita=(w,k)=>closed.has(k)&&['tempo','limite','agua','sono','zero','doce',...(HASD?['alim']:[]),...(cardioN.length?['resist']:[])].filter(m=>!OFFM.has(m)).every(m=>MET[m](w));
+  /* progresso justo: semana cumprida soma 1; semana abandonada (até 2 check-ins) tira 1; semana parcial, pausada ou ruim sem abandono não pune */
+  const wk0=Object.keys(wks).concat(created0?[wkOfD(created0)]:[]).sort()[0]||wsd,paused=k=>{const a=new Date(k+'T12:00:00'),e=ymd(new Date(a.getTime()+6*864e5));return PZH.some(z=>z.ini<=e&&(z.fim||TODAY)>=k)};
+  const EFF=m=>{let v=0;for(let a=new Date(wk0+'T12:00:00');ymd(a)<wsd;a=new Date(a.getTime()+7*864e5)){const k=ymd(a);if(paused(k))continue;const w=wks[k]||{tr:0,cardio:0,ci:0,agua:0,sono:0,ff:0,doce:0,carga:false},met=MET[m](w,k);if(met)v++;else if(w.ci<=2&&k!==wk0)v=Math.max(0,v-1)}return v};
+  R.RMV={doce:EFF('doce'),tempo:EFF('tempo'),carga:EFF('carga'),resist:EFF('resist'),limite:EFF('limite'),agua:EFF('agua'),alim:HASD?EFF('alim'):0,sono:EFF('sono'),zero:EFF('zero'),
+    destaque:(AW||[]).filter(a=>a.medal_id==='destaque').length,perfeita:EFF('perfeita'),recrutador:0};
+  R.MEDD={alim:alimDays.size,uivo:ciDays.size,perfeita:[...ciDays.keys()].filter(complete).length,agua:[...ciDays.values()].filter(a=>a.agua===2).length,sono:[...ciDays.values()].filter(a=>a.sono===2).length,limite:trDays.size};
   let st=0;if(TODO){for(let d=new Date(now);;d=new Date(d.getTime()-864e5)){const k=ymd(d);if(k===TODAY&&!complete(k))continue;if(complete(k))st++;else break;if(st>400)break}}
   else{/* meta pela frequência: dia sem treino não quebra; quebra a semana passada que ficou abaixo da meta */
    for(let w=new Date(ws),n=0;n<60;n++,w=new Date(w.getTime()-7*864e5)){const a=ymd(w),b=ymd(new Date(w.getTime()+6*864e5)),c=[...trDays].filter(d=>d>=a&&d<=b&&d<=TODAY&&complete(d)).length;
@@ -7087,7 +7101,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   const wkPct=Math.min(100,Math.round([...trDays].filter(inW).length/Math.max(1,freq)*100));const cp=Math.round(doneC/Math.max(1,T)*100),OT=(window.__RKD||[]).filter(o=>!o.me),used=new Set([first]);
   R.RK=[[first,lv,0,cyc,cp,wkPct],...OT.map(o=>{let n=o.n||'Aluno';if(used.has(n))n=n+' '+(o.l||'')+'.';used.add(n);return [n,Math.min(4,+o.lv||0),0,+o.cyc||0,+o.cp||0,+o.wk||0]})];
   {const rk=(P.setup||{}).rk||{},d=new Date(now);d.setDate(d.getDate()-((d.getDay()+6)%7));R.PROF={};OT.forEach((o,i)=>{R.PROF[R.RK[i+1][0]]={ig:o.ig||'',ph:o.av||null,usePhoto:!!o.av,showIg:!!o.ig}});
-   R.PROF[first]={ig:String(P.instagram||'').replace(/^@+/,''),ph:P.avatar_url||null,usePhoto:rk.usePhoto!=null?rk.usePhoto:!!P.avatar_url,showIg:rk.showIg!=null?rk.showIg:true,showKg:rk.showKg!=null?rk.showKg:true,showCase:rk.showCase!=null?rk.showCase:true};R.RKON=rk.on!==false;
+   R.PROF[first]={ig:String(P.instagram||'').replace(/^@+/,''),ph:P.avatar_url||null,usePhoto:rk.usePhoto!=null?rk.usePhoto:false,showIg:rk.showIg!=null?rk.showIg:false,showKg:rk.showKg!=null?rk.showKg:false,showCase:rk.showCase!=null?rk.showCase:false};R.RKON=rk.on!==false;
    try{sb.rpc('rk_push',{p:{lv,cyc,cp,wk:wkPct,wks:ymd(d)}}).then(()=>{},()=>{})}catch(_){}}
   /* fechar a semana: abre no dia/hora do personal (padrão sexta 6h) e fecha às 22h do último dia */
   const WO=Object.assign({dow:5,days:3},(CIC.wk||{}).open||{},{h:6,close:22}),WD=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
