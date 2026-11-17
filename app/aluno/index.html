@@ -3717,19 +3717,19 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-plan-freeze]')){sheet(`<span class="lbl">Congelar por saúde</span><p class="d" style="font-size:40px;margin:6px 0">Cuide-se primeiro</p>
      <p class="meta">Lesão, doença ou problema de saúde. Não precisa de atestado. As aulas e os dias do plano ficam parados até você voltar.</p>
      <div class="field" style="margin-top:8px"><label for="fz-mot">O que aconteceu? (opcional)</label><input class="inp" id="fz-mot" placeholder="Ex.: dor no joelho"></div>
-     <div class="field" style="margin-top:10px"><label for="fz-ini">A partir de</label><input class="inp" id="fz-ini" type="date" value="2026-10-29"></div>
-     <button class="btn solid wide" style="margin-top:14px" id="fz-ok">Pedir congelamento</button>`,sh=>{sh.querySelector('#fz-ok').onclick=()=>{const d=sh.querySelector('#fz-ini').value;FROZEN=`congelamento pedido a partir de ${d.split('-').reverse().slice(0,2).join('/')}`;sh.remove();renderPlan();toast('Pedido enviado. O Sérgio e a secretária já foram avisados.')}});return}
+     <div class="field" style="margin-top:10px"><label for="fz-ini">A partir de</label><input class="inp" id="fz-ini" type="date" value="${new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10)}"></div>
+     <button class="btn solid wide" style="margin-top:14px" id="fz-ok">Pedir congelamento</button>`,sh=>{sh.querySelector('#fz-ok').onclick=async()=>{const d=sh.querySelector('#fz-ini').value,mot=(sh.querySelector('#fz-mot').value||'').trim();if(!d){toast('Escolha a data.');return}const bt=sh.querySelector('#fz-ok');bt.disabled=true;const er=window.__pedirPausa?await window.__pedirPausa('saude',d,null,mot):{message:'Sem conexão. Tente de novo.'};if(er){bt.disabled=false;toast(er.message||'Não enviou. Tente de novo.');return}FROZEN=`congelamento pedido a partir de ${d.split('-').reverse().slice(0,2).join('/')}`;sh.remove();renderPlan();toast('Pedido enviado. A equipe foi avisada e vai te responder.')}});return}
   if(e.target.closest('[data-plan-trip]')){sheet(`<span class="lbl">Avisar viagem</span><p class="d" style="font-size:40px;margin:6px 0">Boa viagem</p>
      <p class="meta">Avise com pelo menos 1 mês de antecedência. O plano fica congelado no período.</p>
-     <div class="grid2" style="margin-top:8px"><div class="field"><label for="tr-ini">Ida</label><input class="inp" id="tr-ini" type="date" value="2026-12-10"></div><div class="field"><label for="tr-fim">Volta</label><input class="inp" id="tr-fim" type="date" value="2026-12-24"></div></div>
+     <div class="grid2" style="margin-top:8px"><div class="field"><label for="tr-ini">Ida</label><input class="inp" id="tr-ini" type="date" value="${new Date(Date.now()+35*864e5-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10)}"></div><div class="field"><label for="tr-fim">Volta</label><input class="inp" id="tr-fim" type="date" value="${new Date(Date.now()+49*864e5-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10)}"></div></div>
      <p class="meta" id="tr-err" style="color:var(--miss);font-size:13px;margin:8px 0 0"></p>
      <button class="btn solid wide" style="margin-top:10px" id="tr-ok">Avisar a equipe</button>`,sh=>{const err=sh.querySelector('#tr-err');
        sh.querySelectorAll('input').forEach(i=>i.oninput=()=>err.textContent='');
-       sh.querySelector('#tr-ok').onclick=()=>{const a=sh.querySelector('#tr-ini').value,b=sh.querySelector('#tr-fim').value;
+       sh.querySelector('#tr-ok').onclick=async()=>{const a=sh.querySelector('#tr-ini').value,b=sh.querySelector('#tr-fim').value;
          if(!a||!b){err.textContent='Preencha a ida e a volta.';return}
          if(b<a){err.textContent='A volta precisa ser depois da ida.';return}
-         const days=(new Date(a)-new Date('2026-10-28'))/864e5;if(days<30){err.textContent=`Faltam ${Math.round(days)} dias para a ida. O aviso precisa ser de pelo menos 1 mês. Fale com a equipe pelo WhatsApp.`;return}
-         const f=x=>x.split('-').reverse().slice(0,2).join('/');FROZEN=`viagem ${f(a)} a ${f(b)}`;sh.remove();renderPlan();toast(`Viagem avisada: ${f(a)} a ${f(b)}. O plano fica congelado no período.`)}});return}
+         const days=(new Date(a)-new Date(new Date().toISOString().slice(0,10)))/864e5;if(days<30){err.textContent=`Faltam ${Math.round(days)} dias para a ida. O aviso precisa ser de pelo menos 1 mês. Fale com a equipe pelo WhatsApp.`;return}
+         const f=x=>x.split('-').reverse().slice(0,2).join('/');const bt=sh.querySelector('#tr-ok');bt.disabled=true;const er=window.__pedirPausa?await window.__pedirPausa('viagem',a,b,''):{message:'Sem conexão. Tente de novo.'};if(er){bt.disabled=false;err.textContent=er.message||'Não enviou. Tente de novo.';return}FROZEN=`viagem ${f(a)} a ${f(b)}`;sh.remove();renderPlan();toast(`Viagem avisada: ${f(a)} a ${f(b)}. A equipe foi avisada.`)}});return}
 });
 document.addEventListener('click',e=>{const t=e.target.closest('[data-nowh],[data-ag-conf],[data-ag-unconf],[data-ag-move],[data-ag-cancel],[data-ag-book],[data-ag-stop],[data-ag-cal]');if(!t)return;const d=t.dataset;
   if(d.agCal!==undefined){$('#ag-cal-h').scrollIntoView({behavior:'smooth',block:'start'});return}
@@ -6656,6 +6656,7 @@ const DB={};
   AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',paid:c.note==='xcred'||c.note==='xpix'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,_id:c.id,loc:c.location||window.__LOC0||undefined})});
 try{sb.rpc('extra_em_aberto_qtd',{p_student:uid}).then(({data})=>{window.__XOPEN=+data||0})}catch(_){}
 try{sb.rpc('extra_em_aberto',{p_student:uid}).then(({data})=>{AG.xdebt=!!data})}catch(_){}
+window.__pedirPausa=async(t,i,f,m)=>{try{const {error}=await sb.rpc('pedir_pausa',{p_tipo:t,p_ini:i,p_fim:f||null,p_motivo:m||null});return error||null}catch(e){return e}};
 window.__rkSave=async(p,on)=>{try{if(on!=null){await sb.rpc('rk_push',{p:{on:!!on}});return}
   if(p._new&&p.ph&&/^data:/.test(p.ph)){const b=await (await fetch(p.ph)).blob();const path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(!error){const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;await sb.from('profiles').update({avatar_url:url}).eq('id',uid);P.avatar_url=url;p.ph=url;try{const me=document.getElementById('h-me');if(me)me.innerHTML=`<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`}catch(_){}}}delete p._new;
   await sb.from('profiles').update({instagram:p.ig?('@'+p.ig):null}).eq('id',uid);
