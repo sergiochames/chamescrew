@@ -1133,7 +1133,9 @@ body,button,input,select,textarea{font-family:var(--body)!important}
 .wk3 .wb b::before{content:"";width:7px;height:7px;border-radius:2px;background:var(--mk83);flex:none}
 .wk3 .wb b span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wk3 .wb small{font-size:10.5px;color:var(--muted);opacity:1;font-weight:600;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
-.wk3 .wb.conf b::before{background:var(--g83)}.wk3 .wb.wait b::before,.wk3 .wb.rq b::before{background:var(--y83)}.wk3 .wb.can b::before{background:var(--rd83)}
+.wk3 .wb b::before{display:none}.wk3 .wb.conf{box-shadow:inset 3px 0 0 var(--g83)}.wk3 .wb.wait,.wk3 .wb.pst{box-shadow:inset 3px 0 0 var(--muted)}.wk3 .wb.exp{box-shadow:inset 3px 0 0 var(--g83)}
+.wk3 .wb.rq{background:linear-gradient(180deg,#f3c76b,#e7aa3c)!important;border:0!important;color:#2b1d00;z-index:4;box-shadow:0 0 0 1.5px #f3c76b,0 6px 16px rgba(243,199,107,.32)}.wk3 .wb.rq b,.wk3 .wb.rq small{color:#2b1d00}.wk3 .wb.rq b{font-weight:800}.wk3 .wb.rq small{font-weight:700;opacity:.8}
+.wk3 .wb .pdt{flex:none;margin-left:auto;background:#2b1d00;color:#f3c76b;font:800 8.5px/1 inherit;letter-spacing:.06em;padding:3px 5px;border-radius:5px;font-style:normal}.wk3 .wb.can b::before{background:var(--rd83)}
 .wk3 .wb.can b span{text-decoration:line-through}
 .wk3 .wb.ok{opacity:.5}
 .wk3 .wb b span{flex:1 1 auto;min-width:0}.wk3 .wb .wh{flex:none;margin-left:auto;font-style:normal;font-size:10.5px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}.wk3 .wb.ghost .wh{display:none}.wk3 .wb.can{text-decoration:none}.wk3 .wb.pst{cursor:default}.wk3 .wb.pst:not(.ok){opacity:.72}
@@ -3996,7 +3998,7 @@ const w3clamp=n=>Math.max(0,Math.min(4,n));
 function w3Tight(e,d,h){if(!e)return null;const L=(S.ev[d]||[]).filter(x=>x!==e&&!x.gc&&x.st!=='can').sort((a,b)=>a.h-b.h),pv=L.filter(x=>x.h<h).pop(),nx=L.find(x=>x.h>h),l=lid(e);
   if(pv&&lid(pv)!==l){const need=trv3(lid(pv),l),gap=Math.round((h-(pv.h+1))*60);if(gap<need)return {msg:`Você sai de ${lsn(pv)} às ${hh(pv.h+1)} e leva uns ${need} min até ${lsn(e)}`,short:`${need} min de ${lsn(pv)}`}}
   if(nx&&lid(nx)!==l){const need=trv3(l,lid(nx)),gap=Math.round((nx.h-(h+1))*60);if(gap<need)return {msg:`Depois você precisa estar em ${lsn(nx)} às ${hh(nx.h)} e leva uns ${need} min`,short:`${need} min até ${lsn(nx)}`}}return null}
-const pedB=p=>`<button class="wb rq" style="top:${(pedH(p)-H0)*HP}px;height:${HP-3}px" data-ped="${p.id}"><b><span>${esc(p.n.split(' ')[0])}</span></b><small><span>pedido ${hh(pedH(p))}</span></small></button>`;
+const pedB=p=>`<button class="wb rq" style="top:${(pedH(p)-H0)*HP}px;height:${HP-3}px" data-ped="${p.id}"><b><span>${esc(p.n.split(' ')[0])}</span></b><small><span>${hh(pedH(p))}</span><em class="pdt">PEDIDO</em></small></button>`;
 const subL=(h,ln,id)=>{const m=mvOf(id),hs=m&&pedH(m);return `<span>${m?'→ '+WD[(m.at.getDay()+6)%7]+' '+Math.floor(hs)+'h'+(hs%1?String(Math.round(hs%1*60)).padStart(2,'0'):''):ln?esc(ln):hh(h)}</span>`};
 const lshort=n=>String(n||'').split(' (')[0].split(' •')[0].trim();
 function w3Tags(L){const A=L.filter(e=>!e.gc&&e.st!=='can'&&e.n).sort((a,b)=>a.h-b.h),m=new Map();
@@ -4017,7 +4019,7 @@ function w3Body(){const cur=S.wo===0,days=w3Days(),s0=S.w3=w3clamp(S.w3),vis=doc
         const ended=pastD||(i===TODAY&&e.h+1<=NOW);
         bl+=e.gc?`<div class="wb gc" style="top:${top}px;height:${HP-3}px"><b><span>${esc(e.gc.split(' • ')[0])}</span></b><small>${hh(e.h)}</small></div>`
           :`<button class="wb ${e.st}${e.exp?' exp':''}${ended?' pst':''}" style="top:${top}px;height:${HP-3}px" data-wev="${i}:${e.h}" data-cid="${e._id||''}"><b><span>${esc(e.n.split(' ')[0])}</span><i class="wh">${hh(e.h)}</i></b><small>${subL(e.h,e.ln?lshort(e.ln):lsn(e),e._id)}${TG.get(e)||''}</small></button>`});pedsOn(dt).forEach(p=>{bl+=pedB(p)});
-      Object.entries(sp).forEach(([h,x])=>{if(gh.has(+h)&&!x.lock&&!x.req)return;const top=(h-H0)*HP;bl+=`<button class="wb ${x.lock?'lk':x.req?'rq':'fr'}" style="top:${top}px;height:${HP-3}px" data-wsp="${i}:${h}"><b><span>${x.lock?'Travado':x.req?esc(x.req.n.split(' ')[0])+' pediu':'Livre'}</span></b><small>${x.lock?hh(+h):x.req?({extra:'aula extra',rep:'reposição',plano:'do plano',mv:'remarcação'}[x.req.tp||'plano']):hh(+h)}</small></button>`})}
+      Object.entries(sp).forEach(([h,x])=>{if(gh.has(+h)&&!x.lock&&!x.req)return;const top=(h-H0)*HP;bl+=`<button class="wb ${x.lock?'lk':x.req?'rq':'fr'}" style="top:${top}px;height:${HP-3}px" data-wsp="${i}:${h}"><b><span>${x.lock?'Travado':x.req?esc(x.req.n.split(' ')[0]):'Livre'}</span></b><small>${x.lock?hh(+h):x.req?`<span>${hh(+h)}</span><em class="pdt">PEDIDO</em>`:hh(+h)}</small></button>`})}
     else{const A=evOn(dt),ped=pedsOn(dt),pastD=dDiff(dt)<0,gh=new Set(),cov=e=>A.some(x=>x!==e&&x.st!=='can'&&Math.abs(x.h-e.h)<1)||ped.some(p=>Math.abs(pedH(p)-e.h)<1);L=A.filter(e=>e.st!=='can');TG=w3Tags(L);
       A.forEach(e=>{const top=(e.h-H0)*HP;if(e.st==='can'){const k=Math.floor(e.h);if(cov(e)||gh.has(k))return;gh.add(k);const mv=mvOf(e._cid);bl+=`<button class="wb can${mv?' mvq':''}" style="top:${top}px;height:${HP-3}px" data-fev="${+dt}|${e.h}|${esc(e.n)}" data-cid="${e._cid||''}"><b><span>${esc(e.n.split(' ')[0])}</span><i class="wh">${hh(e.h)}</i></b><small>${mv?subL(e.h,'',e._cid):'<span>cancelou</span>'}</small></button>`;return}
         bl+=`<button class="wb ${e.st}${pastD?' pst':''}" style="top:${top}px;height:${HP-3}px" data-fev="${+dt}|${e.h}|${esc(e.n)}" data-cid="${e._cid||''}"><b><span>${esc(e.n.split(' ')[0])}</span><i class="wh">${hh(e.h)}</i></b><small>${subL(e.h,e.ln?lshort(e.ln):lsn(e),e._cid)}${TG.get(e)||''}</small></button>`});pedsOn(dt).forEach(p=>{bl+=pedB(p)})}
@@ -5048,6 +5050,10 @@ body.ag2 #app>.vseg button[aria-pressed="true"]{background:linear-gradient(180de
 .a2r.a2cl .h{color:var(--a2tx)}.a2r.a2dn .m b{color:var(--a2mu)}.a2r.a2cn{opacity:.5}.a2r.a2cn .m b{text-decoration:line-through}
 .a2r.fr .m b,.a2r.lk .m b{font-weight:600}.a2r.fr .h{color:var(--a2tx)}.a2r.lk .m b{color:var(--a2mu)}
 .a2r.pd .m b{color:var(--a2y)}
+body.ag2 #app #a2t .a2r.pd{background:linear-gradient(180deg,#f3c76b,#e7aa3c)!important;border-radius:16px!important;padding:12px 14px!important;margin:8px 0!important;border-bottom:0!important;box-shadow:0 0 0 1.5px #f3c76b,0 8px 22px rgba(243,199,107,.28)!important}
+body.ag2 #app #a2t .a2r.pd .h,body.ag2 #app #a2t .a2r.pd .m b,body.ag2 #app #a2t .a2r.pd .m small{color:#2b1d00}body.ag2 #app #a2t .a2r.pd .m b{font-weight:800}body.ag2 #app #a2t .a2r.pd .m small{font-weight:700;opacity:.85}
+body.ag2 #app #a2t .a2r.pd .a2st{background:#2b1d00;color:#f3c76b;font-weight:800}
+.a2st.y{color:var(--a2mu)!important;background:var(--a2pill)!important}body.ag2 #app #a2t .a2r.pd .a2st.y{color:#f3c76b!important;background:#2b1d00!important}
 .a2bt{display:flex;gap:6px;flex:none}
 .a2bt button{display:flex;align-items:center;gap:4px;font:700 12.5px Manrope,sans-serif;border-radius:999px;padding:8px 12px;border:1px solid var(--a2bd);color:var(--a2tx);background:transparent}
 .a2bt button svg.a2i{width:14px;height:14px}.a2bt button.ic{padding:8px 9px}
@@ -5114,7 +5120,7 @@ function ag2(){let on=false;try{on=S.tab==='agenda'&&S.view==='dia'&&!NEWP.on}ca
       const pst=isT?e.h<NOW:past,lbl=e.st==='ok'?['g','Presente',1]:e.st==='conf'?['g','Confirmou',1]:e.st==='can'?['r','Cancelou']:e._res?['y','Aguardando pagamento']:pst?['y','Aguardando presença']:['y','A confirmar'];
       const tp=e.extra?'aula extra':e.exp?'experimental':'do plano',lc=a2loc(e);
       return `<button class="a2r a2c ${e.st==='ok'?'a2dn':e.st==='can'?'a2cn':'a2cl'}" data-ev="${x.i}"><span class="h">${hh(e.h)}</span><span class="m"><b>${esc(e.n)}</b><small>${lc?a2i('pin')+esc(lc.split(' (')[0])+' • ':''}${tp}</small></span><span class="a2st ${lbl[0]}">${lbl[2]?a2i('chk'):''}${lbl[1]}</span></button>`}
-    if(x.k==='pd'){const p=x.p;return `<button class="a2r pd" data-ped="${p.id}"><span class="h">${hh(pedH(p))}</span><span class="m"><b>${esc(p.n.split(' ')[0])} pediu este horário</b><small>${PTP[p.tp]}${p.from?' • era '+WD[(p.from.getDay()+6)%7].toLowerCase()+' '+p.from.getDate()+', '+hh(p.from.getHours()+p.from.getMinutes()/60):''}</small></span><span class="a2st y">Ver</span></button>`}
+    if(x.k==='pd'){const p=x.p;return `<button class="a2r pd" data-ped="${p.id}"><span class="h">${hh(pedH(p))}</span><span class="m"><b>${esc(p.n.split(' ')[0])} pediu este horário</b><small>${PTP[p.tp]}${p.from?' • era '+WD[(p.from.getDay()+6)%7].toLowerCase()+' '+p.from.getDate()+', '+hh(p.from.getHours()+p.from.getMinutes()/60):''}</small></span><span class="a2st y">Responder</span></button>`}
     if(x.k==='lk')return `<div class="a2r lk"><span class="h">${hh(x.t)}</span><span class="m"><b>Travado</b><small>${a2i('lock')}${esc(x.bk.reason||'os alunos não veem')}</small></span><span class="a2bt"><button data-a2ul="${x.bk.id}">Destravar</button></span></div>`;
     return `<div class="a2r fr"><span class="h">${hh(x.t)}</span><span class="m"><b>Livre</b></span><span class="a2bt"><button class="ic" data-a2lk="${x.t}" aria-label="Travar ${hh(x.t)}">${a2i('lock')}</button><button data-a2bk="${x.t}">${a2i('plus')}Marcar</button></span></div>`};
   let html='',nowD=!isT;it.forEach(x=>{if(!nowD&&x.t>NOW){html+=`<div class="a2now"><span>${hh(NOW)}</span></div>`;nowD=true}html+=row(x)});if(!nowD&&it.length)html+=`<div class="a2now"><span>${hh(NOW)}</span></div>`;
@@ -5884,7 +5890,7 @@ body.dsk .wk3 .w3ar,body.dsk .wk3 .w3h{display:none!important}body.dsk .wk3 .whe
 
 }catch(err){console.error('dsk',err)}
 })().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);try{window.__unCover&&window.__unCover()}catch(_){}const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
+{const st=document.createElement('style');st.textContent="html body.ag3 .wk3 .wb.rq{background:linear-gradient(180deg,#f3c76b,#e7aa3c)!important;border:0!important;color:#2b1d00!important;z-index:4;box-shadow:0 0 0 1.5px #f3c76b,0 6px 16px rgba(243,199,107,.32)!important}html body.ag3 .wk3 .wb.rq b,html body.ag3 .wk3 .wb.rq small,html body.ag3 .wk3 .wb.rq small span{color:#2b1d00!important;opacity:1}";document.head.appendChild(st)}
 
 </script>
-
 </body></html>
