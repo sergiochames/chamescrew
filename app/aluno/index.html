@@ -6651,11 +6651,17 @@ try{AG.chgLim=CI.lim;AG.remLim=CI.lim}catch(_){}
 const DB={};
 (CL||[]).forEach(c=>{if(c.status==='pedido')return;const d=new Date(c.starts_at),n=dayN(d),k=keyOf(n),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:c.status,note:c.note,k,h,kind:c.kind};
   if(c.status==='cancelada'&&c.kind==='extra'){if(c.note==='xcrok'||(/^xusado:/.test(c.note||'')&&!(CL||[]).some(z=>z.id===c.note.slice(7)))){AG.xcr++;AG.xcrIds.push(c.id)}return}
+  if(c.status==='cancelada'&&c.note==='pausa')return;
   if(c.status==='cancelada'){const cr=c.note==='credito',tc=/^pcan/.test(c.note||'');AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr&&!tc)AG.dadas.push({d:k,h});return}
   AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',paid:c.note==='xcred'||c.note==='xpix'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,_id:c.id,loc:c.location||window.__LOC0||undefined})});
 try{sb.rpc('extra_em_aberto_qtd',{p_student:uid}).then(({data})=>{window.__XOPEN=+data||0})}catch(_){}
 try{sb.rpc('extra_em_aberto',{p_student:uid}).then(({data})=>{AG.xdebt=!!data})}catch(_){}
+try{(async()=>{const {data}=await sb.rpc('pausa_ativa');window.__PAUSA=data||null;const P=window.__PAUSA;if(!P)return;
+  const D=x=>x?String(x).split('-').reverse().slice(0,2).join('/'):'';
+  const put=()=>{const v=document.getElementById('v-hoje');if(!v)return false;let el=document.getElementById('pz-ban');if(!el){el=document.createElement('div');el.id='pz-ban';el.className='avb';const w=document.getElementById('week');w?w.insertAdjacentElement('afterend',el):v.prepend(el)}
+    el.innerHTML=P.status==='ativa'?`<b>Plano pausado${P.fim?' até '+D(P.fim):''}</b><span>Aulas, ciclo e medalhas ficam parados. ${P.fim?'O fim do plano foi estendido.':'Avise a equipe quando puder voltar.'}</span>`:`<b>${P.tipo==='viagem'?'Viagem':'Congelamento'} enviado</b><span>A equipe vai responder em breve.</span>`;return true};
+  let t=0;const iv=setInterval(()=>{if(put()||++t>20)clearInterval(iv)},500)})()}catch(_){}
 window.__pedirPausa=async(t,i,f,m)=>{try{const {error}=await sb.rpc('pedir_pausa',{p_tipo:t,p_ini:i,p_fim:f||null,p_motivo:m||null});return error||null}catch(e){return e}};
 window.__rkSave=async(p,on)=>{try{if(on!=null){await sb.rpc('rk_push',{p:{on:!!on}});return}
   if(p._new&&p.ph&&/^data:/.test(p.ph)){const b=await (await fetch(p.ph)).blob();const path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(!error){const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;await sb.from('profiles').update({avatar_url:url}).eq('id',uid);P.avatar_url=url;p.ph=url;try{const me=document.getElementById('h-me');if(me)me.innerHTML=`<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`}catch(_){}}}delete p._new;
