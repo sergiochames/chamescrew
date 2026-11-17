@@ -6821,16 +6821,24 @@ const hmin=s=>{const m=String(s||'').match(/(\d{1,2})\s*[:h]\s*(\d{2})?/);return
 /* horário da refeição: o do PDF; se não tiver, um horário típico pelo nome */
 const mealT=r=>{const t=hmin(r.horario);if(t!==null)return t;const n=DN(r.nome);return /cafe|desjejum/.test(n)?420:/lanche.*manha|colacao/.test(n)?600:/almoco/.test(n)?720:/pre.?treino/.test(n)?960:/lanche|merenda/.test(n)?960:/jantar/.test(n)?1200:/ceia/.test(n)?1320:null};
 /* "Agora" = a refeição ainda não feita com horário mais perto de agora */
-function curMeal(R){const now=new Date().getHours()*60+new Date().getMinutes();let best=-1,bd=1e9;R.forEach((r,i)=>{if(MLOG[i])return;const t=mealT(r);if(t===null)return;const d=Math.abs(t-now);if(d<bd){bd=d;best=i}});return best}
+function curMeal(R){const now=new Date().getHours()*60+new Date().getMinutes();let best=-1,bd=1e9;R.forEach((r,i)=>{if(groupDone(R,i))return;const t=mealT(r);if(t===null)return;const d=Math.abs(t-now);if(d<bd){bd=d;best=i}});return best}
 const itemsOf=r=>(r.opcoes||[]).length?r.opcoes[0].itens||[]:(r.itens||[]);
+/* refeições alternativas (almoço com/sem..., lanche opção 1/2): contam como UMA só. Automático pelo nome; o campo alt (editável) manda. */
+const _dn=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const _alBase=n=>_dn(n).replace(/\b(opcao|op)\s*[0-9a-z]\b/g,'').replace(/\b(com|sem)\b.*$/,'').replace(/[-–:()]/g,' ').replace(/\s+/g,' ').trim();
+const _alMk=n=>/\b(opcao|op)\s*[0-9a-z]\b/.test(_dn(n))||/\b(com|sem)\b/.test(_dn(n));
+function mealGroups(R){const G={},out=[];R.forEach((r,i)=>{let k;if(typeof r.alt==='string'&&r.alt!=='')k='m:'+r.alt;else if(r.alt===''||!_alMk(r.nome)||!_alBase(r.nome))k='s:'+i;else k='a:'+_alBase(r.nome);if(!G[k]){G[k]=[];out.push(G[k])}G[k].push(i)});return out}
+const groupOf=(R,i)=>mealGroups(R).find(g=>g.includes(i))||[i];
+const groupDone=(R,i)=>groupOf(R,i).some(j=>MLOG[j]);
+const nGroups=R=>mealGroups(R).length,nGroupsDone=R=>mealGroups(R).filter(g=>g.some(j=>MLOG[j])).length;
 const nItems=r=>(r.opcoes||[]).length>1?r.opcoes.length+' opções':itemsOf(r).length+' '+(itemsOf(r).length===1?'item':'itens');
 
 /* Seu dia: linha da dieta usa o plano montado pela IA */
-window.__dietDone=()=>{const PL=dPlan();return PL?PL.refeicoes.every((_,i)=>MLOG[i]):false};
+window.__dietDone=()=>{const PL=dPlan();return PL?nGroupsDone(PL.refeicoes)===nGroups(PL.refeicoes):false};
 const _dOn=window.DIETA_ON;window.DIETA_ON=()=>!!dPlan()||(_dOn?_dOn():false);
-window.__dietRow=()=>{const PL=dPlan(),r=document.getElementById('dk-di');if(!PL||!r)return;const row=r.closest('.srow');if(row)row.hidden=false;const R=PL.refeicoes,n=R.filter((_,i)=>MLOG[i]).length,ci=curMeal(R);
-  const st=document.getElementById('h-di-st'),nw=document.getElementById('h-di-now');if(st)st.textContent=n+' de '+R.length;if(nw)nw.textContent=n===R.length?'Dieta do dia completa ✓':(R[ci]?'Agora: '+R[ci].nome+(R[ci].horario?' • '+R[ci].horario:''):'');
-  const bt=row&&row.querySelector('.btn');if(bt)bt.textContent=n===R.length?'Ver':'Marcar'};
+window.__dietRow=()=>{const PL=dPlan(),r=document.getElementById('dk-di');if(!PL||!r)return;const row=r.closest('.srow');if(row)row.hidden=false;const R=PL.refeicoes,n=nGroupsDone(R),T=nGroups(R),ci=curMeal(R);
+  const st=document.getElementById('h-di-st'),nw=document.getElementById('h-di-now');if(st)st.textContent=n+' de '+T;if(nw)nw.textContent=n===T?'Dieta do dia completa ✓':(R[ci]?'Agora: '+R[ci].nome+(R[ci].horario?' • '+R[ci].horario:''):'');
+  const bt=row&&row.querySelector('.btn');if(bt)bt.textContent=n===T?'Ver':'Marcar'};
 const _rd=()=>{try{typeof renderDay==='function'&&renderDay()}catch(_){}try{window.__dietRow()}catch(_){}};
 async function markMeal(i,on){const prev=!!MLOG[i];if(on)MLOG[i]=1;else delete MLOG[i];dietView(true);_rd();
   const {error}=await sb.from('meal_logs').upsert({user_id:uid,day:DTD,meal_idx:i,done_at:on?new Date().toISOString():null},{onConflict:'user_id,day,meal_idx'});
@@ -6884,9 +6892,9 @@ function swapSheet(id){const L=DSL[id];if(!L)return;const p=id.split('|'),mi=+p[
    s.classList.add('dsx-scrim');const f=s.querySelector('.sheet>.btn[data-close]:last-child');if(f)f.remove();
    s.addEventListener('click',e=>{const b=e.target.closest('[data-dsx]');if(!b)return;const k=+b.dataset.dsx;SWP[mi]=SWP[mi]||{};if(k===0)delete SWP[mi][key];else SWP[mi][key]=k;s.remove();dietView(true);saveSw(mi);toast(k===0?'Voltou ao original':'Trocado por '+L[k].n)})})}
 let OPENM=-1;
-function mealArt(PL,r,mi,ci){const O=(r.opcoes||[]).length?r.opcoes:[{itens:r.itens||[]}],n=(O[Math.min(OPT[mi]||0,O.length-1)].itens||[]).length,done=!!MLOG[mi],op=OPENM===mi;
-  const st=done?'<span class="state st-done">✓ Feita</span>':mi===ci?'<span class="state st-open">Agora</span>':'';
-  return `<article class="meal ${done?'ok':mi%2?'frost':'line'}${op?' dm-open':''}"><button class="dm-hd" data-dmo="${mi}" aria-expanded="${op}"><div style="min-width:0"><h3>${DE(r.nome)}</h3><p class="meta" style="font-size:13px;margin-top:4px">${r.horario?DE(r.horario)+' • ':''}${O.length>1?O.length+' opções':n+(n===1?' alimento':' alimentos')}</p></div><span class="dm-st">${st}<span class="dm-chev">›</span></span></button>
+function mealArt(PL,r,mi,ci){const O=(r.opcoes||[]).length?r.opcoes:[{itens:r.itens||[]}],n=(O[Math.min(OPT[mi]||0,O.length-1)].itens||[]).length,done=!!MLOG[mi],op=OPENM===mi,GR=groupOf(PL.refeicoes,mi),alt=GR.length>1,gd=alt&&!done&&groupDone(PL.refeicoes,mi);
+  const st=done?'<span class="state st-done">✓ Feita</span>':gd?'<span class="state">Outra opção feita</span>':mi===ci?'<span class="state st-open">Agora</span>':'';
+  return `<article class="meal ${done?'ok':mi%2?'frost':'line'}${op?' dm-open':''}"><button class="dm-hd" data-dmo="${mi}" aria-expanded="${op}"><div style="min-width:0"><h3>${DE(r.nome)}</h3><p class="meta" style="font-size:13px;margin-top:4px">${alt?'Alternativa • ':''}${r.horario?DE(r.horario)+' • ':''}${O.length>1?O.length+' opções':n+(n===1?' alimento':' alimentos')}</p></div><span class="dm-st">${st}<span class="dm-chev">›</span></span></button>
    ${op?`<div class="dm-in">${mealBody(PL,r,mi,ci,true)}</div>`:''}</article>`}
 function openMeal(mi){const PL=dPlan();if(!PL)return;const R=PL.refeicoes;if(!R[mi])return;OPENSW='';
   const s=sheet(`<div id="dmsb"></div>`,el=>{const draw=()=>{const ci=curMeal(R);el.querySelector('#dmsb').innerHTML=mealBody(PL,R[mi],mi,ci)};draw();
@@ -6896,26 +6904,26 @@ function openMeal(mi){const PL=dPlan();if(!PL)return;const R=PL.refeicoes;if(!R[
     if(t.dataset.dopt!=null){OPT[mi]=+t.dataset.dopt.split(':')[1];OPENSW='';draw();dietView(true);saveSw(mi);return}
     if(t.dataset.dpk!=null){const p=t.dataset.dpk.split('|'),key=p[1],k=+p[2];SWP[mi]=SWP[mi]||{};if(k===0)delete SWP[mi][key];else SWP[mi][key]=k;OPENSW='';draw();dietView(true);saveSw(mi);toast(k===0?'Voltou ao original':'Troca aplicada')}})})}
 async function saveSw(mi){const {error}=await sb.from('meal_logs').upsert({user_id:uid,day:DTD,meal_idx:mi,swaps:{opt:OPT[mi]||0,sw:SWP[mi]||{}}},{onConflict:'user_id,day,meal_idx'});if(error)toast('Não salvou a troca: '+error.message)}
-function dietFinish(){const PL=dPlan();if(!PL)return;const R=PL.refeicoes,miss=R.filter((_,i)=>!MLOG[i]).map(r=>r.nome);
-  if(miss.length)return sheet(`<span class="lbl">Dieta do dia</span><p class="d" style="font-size:40px;margin:6px 0">${R.length-miss.length} de ${R.length}</p><p class="meta">Falta marcar: ${miss.map(DE).join(', ')}.</p>`);
-  try{window.RUN={kick:'Dieta do dia completa',ttl:R.length+' de '+R.length+' refeições',done:null};window.medalRun(null,[['alim','Todas as refeições do dia marcadas.','alim',false,true]])}catch(_){toast('Dieta do dia completa ✓')}}
+function dietFinish(){const PL=dPlan();if(!PL)return;const R=PL.refeicoes,GG=mealGroups(R),miss=GG.filter(g=>!g.some(j=>MLOG[j])).map(g=>g.map(j=>R[j].nome).join(' ou '));
+  if(miss.length)return sheet(`<span class="lbl">Dieta do dia</span><p class="d" style="font-size:40px;margin:6px 0">${GG.length-miss.length} de ${GG.length}</p><p class="meta">Falta marcar: ${miss.map(DE).join(', ')}.</p>`);
+  try{window.RUN={kick:'Dieta do dia completa',ttl:GG.length+' de '+GG.length+' refeições',done:null};window.medalRun(null,[['alim','Todas as refeições do dia marcadas.','alim',false,true]])}catch(_){toast('Dieta do dia completa ✓')}}
 let DVK='';function dietView(force){const v=document.getElementById('v-dieta');if(!v)return;const D=P.diet,PL=dPlan(),key=JSON.stringify([D||0,MLOG,OPT,SWP,OPENSW,OPENM]);let box=v.querySelector(':scope>#rl-diet');if(box&&!force&&DVK===key)return;DVK=key;
   if(!box){box=document.createElement('div');box.id='rl-diet';v.prepend(box)}
   const sig=D?`${DE(D.nutri)}${D.reg?' • CRN-'+DE(D.reg)+' '+DE(D.num):''}`:'';
   const pdfRow=D?`<button class="block dt-pdf" id="dt-open"><span class="dt-ic">PDF</span><span class="dt-tx"><b>${PL?'Ver o PDF original':DE(D.name||'Dieta')}</b><small>${sig}${D.at?' • '+DE(D.at):''}</small></span><span class="dt-ar">›</span></button>`:'';
-  if(PL){const R=PL.refeicoes,ci=curMeal(R),nd=R.filter((_,i)=>MLOG[i]).length;
-    box.innerHTML=`<div class="hero"><span class="motto">Dieta da matilha${sig?' • '+sig:''}</span><h2 class="d">Dieta</h2><p class="sub">Toque na refeição para abrir. Marque quando fizer e use as trocas quando precisar.</p></div>
-     <div class="block ink"><div class="row"><span class="lbl">Hoje</span><span class="pill">${nd===R.length?'Dieta do dia completa ✓':nd+' de '+R.length+' refeições'}</span></div><div class="dm-bar"><i style="width:${Math.round(nd/R.length*100)}%"></i></div></div>
+  if(PL){const R=PL.refeicoes,ci=curMeal(R),nd=nGroupsDone(R),NT=nGroups(R);
+    box.innerHTML=`<div class="hero"><span class="motto">Dieta da matilha</span><h2 class="d">Dieta</h2><p class="sub">Toque na refeição para abrir. Marque quando fizer e use as trocas quando precisar.</p></div>
+     <div class="block ink"><div class="row"><span class="lbl">Hoje</span><span class="pill">${nd===NT?'Dieta do dia completa ✓':nd+' de '+NT+' refeições'}</span></div><div class="dm-bar"><i style="width:${Math.round(nd/NT*100)}%"></i></div></div>
           <div class="view dm-list" style="gap:12px">${R.map((r,mi)=>mealArt(PL,r,mi,ci)).join('')}</div>
      <button class="btn solid wide" data-dfin style="margin-top:14px">Finalizar dieta do dia</button>
-     ${pdfRow}<button class="btn wide" id="dt-new" style="margin-top:10px">Trocar a dieta</button>
+     ${pdfRow}<button class="btn wide" id="dt-alt" style="margin-top:10px">Ajustar refeições alternativas</button><button class="btn wide" id="dt-new" style="margin-top:10px">Trocar a dieta</button>
      <p class="meta" style="font-size:12px;margin:14px 2px 0;line-height:1.45">A dieta é do nutricionista que assinou. As trocas "calculadas pelo app" usam valores aproximados da Tabela TACO; na dúvida, siga o nutricionista.</p>`}
   else box.innerHTML=`<div class="hero"><span class="motto">Dieta</span><h2 class="d">${D?'Sua dieta':'Sua dieta aqui'}</h2><p class="sub">${D?'Monte a dieta no app: a IA lê o PDF e organiza as refeições para você.':'Envie o PDF que o seu nutricionista fez. A IA monta tudo no app para você.'}</p></div>
     ${D?`${pdfRow}<button class="btn solid wide" id="dt-ai" style="margin-top:12px">Montar a dieta no app com IA</button><button class="btn wide" id="dt-new" style="margin-top:10px">Trocar o PDF</button>`
     :`<button class="block dt-pdf" id="dt-new"><span class="dt-ic">PDF</span><span class="dt-tx"><b>Enviar a dieta em PDF</b><small>O arquivo que o nutricionista te entregou</small></span><span class="dt-ar">›</span></button>`}
     <p class="meta" style="font-size:12px;margin:14px 2px 0;line-height:1.45">A dieta é responsabilidade do nutricionista que assinou. O app e o seu personal só guardam e organizam.</p>`;
   const op=box.querySelector('#dt-open');if(op)op.onclick=()=>window.__openSigned('diets',D.path,'Não abriu a dieta');
-  const nw=box.querySelector('#dt-new');if(nw)nw.onclick=dietSheet;const ai=box.querySelector('#dt-ai');if(ai)ai.onclick=()=>aiConsent(D.path);
+  const nw=box.querySelector('#dt-new');if(nw)nw.onclick=dietSheet;const al=box.querySelector('#dt-alt');if(al)al.onclick=altSheet;const ai=box.querySelector('#dt-ai');if(ai)ai.onclick=()=>aiConsent(D.path);
   box.querySelectorAll('[data-dtck]').forEach(b=>b.onclick=()=>{const i=+b.dataset.dtck;markMeal(i,!MLOG[i])});
   box.onclick=e=>{const t=e.target.closest('[data-dmo],[data-dfin],[data-dmk],[data-dsw],[data-dpk],[data-dopt]');if(!t)return;const PL=dPlan();
     if(t.dataset.dfin!=null)return dietFinish();
@@ -6968,6 +6976,16 @@ function confSheet(pl){const R=(pl.refeicoes||[]).filter(r=>r&&r.nome),nIt=R.red
    s.addEventListener('input',e=>{const k=e.target.dataset.e;if(!k)return;const [i,oi,xi,f]=k.split(':');const r=R[+i];const O=(r.opcoes||[]).length?r.opcoes:null;const it=O?O[+oi].itens[+xi]:r.itens[+xi];if(it)it[f]=e.target.value});
    s.querySelector('#dtcok').onclick=async ev=>{const b=ev.currentTarget;b.disabled=true;const diet=Object.assign({},P.diet,{plan:Object.assign({},pl,{refeicoes:R,conferido:new Date().toISOString()})});
      const r=await sb.from('profiles').update({diet}).eq('id',uid);if(r.error){b.disabled=false;return toast('Não salvou: '+r.error.message)}P.diet=diet;s.remove();dietView(true);_rd();toast('Dieta montada no app')}})}
+function altSheet(){const PL=dPlan();if(!PL)return;const R=PL.refeicoes.map(x=>Object.assign({},x));
+  const cur=i=>{const g=groupOf(R,i);return g.length>1?String(g[0]===i?g[1]:g[0]):''};
+  const list=()=>R.map((r,i)=>`<div class="dtc-m" style="display:flex;align-items:center;gap:10px;justify-content:space-between"><b style="min-width:0">${DE(r.nome)}${r.horario?' • '+DE(r.horario):''}</b><select class="inp" data-al="${i}" style="max-width:48%"><option value="">Refeição própria</option>${R.map((o,j)=>j===i?'':`<option value="${j}"${cur(i)===String(j)?' selected':''}>Alternativa de ${DE(o.nome)}</option>`).join('')}</select></div>`).join('');
+  sheet(`<span class="lbl">Dieta</span><p class="d" style="font-size:30px;margin:6px 0 4px">Refeições alternativas</p><p class="meta" style="margin:0 0 10px">Alternativas contam como uma refeição só: marcou uma, a outra dispensa o check.</p><div id="dal">${list()}</div><button class="btn solid wide" id="dalok" style="margin-top:12px">Salvar</button>`,s=>{
+   s.addEventListener('change',e=>{const i=e.target.dataset.al;if(i==null)return;const v=e.target.value,n=+i;
+     if(v===''){const g=groupOf(R,n).filter(j=>j!==n);R[n].alt='';if(g.length===1)R[g[0]].alt=R[g[0]].alt||''}
+     else{const j=+v,id=(typeof R[j].alt==='string'&&R[j].alt)?R[j].alt:'g'+j;R[j].alt=id;R[n].alt=id}
+     s.querySelector('#dal').innerHTML=list()});
+   s.querySelector('#dalok').onclick=async ev=>{const b=ev.currentTarget;b.disabled=true;const diet=Object.assign({},P.diet,{plan:Object.assign({},PL,{refeicoes:R})});
+     const r=await sb.from('profiles').update({diet}).eq('id',uid);if(r.error){b.disabled=false;return toast('Não salvou: '+r.error.message)}P.diet=diet;s.remove();dietView(true);_rd();toast('Alternativas salvas')}})}
 function dietSheet(){let file=null;sheet(`<span class="lbl">Dieta</span><p class="d" style="font-size:34px;margin:6px 0 10px">Enviar dieta</p>
   <label class="btn wide" style="display:flex;align-items:center;justify-content:center;gap:8px"><input type="file" id="df" accept="application/pdf" hidden><span id="dfl">Escolher o PDF</span></label>
   <div class="field" style="margin-top:12px"><label>Nome do nutricionista</label><input class="inp" id="dn" placeholder="Como está no CRN"></div>
