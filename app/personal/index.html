@@ -1281,7 +1281,7 @@ function drawAgenda(){
   const n=E.filter(e=>!e.gc&&e.st!=='can').length;
   let tl='',nowDrawn=false;
   HOURS.forEach(h=>{const here=E.filter(e=>Math.floor(e.h)===h);
-    if(S.day===TODAY&&!nowDrawn&&h>NOW){tl+='<div class="now" aria-label="Agora 14:45"></div>';nowDrawn=true}
+    if(S.day===TODAY&&!nowDrawn&&h>NOW){tl+='<div class="now" aria-label="Agora '+String(Math.floor(NOW)).padStart(2,'0')+':'+String(Math.round((NOW%1)*60)).padStart(2,'0')+'"></div>';nowDrawn=true}
     const PQ=pedsOn(pdDay(S.day)).filter(p=>Math.floor(pedH(p))===h);
     const sp=spOf(S.day,h),cx=here.find(e=>e.st==='can'),cw=cx?` • motivo: ${esc(cx.why||'não informado')}`:'',free=!PQ.length&&!busy(S.day,h)&&isWork(S.day,h)&&!(S.day===TODAY&&h<=NOW);
     if(!here.length&&!free&&!sp&&!PQ.length)return;
@@ -1456,7 +1456,7 @@ function weekView(nb,R,pend){
       bl+=e.gc?`<div class="wb gc" style="top:${top}px;height:${HP-3}px">${esc(e.gc.split(' ')[0])}</div>`
         :`<button class="wb ${e.st}${e.exp?' exp':''}" style="top:${top}px;height:${HP-3}px" data-wev="${i}:${e.h}"><b>${esc(e.n.split(' ')[0])}</b><small>${hh(e.h)}</small></button>`});
     Object.entries(sp).forEach(([h,x])=>{const top=(h-H0)*HP;bl+=`<button class="wb ${x.lock?'lk':x.req?'rq':'fr'}" style="top:${top}px;height:${HP-3}px" data-wsp="${i}:${h}"><b>${x.lock?'🔒':x.req?esc(x.req.n.split(' ')[0])+'?':'Livre'}</b><small>${x.lock?'bloqueado':x.req?({extra:'extra $',rep:'reposição',plano:'do plano',mv:'remarcação'}[x.req.tp||'plano']):hh(+h)}</small></button>`});
-    const nowL=(i===TODAY?`<i class="wnow" style="top:${(NOW-H0)*HP}px"></i>`:'')+WH[i].map(([a,b])=>`<i class="wwork" style="top:${(a-H0)*HP}px;height:${(b-a)*HP}px"></i>`).join('');
+    const nowL=(i===TODAY&&NOW>=H0&&NOW<=H1?`<i class="wnow" style="top:${(NOW-H0)*HP}px"></i>`:'')+WH[i].map(([a,b])=>`<i class="wwork" style="top:${(a-H0)*HP}px;height:${(b-a)*HP}px"></i>`).join('');
     return `<div class="wcol${i===TODAY?' td':''}" data-wcol="${i}" style="height:${(H1-H0)*HP}px">${bl}${nowL}</div>`}).join('');
   const hrs=Array.from({length:H1-H0},(_,k)=>`<span style="top:${k*HP}px">${String(H0+k).padStart(2,'0')}</span>`).join('');
   return `${!nb&&histHTML()?`<button class="pend ok" data-gday="${TODAY}"><span><b>Tudo visto ✓</b><small>Abra o dia para rever os avisos e o que você fez</small></span><span>ver ›</span></button>`:''}${nb?`<button class="pend" data-gday="${TODAY}"><span><b>${nb} ${nb===1?'coisa precisa':'coisas precisam'} de você</b><small>${R.length?R.length+' pedido'+(R.length>1?'s':'')+' para confirmar • ':''}${pend.length} aviso${pend.length===1?'':'s'} de alunos</small></span><span>ver ›</span></button>`:''}
@@ -4006,7 +4006,7 @@ function w3Body(){const cur=S.wo===0,days=w3Days(),s0=S.w3=w3clamp(S.w3),vis=doc
       Object.entries(sp).forEach(([h,x])=>{const top=(h-H0)*HP;bl+=`<button class="wb ${x.lock?'lk':x.req?'rq':'fr'}" style="top:${top}px;height:${HP-3}px" data-wsp="${i}:${h}"><b><span>${x.lock?'Travado':x.req?esc(x.req.n.split(' ')[0])+' pediu':'Livre'}</span></b><small>${x.lock?hh(+h):x.req?({extra:'aula extra',rep:'reposição',plano:'do plano',mv:'remarcação'}[x.req.tp||'plano']):hh(+h)}</small></button>`})}
     else{L=evOn(dt);TG=w3Tags(L);L.forEach(e=>{bl+=`<button class="wb ${e.st}" style="top:${(e.h-H0)*HP}px;height:${HP-3}px" data-fev="${+dt}|${e.h}|${esc(e.n)}" data-cid="${e._cid||''}"><b><span>${esc(e.n.split(' ')[0])}</span></b><small>${subL(e.h,e.ln,e._cid)}${TG.get(e)||''}</small></button>`});pedsOn(dt).forEach(p=>{bl+=pedB(p)})}
     const t=sameD(dt,TD),wk=(WH[i]||[]).map(([a,b])=>`<i class="wwork" style="top:${(a-H0)*HP}px;height:${(b-a)*HP}px"></i>`).join('');
-    return `<div class="wcol${t?' td':''}" ${cur?`data-wcol="${i}"`:`data-fcol="${+dt}"`} style="height:${(H1-H0)*HP}px">${wk}${bl}${t?`<i class="wnow" style="top:${(NOW-H0)*HP}px"></i>`:''}</div>`}).join('');
+    return `<div class="wcol${t?' td':''}" ${cur?`data-wcol="${i}"`:`data-fcol="${+dt}"`} style="height:${(H1-H0)*HP}px">${wk}${bl}${t&&NOW>=H0&&NOW<=H1?`<i class="wnow" style="top:${(NOW-H0)*HP}px"></i>`:''}</div>`}).join('');
   const hrs=Array.from({length:H1-H0},(_,k)=>`<span style="top:${k*HP}px">${H0+k}h</span>`).join('');
   return rul+nav+`<section class="card wk wk3">${head}<div class="wbody"><div class="whrs" style="height:${(H1-H0)*HP}px">${hrs}</div>${cols}</div>
     <p class="note">${cur||true?'Toque numa aula para ver o local. Segure e arraste para mudar o horário, ou solte num dia da régua lá em cima. Entre aulas em locais diferentes aparece o tempo de trajeto, em amarelo quando não dá tempo.':S.wo>0?'Semana futura: mostra os horários fixos e as aulas já marcadas. Toque numa aula para ver ou remarcar.':'Semana passada.'}</p></section>`}
