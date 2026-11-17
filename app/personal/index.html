@@ -1889,7 +1889,7 @@ function picker(single){const P=CUR().plans[T2.sel];let n=0;
     const L=listOf(T2.mus),nf=L.filter(k=>T2.fav.has(k)).length;
     pl.innerHTML=(nf?`<p class="lbl" style="margin:10px 0 0">★ Seus favoritos</p>`:'')+L.slice(0,nf).map(row).join('')+`<p class="lbl" style="margin:12px 0 0">${T2.mus} (A–Z)</p>`+L.slice(nf).map(row).join('')};
   fill();pq.oninput=()=>{T2.q=pq.value;fill()};
-  s.addEventListener('click',e=>{const gp=e.target.closest('[data-pgif]');if(gp){exPrev(gp.dataset.pgif);return}const r=e.target.closest('[data-rg]'),m=e.target.closest('[data-ms]'),f=e.target.closest('[data-pf]'),a=e.target.closest('[data-padd]');
+  s.addEventListener('click',e=>{const gp=e.target.closest('[data-pgif]');if(gp){exPrev(gp.dataset.pgif);return}const r=e.target.closest('[data-rg]'),m=e.target.closest('[data-ms]'),f=e.target.closest('[data-pf]'),a=e.target.closest('[data-padd]')||(!f&&e.target.closest('.lx')?e.target.closest('.lx').querySelector('[data-padd]'):null);
     if(r){T2.reg=r.dataset.rg;T2.mus=Object.keys(LIB[T2.reg])[0];fill();return}
     if(m){T2.mus=m.dataset.ms;fill();return}
     if(f){const k=f.dataset.pf;T2.fav.has(k)?T2.fav.delete(k):T2.fav.add(k);fill();toast(T2.fav.has(k)?`★ ${k} vai aparecer primeiro`:`${k} saiu dos favoritos`);return}
@@ -4483,7 +4483,7 @@ try{const _g=gearSheet;gearSheet=function(){_g.apply(this,arguments);const sh=do
 try{const _iv=inviteSheet;inviteSheet=function(nm){if(nm)return _iv(nm);window.__rlInvPh='';window.__rlInvPhRaw='';
   sheet(`<span class="lbl">Alunos</span><h3 class="d">Convidar aluno</h3><input class="inp" id="rlin" placeholder="Nome e sobrenome" autocomplete="off">${phoneField('rlip','')}<p class="note">O convite sai com o nome dele e abre direto a conversa no WhatsApp.</p><div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="rlig">Gerar convite</button></div>`,s=>{
    s.querySelector('#rlig').onclick=()=>{const n=s.querySelector('#rlin').value.trim(),ip=s.querySelector('#rlip'),ph=ip.value.replace(/\D/g,'');if(!n){toast('Escreva o nome');return}
-     if(ph&&ip.dataset.cc==='55'&&ph.length<10){toast('WhatsApp com DDD');return}window.__rlInvPh=ph?ip.dataset.cc+ph:'';window.__rlInvPhRaw=ph?'+'+ip.dataset.cc+' '+ip.value.trim():'';s.remove();_iv(n)}})}}catch(e){console.error(e)}
+     if(ph&&ip.dataset.cc==='55'&&ph.length<10){toast('WhatsApp com DDD');return}window.__rlInvPh=ph?ip.dataset.cc+ph:'';window.__rlInvPhRaw=ph?'+'+ip.dataset.cc+' '+ph:'';s.remove();_iv(n)}})}}catch(e){console.error(e)}
 
 /* ---------- modelos de treino abrem no montador ---------- */
 window.addEventListener('click',e=>{const b=e.target.closest('.tplg [data-fs="treino"]');if(!b)return;e.stopImmediatePropagation();e.preventDefault();
@@ -4679,7 +4679,10 @@ function progSheet(){const P0={...PROG};
    if(k==='agenda'){h.textContent='Agenda';sh.querySelectorAll('button').forEach(x=>{if(/anamnese/i.test(x.textContent))x.hidden=true});const r=sh.querySelector('[data-rules]');if(r)r.hidden=false;const st=sh.querySelector('.stick');if(st)st.hidden=false}
    if(k==='alunos'){const bd=sh.querySelector('[data-bdayc]');if(bd)bd.hidden=true;const ga=sh.querySelector('#g-alunos');if(ga)ga.hidden=true;const gg=sh.querySelector('#g-game');if(gg)gg.hidden=false}
    if(k==='fin'){sh.querySelector('#g-precos')&&(sh.querySelector('#g-precos').hidden=true);sh.querySelectorAll('[data-gfin],[data-grecv]').forEach(x=>{for(let n=x;n&&n!==sh;n=n.parentElement)n.hidden=false});h.insertAdjacentHTML('afterend',`<button class="opt2" data-rlfin><b>Abrir o Financeiro</b><small>Cobranças, recebidos e lançamentos do mês</small></button>`);sh.querySelector('[data-rlfin]').onclick=()=>{sh.closest('.scrim').remove();S.tab='fin';draw()}}
-   if(k==='ass'){const gi=sh.querySelector('#g-ia');if(gi)gi.hidden=false;h.insertAdjacentHTML('afterend',`<button class="opt2" data-rlass><b>Meu plano</b><small>${PLANOS[PLN.atual].n} • ${SUB.st==='trial'?'teste grátis: '+SUB.left+' dias':'cobrança e troca de plano'}</small></button>`);sh.querySelector('[data-rlass]').onclick=()=>{sh.closest('.scrim').remove();myPlan()}}};
+   if(k==='ass'){const gi=sh.querySelector('#g-ia');if(gi)gi.hidden=false;h.insertAdjacentHTML('afterend',`<button class="opt2" data-rlass><b>Meu plano</b><small>${PLANOS[PLN.atual].n} • ${SUB.st==='trial'?'teste grátis: '+SUB.left+' dias':'cobrança e troca de plano'}</small></button>`);sh.querySelector('[data-rlass]').onclick=()=>{sh.closest('.scrim').remove();myPlan()}}
+   /* cabeçalho limpo: o botão "‹ Configurações" já diz onde está; o título não se repete no primeiro grupo */
+   try{if(sh.querySelector('[data-cfgback]')){const l=sh.querySelector(':scope>span.lbl');if(l)l.hidden=true}
+     const ht=(h.textContent||'').trim().toLowerCase();sh.querySelectorAll('.gh').forEach(g=>{if(g.hidden)return;const bb=g.querySelector('b');if(bb&&(bb.textContent||'').trim().toLowerCase()===ht)bb.hidden=true})}catch(_){}};
  cfgMenu=function(){const nAl=STU.length;sheet(`<span class="lbl">Configurações</span><h3 class="d">Configurações</h3><div class="cfgl">
   <button class="cfg" data-c2="perfil">${ic('perfil')}<span><b>Meu perfil</b><small>Nome, marca, foto, cor e mensagem no app do aluno</small></span><i>›</i></button>
   <button class="cfg" data-c2="agenda">${ic('disp')}<span><b>Agenda</b><small>Horários e folgas, ${LOCS.length===1?'local':'locais'} e regras de agendamento</small></span><i>›</i></button>
@@ -4693,6 +4696,8 @@ function progSheet(){const P0={...PROG};
   <button class="cfg" data-c2="aj">${ic('aj')}<span><b>Ajuda</b><small>Tutorial de 5 passos pelo app</small></span><i>›</i></button>
   <button class="cfg" data-c2="out">${ic('out')}<span><b>Sair da conta</b><small>${esc(session.user.email||'')}</small></span><i>›</i></button></div>
   <button class="btn" data-close>Fechar</button>`,s=>s.addEventListener('click',async e=>{const b=e.target.closest('[data-c2]');if(!b)return;const k=b.dataset.c2;s.remove();
+   const addBack=()=>{const sh=[...document.querySelectorAll('.scrim .sheet')].pop();if(!sh||sh.querySelector('[data-cfgback]'))return;const l=sh.querySelector(':scope>span.lbl');const bt='<button class="lnk cfgb" data-cfgback>‹ Configurações</button>';if(l){l.insertAdjacentHTML('beforebegin',bt);l.hidden=true}else sh.insertAdjacentHTML('afterbegin',bt)};
+   if(['team','tr','ac','msg'].includes(k)){setTimeout(addBack,0);setTimeout(addBack,450)}
    if(k==='team')teamSheet();else if(k==='tr'||k==='ac')treinoHub(k);else if(k==='msg')msgList();else if(k==='aj')tutP(0);else if(k==='fin'){S.tab='fin';draw()}else if(k==='out'){await saveNow();await sb.auth.signOut();location.replace('/app/')}else part(k)}))};
  {const _cmP=cfgMenu;cfgMenu=function(){_cmP.apply(this,arguments);const sh=[...document.querySelectorAll('.scrim .sheet')].pop();if(!sh)return;
    const kill=PERM.own?[]:['ass','team',...(PERM.trn?[]:['tr','ac']),...(PERM.fin?[]:['fin'])];kill.forEach(k=>sh.querySelectorAll('[data-c2="'+k+'"]').forEach(x=>x.remove()))}}
@@ -5659,7 +5664,7 @@ try{
      if(k==='dup'){const add=L.map(i=>JSON.parse(JSON.stringify(P.ex[i])));add.forEach(a=>delete a.link);const at=L[L.length-1]+1;P.ex.splice(at,0,...add);SEL.clear();add.forEach((_,j)=>SEL.add(at+j));redo();return}
      const [f,d]=k.split(':');L.forEach(i=>{const ex=P.ex[i];if(ex.cd)return;if(f==='s'){if(+d>0)ex.s.push([...ex.s[ex.s.length-1]]);else if(ex.s.length>1)ex.s.pop()}else ex.rest=Math.max(0,(+ex.rest||0)+(+d))});redo();return}
    /* adicionar pela biblioteca: atualiza o meio */
-   if(t.closest('.dkpick [data-padd]'))setTimeout(()=>{save();drawBuilder()},0);
+   if(t.closest('.dkpick [data-padd]')||(t.closest('.dkpick .lx')&&!t.closest('[data-pf],[data-pgif]')))setTimeout(()=>{save();drawBuilder()},0);
  },true);
  /* arrastar da biblioteca para o treino */
  document.addEventListener('dragover',e=>{if(e.target.closest&&e.target.closest('.dk-mid')){e.preventDefault();document.querySelector('.dkdrop')&&document.querySelector('.dkdrop').classList.add('hv')}});
