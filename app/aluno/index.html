@@ -2746,16 +2746,16 @@ $('#finish').onclick=()=>{
   const html=`<div class="unlock fin2">
     <div class="fin-top">${RA.emblem(2,false,76)}</div>
     <span class="motto" style="display:block;margin-top:10px">Treino concluído</span>
-    <p class="d" style="font-size:52px;margin:6px 0 2px">Treino A</p>
-    <p class="meta" style="margin:0">Inferiores • segunda, 2 de novembro</p>
+    <p class="d" style="font-size:52px;margin:6px 0 2px">${PLANS[__TK].title}</p>
+    <p class="meta" style="margin:0">${(PLANS[__TK].focus&&PLANS[__TK].focus!==PLANS[__TK].title?PLANS[__TK].focus+' • ':'')+new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'})}</p>
     <span class="status flag ${status[0]}">${status[1]}</span>
     <div class="stats">
-      <div class="stat"><span>Volume total</span><b>${vol.toLocaleString('pt-BR')} kg</b><em class="${dVol>0?'up':''}">${(dVol>0?'+':'')+dVol}% vs último treino A</em></div>
+      <div class="stat"><span>Volume total</span><b>${vol.toLocaleString('pt-BR')} kg</b><em class="${dVol>0?'up':''}">${(dVol>0?'+':'')+dVol}% vs último ${PLANS[__TK].title}</em></div>
       <div class="stat"><span>Duração</span><b>${dur}</b><em>do 1º check até agora</em></div>
       <div class="stat"><span>Séries</span><b>${n} de ${totalSets}</b><em>${pct>=100?'treino completo':pct>=75?'parcial':'iniciado'}${counted>n?' • dor não desconta':''}</em></div>
       <div class="stat"><span>Recordes de carga</span><b>${recs}</b><em class="${recs?'up':''}">${recs?'carga acima da última vez':'mesma carga da última vez'}</em></div>
     </div>
-    <p class="lbl" style="text-align:left;margin:18px 0 4px">Comparação com o último treino A</p>
+    <p class="lbl" style="text-align:left;margin:18px 0 4px">Comparação com o último ${PLANS[__TK].title}</p>
     <div>${rows}</div>
     <p style="font-weight:800;margin:16px 0 0;text-align:left">${gained.length?'Progressão confirmada: '+gained.join(', '):'Sem progressão de carga hoje: consistência também conta.'}</p>
     <p class="lbl" style="text-align:left;margin:18px 0 0">Próxima conquista</p>
@@ -2767,9 +2767,9 @@ $('#finish').onclick=()=>{
   const SD={vol,dVol,dur,recs,n,total:totalSets,cmp:CMP.filter(c=>c.done)};
   lastSummary=()=>sheet(html,s=>{s.querySelector('#share').onclick=()=>window.storyPNG(SD)});
   const hadGain=gained.length>0;
-  window.RUN={kick:'Treino concluído',ttl:'Treino A • suas medalhas',done:lastSummary};
+  window.RUN={kick:'Treino concluído',ttl:PLANS[__TK].title+' • suas medalhas',done:lastSummary};
   window.medalRun(null,[['carga',hadGain?`Progressão confirmada em ${gained.join(', ')}. Semana com carga subindo.`:'Sem progressão hoje. Semana segue aberta.',0,hadGain,hadGain],
-    ['limite',pct>=100?'4º treino da semana: semana fechada.':'Treino parcial: conta só para a sequência.',0,pct>=100,pct>=100],
+    ['limite',pct>=100?'Treino completo: conta para a semana.':'Treino parcial: conta só para a sequência.',0,pct>=100,pct>=100],
     ['tempo','Treino feito. Sua semana na matilha está garantida.',0,false,true]]);
 };
 
