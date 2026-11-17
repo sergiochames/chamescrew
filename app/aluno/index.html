@@ -2663,20 +2663,21 @@ $('#exs').addEventListener('click',e=>{
 });
 
 /* bonequinho */
-const EXV={'agachamento sumô com barra':'agachamento-sumo-com-barra','supino reto com barra':'supino-reto-com-barra','rosca direta com barra':'rosca-direta-com-barra','remada curvada com barra':'remada-curvada-com-barra'};
-const exVid=n=>{const k=String(n||'').trim().toLowerCase();return EXV[k]?'../ex/'+EXV[k]:''};
+const exInfo=n=>{const k=String(n||'').trim().toLowerCase(),b=(window.__EXD||{})[k],o=(window.__EXN||{})[k]||{};const h=o.h?o.h:(b?b.h:''),a=o.a?o.a:(b?b.a:'');return (b||h||a)?{v:b?b.v:'',h,a}:null};
+const exTxt=i=>i&&(i.h||i.a)?`<div class="exh">${i.h?`<b>Como fazer</b><p>${esc2(i.h)}</p>`:''}${i.a?`<b>Atenção</b><p>${esc2(i.a)}</p>`:''}</div>`:'';
+const esc2=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const EXCSS='<style>.exv{width:100%;display:block;border-radius:20px;background:#fff;aspect-ratio:4/3;object-fit:cover}.exh{margin-top:12px;font-size:12.5px;line-height:1.45;color:var(--muted)}.exh b{display:block;color:var(--fg);font-size:11px;letter-spacing:.07em;text-transform:uppercase;margin:10px 0 3px}.exh p{margin:0}</style>';
 function openDemo(ex){
-  const gv=exVid(ex.name);
-  if(gv){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.name}</p>
+  const inf=exInfo(ex.name),gv=inf&&inf.v?'../ex/'+inf.v:'';
+  if(gv){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:34px;margin:4px 0 10px">${ex.name}</p>
     <video class="exv" src="${gv}.mp4" poster="${gv}.jpg" autoplay loop muted playsinline webkit-playsinline preload="auto" aria-label="Animação de ${ex.name}"></video>
-    <p class="meta" style="margin-top:8px">Animação ilustrativa.</p>${ex.yt?`<a class="btn wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:10px">▶ Ver o vídeo do seu personal</a>`:''}
-    <style>.exv{width:100%;display:block;border-radius:20px;background:#fff;aspect-ratio:480/436;object-fit:cover}</style>`,s=>{const v=s.querySelector('video');if(v){v.muted=true;const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{})}});return}
+    ${exTxt(inf)}${ex.yt?`<a class="btn wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:14px">▶ Ver o vídeo do seu personal</a>`:''}${EXCSS}`,s=>{const v=s.querySelector('video');if(v){v.muted=true;const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{})}});return}
   if(ex.yt){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.name}</p>
     <a class="btn solid wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">▶ Ver o vídeo do exercício</a>
-    <p class="meta" style="margin-top:8px">Vídeo escolhido pelo seu personal. Abre no YouTube.</p>`);return}
+    <p class="meta" style="margin-top:8px">Vídeo escolhido pelo seu personal. Abre no YouTube.</p>${exTxt(inf)}${EXCSS}`);return}
   sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 6px">${ex.name}</p>
     <canvas class="fig" id="fig" width="720" height="480" aria-label="Animação de um boneco executando ${ex.name}"></canvas>
-    <p class="meta">Animação ilustrativa.</p>`,s=>{
+    <p class="meta">Animação ilustrativa.</p>${exTxt(inf)}${EXCSS}`,s=>{
     const cv=s.querySelector('#fig'),g=cv.getContext('2d');const css=getComputedStyle(document.documentElement);const t0=performance.now();
     (function frame(now){if(s.dataset.closed)return;const fg=css.getPropertyValue('--fg').trim()||'#000',mu=css.getPropertyValue('--muted').trim()||'#888';
       const ph=(1-Math.cos((now-t0)/1000*Math.PI*0.9))/2;g.clearRect(0,0,720,480);g.lineCap='round';g.lineJoin='round';
@@ -6603,7 +6604,8 @@ try{const upd=()=>{const t=document.getElementById('tr-title'),sub=document.getE
 /* tema da gamificação escolhido pelo personal */
 try{const ph=(o)=>{const L=document.querySelector('header.top .logo');if(!L||!o||!o.name)return;const nm=String(o.name).trim(),ini=nm.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();L.classList.add('plogo');let B=L.querySelector('.pbox');if(!B){B=document.createElement('span');B.className='pbox';L.appendChild(B)}B.innerHTML=(o.avatar?`<img class="pav" src="${o.avatar}" alt="">`:`<span class="pav pini">${ini}</span>`)+`<span class="pnm"><b>${String(o.brand||'Chames Crew').replace(/</g,'')}</b><small>${nm.replace(/</g,'')}</small></span>`};
   try{const c=JSON.parse(localStorage.getItem('cc_pers')||'null');if(c)ph(c)}catch(_){}
-  PF.pp.then(({data:o})=>{if(o&&o.name){ph(o);try{localStorage.setItem('cc_pers',JSON.stringify(o))}catch(_){}}}).catch(()=>{})}catch(_){}
+  try{fetch('../ex/ex.json').then(r=>r.json()).then(j=>{window.__EXD=j}).catch(()=>{})}catch(_){}
+  PF.pp.then(({data:o})=>{if(o&&o.exn)window.__EXN=o.exn;if(o&&o.name){ph(o);try{localStorage.setItem('cc_pers',JSON.stringify(o))}catch(_){}}}).catch(()=>{})}catch(_){}
 try{const {data:g}=await PF.gm;const t=g&&{orig:'Matilha',olimpo:'Olimpo',const:'Constelação'}[g.tema];if(t&&window.CFG)window.CFG.tema=t;if(g&&g.nome)window.__GNOME=String(g.nome).slice(0,22);if(g&&Object.keys(g).length){window.__GM=g;if(window.CFG)window.CFG.game=g.on!==false;try{if(Array.isArray(g.th)&&g.th.length===5)RA.MEDALS.forEach(m=>{if(String(m.th)==='4,8,16,26,52')m.th=g.th.map(Number)})}catch(_){}document.body.classList.toggle('norank',g.rank===false)}}catch(_){}
 /* metas do aluno guardadas na conta (não só no aparelho) */
 try{const io=window.__metasIO;if(io){const srv=P.setup&&P.setup.metas,loc=io.get();let t=null;
