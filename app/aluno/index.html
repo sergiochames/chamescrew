@@ -4727,7 +4727,7 @@ AG.xcr=AG.xcr||0;window.CARD94=window.CARD94||{b:'VISA',n:'4821'};
 /* só aulas do mês atual no carrossel */
 {const _ns=nextSlot;nextSlot=function(){if(AG.moving&&agLeft(AG.moving)>0)return AG.moving;const up=AG.slots.filter(x=>agLeft(x)>0&&monOf(x.d)===NOWMO());if(!up.length){NX.n=0;return null}NX.n=up.length;NX.i=Math.max(0,Math.min(NX.i,up.length-1));return up[NX.i]}}
 renderNext=(prev=>function(){prev();const el=$('#ag-next');if(!el)return;if(!nextSlot()&&!AG.moving)el.innerHTML=`<div class="block frost"><span class="lbl">${MESC2(NOWMO())}</span><p class="d" style="font-size:32px;margin:6px 0">Suas aulas de ${MES[NOWMO()]} terminaram</p><p class="meta" style="margin:0">As aulas de ${MES[NOWMO()+1]} aparecem aqui a partir do dia 1º.</p></div>`;
-  const p=el.querySelector('.nxn span');if(p)p.textContent=p.textContent+((window.__CYA||1)>1?' no mês':` em ${MES[NOWMO()].slice(0,3)}`)})(renderNext);
+  })(renderNext);
 /* mês seguinte travado (exceto próximos 7 dias) */
 window.addEventListener('click',e=>{const b=e.target.closest('[data-ag-book],[data-ag-move],[data-ag-cancel],[data-agact]');if(!b)return;let k=null;
   if(b.dataset.agBook!==undefined){const f=AG.free[+b.dataset.agBook];k=f&&f[0]}else{const x=AG.slots[+(b.dataset.agMove??b.dataset.agCancel??b.dataset.agact)];k=x&&x.d}
@@ -4750,7 +4750,7 @@ sumRender=(prev=>function(){prev();const S0=$('#ag-sum');if(!S0)return;const n=M
  if(ap){const ttl=ap.previousElementSibling;if(ttl&&ttl.classList.contains('sec-h'))V.appendChild(ttl);V.appendChild(ap);
    if(fix){fix.classList.remove('block','frost');fix.classList.add('apfix');const hd=ap.querySelector('.row');(hd||ap.firstElementChild).after(fix)}
    const fz=ap.querySelector('[data-plan-freeze]'),tr=ap.querySelector('[data-plan-trip]');const g=fz&&fz.parentNode;
-   ap.insertAdjacentHTML('beforeend',`<button class="aprn" data-renew><span>Plano ${AG.planNome} até <b>${PLE()}</b></span><em>Renovar ›</em></button>`);
+   ap.insertAdjacentHTML('beforeend',`<button class="aprn" data-renew><span>Plano ${AG.planNome} até <b>${window.__ENDS||PLE()}</b></span><em>Renovar ›</em></button>`);
    if(g){g.remove();V.insertAdjacentHTML('beforeend',`<div class="sec-h"><span class="d">Precisa pausar?</span></div><div class="pz"><button class="pz1" data-plan-freeze><span>${IW2('<path d="M12 21s-7.5-4.6-9.6-9.3C.9 8.1 3.1 4 7 4c2.1 0 3.6 1.1 5 2.8C13.4 5.1 14.9 4 17 4c3.9 0 6.1 4.1 4.6 7.7C19.5 16.4 12 21 12 21z"/>')}</span><b>Congelar por saúde</b><small>Lesão ou doença. Sem atestado. Plano e medalhas pausam.</small></button><button class="pz2" data-plan-trip><span>${IW2('<path d="M2.5 13.5 21 6l-4.5 15-4-6.5z M12.5 14.5 21 6"/>')}</span><b>Avisar viagem</b><small>Com 1 mês de antecedência. O plano fica congelado no período.</small></button></div>`)}}}
 
 /* aviso: personal deu crédito */
