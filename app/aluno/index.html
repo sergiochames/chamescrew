@@ -6652,7 +6652,7 @@ const DB={};
   if(c.status==='cancelada'&&c.kind==='extra'){if(c.note==='xcrok'||(/^xusado:/.test(c.note||'')&&!(CL||[]).some(z=>z.id===c.note.slice(7)))){AG.xcr++;AG.xcrIds.push(c.id)}return}
   if(c.status==='cancelada'){const cr=c.note==='credito',tc=/^pcan/.test(c.note||'');AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr&&!tc)AG.dadas.push({d:k,h});return}
-  AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',paid:c.note==='xcred'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,_id:c.id,loc:c.location||window.__LOC0||undefined})});
+  AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',paid:c.note==='xcred'||c.note==='xpix'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,_id:c.id,loc:c.location||window.__LOC0||undefined})});
 try{sb.rpc('extra_em_aberto',{p_student:uid}).then(({data})=>{AG.xdebt=!!data})}catch(_){}
 window.__rkSave=async(p,on)=>{try{if(on!=null){await sb.rpc('rk_push',{p:{on:!!on}});return}
   if(p._new&&p.ph&&/^data:/.test(p.ph)){const b=await (await fetch(p.ph)).blob();const path=uid+'/'+Date.now()+'.jpg';const {error}=await sb.storage.from('avatars').upload(path,b,{contentType:'image/jpeg'});if(!error){const url=sb.storage.from('avatars').getPublicUrl(path).data.publicUrl;await sb.from('profiles').update({avatar_url:url}).eq('id',uid);P.avatar_url=url;p.ph=url;try{const me=document.getElementById('h-me');if(me)me.innerHTML=`<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block">`}catch(_){}}}delete p._new;
@@ -6721,7 +6721,7 @@ function agBox(){const V=document.getElementById('v-hoje'),au=document.getElemen
 /* pedidos aguardando o personal */
 (CL||[]).filter(c=>c.status==='pedido').forEach(c=>{const d=new Date(c.starts_at),k=keyOf(dayN(d)),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:'pedido',note:c.note,k,h,kind:c.kind};
   if(c.note&&c.note.startsWith('mv:')){const x=AG.slots.find(z=>z._id===c.note.slice(3));if(x){x.pend={d:x.d,h:x.h,over:false,wasExtra:!!x.extra,mo:d.getMonth()+1};x.d=k;x.h=h;x._req=c.id}return}
-  AG.slots.push({d:k,h,conf:false,extra:c.kind==='extra',paid:c.note==='xcred'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,pend:{novo:true,credit:c.kind==='credito'},_id:c.id,_ped:1,loc:c.location||window.__LOC0})});
+  AG.slots.push({d:k,h,conf:false,extra:c.kind==='extra',paid:c.note==='xcred'||c.note==='xpix'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,pend:{novo:true,credit:c.kind==='credito'},_id:c.id,_ped:1,loc:c.location||window.__LOC0})});
 try{R1.syncCred&&R1.syncCred()}catch(_){}
 {const fc=(CL||[]).find(c=>c.status!=='cancelada');if(fc){const d=new Date(fc.starts_at),A=window.__CYA;window.__CYM0=d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}}
 /* semana e dia de hoje na agenda */
@@ -7282,7 +7282,7 @@ async function sync(){if(busy)return;busy=true;try{
   for(const x of AG.slots.filter(x=>!x._id&&!x._saving)){const t=at(x.d,x.h);if(!t)continue;x._saving=1;const kind=x.extra?'extra':x.rep==='cr'?'credito':'plano';
     const {data,error}=x.xcid?await sb.rpc('use_extra_credit',{p_credit:x.xcid,p_at:t.toISOString()}):await sb.rpc('request_slot',{p_at:t.toISOString(),p_kind:kind});
     if(error){toast('Não marcou: '+error.message);AG.slots=AG.slots.filter(y=>y!==x);if(x.xcid){AG.xcr++;AG.xcrIds.push(x.xcid)}if(kind==='credito')AG.creds.push({from:x.d,exp:dayN(endD)});ch=true;continue}
-    x._id=data;x.loc=x.loc||window.__LOC0;if(window.__AUTO){delete x.pend;DB[data]={st:'marcada',note:null,k:x.d,h:x.h,kind}}else{x._ped=1;DB[data]={st:'pedido',note:null,k:x.d,h:x.h,kind}}ch=true}
+    x._id=data;x.loc=x.loc||window.__LOC0;if(x.extra&&x.paid&&!x.xcid){try{await sb.from('classes').update({note:'xpix'}).eq('id',data)}catch(_){}}if(window.__AUTO){delete x.pend;DB[data]={st:'marcada',note:null,k:x.d,h:x.h,kind}}else{x._ped=1;DB[data]={st:'pedido',note:null,k:x.d,h:x.h,kind}}ch=true}
   for(const x of AG.slots.filter(x=>x._id&&DB[x._id]&&!x._req&&!x._ped)){const db=DB[x._id];if(db.st==='pedido'||(db.k===x.d&&Math.abs(db.h-x.h)<.01))continue;const t=at(x.d,x.h);if(!t)continue;
     const {data,error}=await sb.rpc('request_move',{p_id:x._id,p_at:t.toISOString()});
     if(error){toast('Não remarcou: '+error.message);x.d=db.k;x.h=db.h;delete x.pend;ch=true;continue}
