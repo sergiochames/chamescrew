@@ -3637,7 +3637,7 @@ function renderMedals(){
 let NOWH=128;const DAYS_AG=['Hoje','Amanhã','Sex','Sáb'],DOFF={Hoje:0,'Amanhã':24,Sex:48,'Sáb':72};
 const AG={slots:[{d:'Hoje',h:16,conf:false},{d:'Sex',h:7.25,conf:false,mv:'07:00',pm:1}],free:[['Hoje',18],['Amanhã',7],['Amanhã',18],['Sex',9],['Sex',18],['Sáb',9]],quota:8,week:2,done:3,wdone:1,credit:0,rem:1,moving:null};
 const hh2=h=>String(Math.floor(h)).padStart(2,'0')+':'+String(Math.round(h%1*60)).padStart(2,'0');
-const agLeft=x=>DOFF[x.d]+x.h-NOWH;
+const agLeft=x=>DOFF[x.d]+x.h-NOWH;const canConf=x=>!AG.slots.some(y=>y!==x&&agLeft(y)>-2&&agLeft(y)<agLeft(x));const confNote='<p class="meta" style="margin:0 0 8px">A confirmação abre quando for a sua próxima aula.</p>';
 const agDl=x=>agDlX(x);
 const inTime=x=>NOWH<=agDl(x).h;
 const regular=()=>usedM(10);
@@ -4043,11 +4043,11 @@ function renderNext(){const el=$('#ag-next');if(!el)return;const x=nextSlot();
     <p class="agnd">${dLong(x.d)}</p><p class="d agnt">${hh2(x.h)}</p><p class="agnl">📍 ${locOf(x)} • com ${PERS_NOME()}</p>
     <div class="agtg">${x.conf?'<span class="tag t-conf">Presença confirmada ✓</span>':'<span class="tag t-wait">Presença a confirmar</span>'}${x.extra?'<span class="tag t-extra">Avulsa</span>':''}${x.mv?`<span class="tag t-mv">${PERS_NOME()} mudou de ${x.mv}</span>`:''}</div>
     <p class="agnm">${mv?'Escolha o novo horário logo abaixo.':ok?`Mudança sem custo ${agDl(x).txt}.`:'Passou do prazo: se não for, conta como aula dada.'}</p>
-    ${mv?`<button class="btn wide" data-ag-stop>Desistir de remarcar</button>`:`${x.conf?'':`<button class="btn solid wide" data-ag-conf="${i}">Confirmar presença</button>`}<div class="grid2" style="margin-top:8px"><button class="btn" data-ag-move="${i}">Remarcar</button><button class="btn" data-ag-cancel="${i}">Cancelar</button></div>`}</div>`}
+    ${mv?`<button class="btn wide" data-ag-stop>Desistir de remarcar</button>`:`${x.conf?'':canConf(x)?`<button class="btn solid wide" data-ag-conf="${i}">Confirmar presença</button>`:confNote}<div class="grid2" style="margin-top:8px"><button class="btn" data-ag-move="${i}">Remarcar</button><button class="btn" data-ag-cancel="${i}">Cancelar</button></div>`}</div>`}
 const PERS_NOME=()=>window.PERS_NOME_X?window.PERS_NOME_X():'Sérgio';
 function actSheet(i){const x=AG.slots[i];if(!x)return;const ok=inTime(x);
   sheet(`<span class="lbl">Sua aula${x.extra?' • avulsa':''}</span><p class="d" style="font-size:40px;margin:6px 0 2px">${dlab(x.d)} • ${hh2(x.h)}</p><p class="meta" style="margin:0 0 12px">📍 ${locOf(x)} • ${x.conf?'presença confirmada ✓':'presença a confirmar'}<br>${ok?`Mudança sem custo ${agDl(x).txt}.`:'Passou do prazo: se não for, conta como aula dada.'}</p>
-   ${x.conf?'':'<button class="btn solid wide" data-a="data-ag-conf">Confirmar presença</button>'}<div class="grid2" style="margin-top:8px"><button class="btn" data-a="data-ag-move">Remarcar</button><button class="btn" data-a="data-ag-cancel">Cancelar</button></div>`,
+   ${x.conf?'':canConf(x)?'<button class="btn solid wide" data-a="data-ag-conf">Confirmar presença</button>':confNote}<div class="grid2" style="margin-top:8px"><button class="btn" data-a="data-ag-move">Remarcar</button><button class="btn" data-a="data-ag-cancel">Cancelar</button></div>`,
    s=>s.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b)return;s.remove();fire(b.dataset.a,i)}))}
 const _rc=renderCal;renderCal=function(){_rc();const el=$('#ag-free');if(!el)return;
   el.querySelectorAll('.agr.mine').forEach(r=>{const b=r.querySelector('[data-ag-move]');if(b){const i=b.getAttribute('data-ag-move');b.remove();r.setAttribute('data-agact',i);r.setAttribute('role','button');r.setAttribute('tabindex','0');r.insertAdjacentHTML('beforeend','<span class="chev">›</span>')}});
