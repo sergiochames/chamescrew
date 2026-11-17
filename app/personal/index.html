@@ -6046,7 +6046,8 @@ function jHTML(cur,title,sub,btns,cls){const L=['Convite','Aluno entra','Primeir
 document.addEventListener('click',e=>{if(e.target.closest('[data-ivcp],[data-ivwa],[data-ivmany],[data-fs="aluno"]')&&NEWP.on)setTimeout(()=>jLoad().then(()=>{try{if(!document.querySelector('.scrim'))draw()}catch(_){}}),1200)},true);
 function jCard(){if(S.tab!=='agenda'||NEWP.on)return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-j'))return;const F=NEWP.flow=NEWP.flow||{};
   const live=CLS.some(c=>['marcada','confirmada','feita'].includes(c.status))||(FXS&&FXS.length>0);let h='';
-  if(STU.length&&!live){if(!F.jshown){F.jshown=1;try{saveSoon()}catch(_){}}
+  const recent=(STUD||[]).some(p=>p.role!=='equipe'&&(!p.created_at||Date.now()-new Date(p.created_at)<30*864e5));
+  if(STU.length&&!live&&recent){if(!F.jshown){F.jshown=1;try{saveSoon()}catch(_){}}
     const n=STU.length===1?jFirst(STU[0].n):'';
     h=jHTML(2,n?'Marque a primeira aula de '+esc(n):'Marque a primeira aula','Toque num horário livre da agenda, ou use o botão abaixo. Pode ser uma aula avulsa ou de um horário fixo.','<button class="btn solid" data-rlmark>Marcar aula</button>')}
   else if(live&&F.jshown&&!F.j1){h=jHTML(3,'Primeira aula na agenda','Daqui pra frente, pedidos de horário e cancelamentos chegam aqui para você decidir.','<button class="btn" data-jok>Entendi</button>','ok')}
