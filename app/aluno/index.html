@@ -2962,7 +2962,7 @@ $('#cups').addEventListener('click',e=>{const c=e.target.closest('[data-cup]');i
 /* renovação */
 $('#renew').onclick=()=>sheet(`<span class="lbl">Renovar plano</span><p class="d" style="font-size:42px;margin:6px 0 6px">Trimestral • 10% off</p>
   <p class="meta" style="margin:0 0 14px">Como Atleta, você renova com 10% de desconto até 9 de novembro. A secretária envia o link de pagamento (cartão ou Pix).</p>
-  <a class="wa-opt" href="https://wa.me/5521981450993?text=${encodeURIComponent('Oi! Sou a Ana, aluna da Chames Crew. Quero renovar meu plano trimestral com o desconto de Atleta.')}" target="_blank" rel="noopener"><b>Falar com a secretária</b><span class="num">(21) 98145-0993</span><small>Mensagem pronta para renovar</small></a>
+  <a class="wa-opt" href="https://wa.me/5521981450993?text=${encodeURIComponent('Oi! Sou __FN__, da Chames Crew. Quero renovar meu plano trimestral com o desconto de Atleta.')}" target="_blank" rel="noopener"><b>Falar com a secretária</b><span class="num">(21) 98145-0993</span><small>Mensagem pronta para renovar</small></a>
   <p class="meta" style="font-size:12.5px;margin-top:10px">Se o plano vencer sem renovação, o app avisa antes e trava no dia seguinte ao vencimento.</p>`);
 /* fotos */
 const SIL={frente:'<circle cx="20" cy="10" r="8" fill="currentColor"/><path fill="currentColor" d="M8 22h24l4 30h-6l-2 26h-6l-2-22-2 22h-6l-2-26H4z"/>',
@@ -3601,8 +3601,8 @@ $('#b-pub').onclick=()=>{if(!draft.length){toast('Monte o rascunho antes de publ
   draft=[];renderDraft()};
 setWhat('treino');setHow('ia');
 /* WhatsApp da equipe */
-const WA=[{n:'Dúvidas de treino e dieta',d:'Feedbacks, ajustes e dúvidas com o Sérgio',num:'5521971275039',show:'(21) 97127-5039',msg:'Oi! Sou a Ana, aluna da Chames Crew. Tenho uma dúvida sobre meu treino/dieta:'},
-  {n:'Pagamentos e renovação',d:'Secretária da Chames Crew',num:'5521981450993',show:'(21) 98145-0993',msg:'Oi! Sou a Ana, aluna da Chames Crew. Quero falar sobre meu plano:'}];
+const WA=[{n:'Dúvidas de treino e dieta',d:'Feedbacks, ajustes e dúvidas com o Sérgio',num:'5521971275039',show:'(21) 97127-5039',msg:'Oi! Sou __FN__, da Chames Crew. Tenho uma dúvida sobre meu treino/dieta:'},
+  {n:'Pagamentos e renovação',d:'Secretária da Chames Crew',num:'5521981450993',show:'(21) 98145-0993',msg:'Oi! Sou __FN__, da Chames Crew. Quero falar sobre meu plano:'}];
 $('#wa').onclick=()=>sheet(`<span class="lbl">Falar com a equipe</span><p class="d" style="font-size:42px;margin:6px 0 14px">Chames Crew no WhatsApp</p>
   <div style="display:flex;flex-direction:column;gap:10px">${WA.map(w=>`<a class="wa-opt" href="https://wa.me/${w.num}?text=${encodeURIComponent(w.msg)}" target="_blank" rel="noopener"><b>${w.n}</b><span class="num">${w.show}</span><small>${w.d}</small></a>`).join('')}</div>
   <p class="meta" style="font-size:13px;margin-top:12px">A mensagem já vai com seu nome e "aluna da Chames Crew", para a equipe saber quem é.</p>`);
@@ -5081,7 +5081,7 @@ function medSheet(id,show){const m=RMEDS().find(x=>x.id===id),t=rtier(m),v=RMED_
   const pv=show!==undefined?show:(t<0?0:t);const preview=pv>t;
   const lk=isLocked(m),pl=m.g==='nutri'?'dieta':'treino';
   const status=lk?`Não disponível no seu plano`:t<0?'Ainda não desbloqueada':`Tier ${TIERS[t]}`;
-  const up=lk?`<div class="upsell"><b>🔒 Medalha do plano de ${pl}</b><p>Quer ganhar essa medalha? Assine o nosso plano de ${pl} e ela entra no seu estojo.</p><a class="btn solid small" target="_blank" rel="noopener" href="https://wa.me/5521981450993?text=${encodeURIComponent('Oi! Sou a Ana, aluna da Chames Crew. Quero conhecer o plano de '+pl+'.')}">Quero o plano de ${pl}</a></div>`:'';
+  const up=lk?`<div class="upsell"><b>🔒 Medalha do plano de ${pl}</b><p>Quer ganhar essa medalha? Assine o nosso plano de ${pl} e ela entra no seu estojo.</p><a class="btn solid small" target="_blank" rel="noopener" href="https://wa.me/5521981450993?text=${encodeURIComponent('Oi! Sou __FN__, da Chames Crew. Quero conhecer o plano de '+pl+'.')}">Quero o plano de ${pl}</a></div>`:'';
   const prog=nx!==undefined?`<p style="margin:14px 0 6px">${v} de ${nx} ${m.unit} pro ${TIERS[t+1]}.</p><div class="bar" style="width:100%;max-width:280px;margin:0 auto"><i style="width:${Math.round(v/nx*100)}%"></i></div>`:'<p style="margin:14px 0 0;font-weight:800">Diamante. Você pode prestigiar: volta pro Ferro com uma estrela.</p>';
   const pct=nx!==undefined?Math.round(v/nx*100):100;
   const html=`<div class="md2"><div class="md2-top">${RA.disc(m,pv).replace('class="rdisc','style="--s:112px" class="rdisc'+(t<0&&!preview?' md2-off':''))}
@@ -6742,6 +6742,10 @@ document.querySelectorAll('button').forEach(b=>{if(/Prévias do protótipo/.test
 
 /* ---- textos com o nome e a data de hoje ---- */
 const first=(P.name||'').split(' ')[0]||'você',ini=(P.name||'?').split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+window.__FN=first==='você'?'aluno':first;
+(()=>{const fx=u=>String(u).replace(/__FN__/g,window.__FN).replace(/Sou%20a%20Ana%2C%20aluna%20da%20Chames%20Crew/g,'Sou%20'+encodeURIComponent(window.__FN)+'%2C%20da%20Chames%20Crew');
+ document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('a[href*="wa.me"]');if(!a)return;const h=a.getAttribute('href'),n=fx(h);if(n!==h)a.setAttribute('href',n)},true);
+ const wo=window.open;window.open=function(u,...r){return wo.call(this,typeof u==='string'&&/wa\.me/.test(u)?fx(u):u,...r)}})();
 const ALU=R2.ALU;ALU.n=P.name||'';ALU.ini=ini;ALU.email=session.user.email;
 document.querySelectorAll('button,span,div').forEach(el=>{if(el.children.length===0&&el.textContent.trim()==='AS')el.textContent=ini});
 const WD=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],MS=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
