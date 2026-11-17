@@ -7128,7 +7128,7 @@ setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&wi
   const tr=$q('#v-hoje .sday .srow .sdt b'),ts=$q('#v-hoje .sday .srow .sdt small'),sa=$q('#start-a');
   if(tr&&R.CFG&&R.CFG.semTreino){tr.textContent='Treino';if(ts)ts.textContent='O Sérgio está montando o seu treino';if(sa)sa.hidden=true}
   else if(tr&&window.restInfo&&window.restInfo()){}
-  else if(tr&&R.PLANS[R.TK]){const p=R.PLANS[R.TK],min=Math.round(p.ex.reduce((a,e)=>a+e.sets*((e.rest||30)+40)/60,0)/5)*5+5;tr.textContent=p.title;const st=document.getElementById('h-tr-st');if(ts&&st){ts.firstChild&&(ts.firstChild.textContent=`${p.focus} • ~${min} min • `)}}
+  else if(tr&&R.PLANS[R.TK]){const dkx=(R.ORD||[]).find(k=>R.TR&&R.TR.done&&R.TR.done[k]==='hoje'&&R.PLANS[k]),p=R.PLANS[dkx||R.TK],min=Math.round(p.ex.reduce((a,e)=>a+e.sets*((e.rest||30)+40)/60,0)/5)*5+5;tr.textContent=p.title;const st=document.getElementById('h-tr-st');if(ts&&st){ts.firstChild&&(ts.firstChild.textContent=`${p.focus} • ~${min} min • `)}}
   /* Matilha: level e temporada */
   const lh=$q('#v-matilha .lv-hero');if(lh){const lv=R.LV,b=lh.querySelector('#m-emb');if(b){b.dataset.lvcard=lv;b.setAttribute('aria-label','Ver level '+LVN[lv]);try{b.innerHTML=RA.emblem(lv,false,96)}catch(_){}}
     const d=lh.querySelector('p.d');if(d)d.textContent=LVN[lv];const bar=lh.querySelector('.bar i');if(bar)bar.style.width=(R.CYPCT||0)+'%';
