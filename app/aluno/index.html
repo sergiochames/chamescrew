@@ -6737,7 +6737,7 @@ try{const F=R1.FREQ,PL3=R1.PLANS3;const {data:pr}=await PF.pr;if(pr&&F&&PL3){con
   PLN.f=Math.min(7,Math.max(1,freq));PLN.base=F[PLN.f].p;PLN.cur={Mensal:'mes',Trimestral:'tri',Semestral:'sem'}[P.plan_period]||'mes'}}catch(_){}
 try{const {data:ph}=await PF.ph;const MC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   window.__PAYH=(ph||[]).map(r=>{const d=new Date(r.created_at);return [`${MC[d.getMonth()]}/${d.getFullYear()}`,`${r.plan_period||'Mensal'} ${r.freq||''}x • Pix`,+r.pay_amount||0]})}catch(_){window.__PAYH=[]}
-AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);try{const {data:rf}=await PF.ref;window.__REF=rf||null;
+AG.planNome=String(P.plan_period||'Mensal').toLowerCase();AG.planEnd=dayN(endD);try{document.querySelectorAll('.aprn span').forEach(x=>{x.innerHTML='Plano '+AG.planNome+' até <b>'+ends+'</b>'})}catch(_){}try{const {data:rf}=await PF.ref;window.__REF=rf||null;
   if(rf&&R1.WAL){const F=R1.FREQ,mv=F&&F[Math.min(7,Math.max(1,freq))]?F[Math.min(7,Math.max(1,freq))].p:0,now=Date.now();
     (rf.list||[]).forEach(x=>{const ok=x.paid_at&&now-new Date(x.paid_at).getTime()>=(+rf.dias||30)*864e5;R1.WAL.items.push({o:'Indicação • '+x.name,pct:+rf.rec||0,ok:ok?1:0,val:Math.round((+rf.rec||0)/100*mv*100)/100,info:x.paid_at?'libera '+(+rf.dias||30)+' dias depois do primeiro pagamento':'aguardando o primeiro pagamento'})})}
   const esc0=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
