@@ -6055,6 +6055,37 @@ function jCard(){if(S.tab!=='agenda'||NEWP.on)return;const ap=document.getElemen
 document.addEventListener('click',e=>{if(e.target.closest('[data-jok]')){const F=NEWP.flow=NEWP.flow||{};F.j1=1;const c=document.getElementById('rl-j');if(c)c.remove();try{saveSoon()}catch(_){}}});
 {const _dJ=draw;draw=function(){_dJ.apply(this,arguments);try{jCard()}catch(e){console.error(e)}}}
 
+/* ===== feriados: aviso na agenda + cancelar aulas dando crédito ===== */
+function holMap(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),dy=(h+l-7*m+114)%31+1;
+  const E=new Date(y,mo-1,dy),sh=n=>new Date(y,mo-1,dy+n),M={};const add=(dt,n)=>{M[dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()]=n};
+  [[1,1,'Confraternização Universal'],[20,1,'São Sebastião'],[21,4,'Tiradentes'],[23,4,'São Jorge'],[1,5,'Dia do Trabalho'],[7,9,'Independência'],[12,10,'Nossa Senhora Aparecida'],[2,11,'Finados'],[15,11,'Proclamação da República'],[20,11,'Consciência Negra'],[25,12,'Natal']].forEach(([d,m,n])=>add(new Date(y,m-1,d),n));
+  add(sh(-48),'Carnaval');add(sh(-47),'Carnaval');add(sh(-2),'Sexta-feira Santa');add(sh(60),'Corpus Christi');return M}
+const holName=dt=>holMap(dt.getFullYear())[dt.getFullYear()+'-'+(dt.getMonth()+1)+'-'+dt.getDate()]||null;
+const holKey=dt=>dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
+function holList(){const t0=new Date();t0.setHours(0,0,0,0);const out=[];
+  for(let k=0;k<=14;k++){const dt=new Date(t0.getFullYear(),t0.getMonth(),t0.getDate()+k),n=holName(dt);if(!n)continue;
+    let seen=false;try{seen=localStorage.getItem('rl-hol-'+holKey(dt))==='1'}catch(_){}
+    if(seen)continue;
+    const cl=CLS.filter(c=>!c.kind||c.kind!=='extra').filter(c=>['marcada','confirmada','reservada'].includes(c.status)).filter(c=>{const x=new Date(c.starts_at);return +x>Date.now()&&x.getFullYear()===dt.getFullYear()&&x.getMonth()===dt.getMonth()&&x.getDate()===dt.getDate()}).sort((a,b)=>new Date(a.starts_at)-new Date(b.starts_at));
+    if(cl.length)out.push({dt,n,cl})}
+  return out}
+function holCard(){if(S.tab!=='agenda'||NEWP.on)return;const ap=document.getElementById('app');if(!ap)return;const old=ap.querySelector('#rl-hol');if(old)old.remove();
+  const L=holList();if(!L.length)return;const H=L[0],q=H.cl.length;
+  const el=document.createElement('section');el.className='card jj';el.id='rl-hol';
+  el.innerHTML=`<span class="jlb">Feriado • ${pkL(H.dt)}</span><h2 class="d">${esc(H.n)}</h2><p class="note">${q} ${q===1?'aula marcada':'aulas marcadas'} nesse dia${L.length>1?'. Tem mais '+(L.length-1)+' '+(L.length>2?'feriados':'feriado')+' chegando':''}. Quer cancelar e dar crédito?</p><div class="row2"><button class="btn" data-holkeep="${holKey(H.dt)}">Manter as aulas</button><button class="btn solid" data-holgo="${holKey(H.dt)}">Cancelar e dar crédito</button></div>`;
+  const ref=ap.querySelector('#rl-j')||ap.querySelector('#rl-ped')||ap.querySelector('#rl-req')||ap.querySelector('.brand');ref&&ref.nextSibling?ap.insertBefore(el,ref.nextSibling):ap.prepend(el)}
+document.addEventListener('click',e=>{const k=e.target.closest('[data-holkeep]');if(k){try{localStorage.setItem('rl-hol-'+k.dataset.holkeep,'1')}catch(_){}const c=document.getElementById('rl-hol');if(c)c.remove();try{holCard()}catch(_){}return}
+  const g=e.target.closest('[data-holgo]');if(!g)return;const H=holList().find(z=>holKey(z.dt)===g.dataset.holgo);if(!H)return;
+  sheet(`<span class="lbl">Feriado • ${pkL(H.dt)}</span><h3 class="d">${esc(H.n)}</h3><p class="note" style="margin:0">Cada aluno abaixo recebe o aviso do cancelamento e 1 crédito no app, para usar quando quiser.</p>
+   <div class="pk-meta" style="flex-direction:column;align-items:flex-start;gap:6px">${H.cl.map(c=>`<span>${pkH(new Date(c.starts_at))} • ${esc(nameOf(c.student_id))}</span>`).join('')}</div>
+   <div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="hol-ok">Cancelar ${H.cl.length} ${H.cl.length===1?'aula':'aulas'}</button></div>`,s=>{
+   s.querySelector('#hol-ok').onclick=async ev=>{const b=ev.currentTarget;b.disabled=true;let ok=0,bad=0;
+    for(const c of H.cl){const {error}=await sb.from('classes').update({status:'cancelada',note:'pcan_cr'}).eq('id',c.id);if(error){bad++;continue}
+      const r=await sb.rpc('give_credit',{p_student:c.student_id,p_note:'Aula de '+pkL(new Date(c.starts_at))+' cancelada por feriado ('+H.n+')'});if(r.error)bad++;else ok++}
+    try{localStorage.setItem('rl-hol-'+holKey(H.dt),'1')}catch(_){}
+    s.remove();toast(bad?`${ok} com crédito. ${bad} não deu certo, confira na agenda.`:`${H.cl.length} ${H.cl.length===1?'aula cancelada':'aulas canceladas'}, com crédito para ${H.cl.length===1?'o aluno':'os alunos'}.`);await pkRefresh()}})},true);
+{const _dH=draw;draw=function(){_dH.apply(this,arguments);try{holCard()}catch(e){console.error(e)}}}
+
 })().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);try{window.__unCover&&window.__unCover()}catch(_){}const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 {const st=document.createElement('style');st.textContent="html body.ag3 .wk3 .wb.rq{background:linear-gradient(180deg,#f3c76b,#e7aa3c)!important;border:0!important;color:#2b1d00!important;z-index:4;box-shadow:0 0 0 1.5px #f3c76b,0 6px 16px rgba(243,199,107,.32)!important}html body.ag3 .wk3 .wb.rq b,html body.ag3 .wk3 .wb.rq small,html body.ag3 .wk3 .wb.rq small span{color:#2b1d00!important;opacity:1}";document.head.appendChild(st)}
 </script>
