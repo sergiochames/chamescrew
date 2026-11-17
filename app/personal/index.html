@@ -1231,7 +1231,7 @@ const hh=h=>{const m=Math.round(h*60);return String(Math.floor(m/60)).padStart(2
 const ini=n=>String(n||'').split(' ').map(x=>x[0]).join('').slice(0,2);
 let stu=n=>STU.find(s=>s.n===n);
 const nLv=n=>n+(n===1?' livre':' livres');
-const ST={conf:['conf','Confirmado'],ok:['ok','Aula dada ✓'],wait:['wait','Falta confirmar'],can:['can','Cancelou']};
+const ST={conf:['conf','Confirmou'],ok:['ok','Aula dada ✓'],wait:['wait','Falta confirmar'],can:['can','Cancelou']};
 function dayLbl(i){return i===TODAY?'Hoje':i===TODAY+1?'Amanhã':WD[i]+' '+DATES[i]}
 function emptyNext(){const N=window.__NXT;let t='Nenhuma outra aula hoje.';if(N&&N.at){const d=new Date(N.at),td=new Date();td.setHours(0,0,0,0);const dd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-td)/864e5);
   const dl=dd===0?'hoje':dd===1?'amanhã':['dom','seg','ter','qua','qui','sex','sáb'][d.getDay()]+' '+d.getDate()+'/'+(d.getMonth()+1);t=`Próxima: <b>${esc(N.n.split(' ')[0])}</b> ${dl} às ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`}
@@ -4915,7 +4915,7 @@ function pkApply(){if(!PKF)return;const c=pkCls(PKF.id);if(!c||c.status!=='pedid
   bar.innerHTML=`<span><b>${esc(pkFirst(c.student_id))} pediu</b><small>${txt}</small></span><button class="n">Recusar</button><button class="y">Confirmar</button><button class="x" aria-label="Fechar">✕</button>`;document.body.classList.add('pkon')}
 /* ---- aula real: presente, remarcar, cancelar ---- */
 function aulaSheet(id){const c=pkCls(id);if(!c)return;const d=new Date(c.starts_at),nm=nameOf(c.student_id),fn=pkFirst(c.student_id),X=STU.find(z=>z._id===c.student_id)||{},ph=pkPh(c.student_id),can=c.status==='cancelada',past=d<new Date();
-  const stt=can?(c.note==='credito'?'Cancelou • guardou crédito':c.note==='pcan_cr'?'Você cancelou • virou crédito':c.note==='pcan'?'Você cancelou':'Cancelada'):({feita:'Presente ✓',confirmada:'Confirmou presença',reservada:'Aguardando pagamento',marcada:past?'Aguardando presença':'Aguardando confirmação'}[c.status]||c.status);
+  const stt=can?(c.note==='credito'?'Cancelou • guardou crédito':c.note==='pcan_cr'?'Você cancelou • virou crédito':c.note==='pcan'?'Você cancelou':c.note==='xcr'?'Cancelou • sem custo':c.note==='xcrok'?'Cancelada • crédito de extra':/^xusado:/.test(c.note||'')?'Cancelada • crédito de extra usado':c.note==='xdada'?'Cancelada • extra cobrada':'Cancelada'):({feita:'Presente ✓',confirmada:'Confirmou presença',reservada:'Aguardando pagamento',marcada:past?'Aguardando presença':'Aguardando confirmação'}[c.status]||c.status);
   const L=(LOCS||[]).map(l=>l.n),nl=v=>String(v||'').trim().toLowerCase();
   sheet(`<div class="pk-top"><div><span class="lbl">${pkCap(pkL(d))} • ${pkH(d)}</span><h3 class="d">${esc(nm)}</h3></div>${ph?`<a class="pk-wa" href="https://wa.me/${ph}" target="_blank" rel="noopener" aria-label="WhatsApp">${PKI.wa}</a>`:''}</div>
     <div class="pk-meta"><span class="${c.status==='feita'||c.status==='confirmada'?'g':can?'w':''}">${stt}</span><span>${c.kind==='extra'?'Aula extra':c.kind==='credito'?'Usou crédito':'Do plano'}</span>${pkCyc(c.student_id)?`<span>${pkCyc(c.student_id)}</span>`:''}</div>
@@ -4929,17 +4929,17 @@ function aulaSheet(id){const c=pkCls(id);if(!c)return;const d=new Date(c.starts_
       if(b.dataset.pkloc!==undefined){up={location:b.dataset.pkloc};msg='Local trocado. '+fn+' vê no app.'}
       if(b.dataset.pkundo){up={status:'marcada',note:null};msg='Aula de volta na agenda. '+fn+' recebe o aviso.'}
       b.disabled=true;const {error}=await sb.from('classes').update(up).eq('id',id);if(error){b.disabled=false;return toast('Não salvou: '+error.message)}s.remove();toast(msg);await pkRefresh()}))}
-function pkCancel(id){const c=pkCls(id);if(!c)return;const d=new Date(c.starts_at),fn=pkFirst(c.student_id);let cr=true;
+function pkCancel(id){const c=pkCls(id);if(!c)return;const d=new Date(c.starts_at),fn=pkFirst(c.student_id);let cr=true;const ex=c.kind==='extra',xpaid=ex&&(c.note==='xcred'||((CHG.find(z=>z.ref==='ex:'+c.id)||{}).st==='pago'));
   sheet(`<span class="lbl">Cancelar • ${pkL(d)} ${pkH(d)}</span><h3 class="d">${esc(nameOf(c.student_id))}</h3>
-    <button class="pk-opt" data-pkco="1" aria-pressed="true"><i></i><span><b>Devolver como crédito</b><small>${esc(fn)} marca outra aula quando quiser. Não gasta as mudanças dele.</small></span></button>
-    <button class="pk-opt" data-pkco="0" aria-pressed="false"><i></i><span><b>Cancelar sem crédito</b><small>Quando ele faltou sem avisar ou vocês combinaram de não repor.</small></span></button>
+    <button class="pk-opt" data-pkco="1" aria-pressed="true"><i></i><span><b>${ex?'Devolver como crédito de extra':'Devolver como crédito'}</b><small>${ex?(xpaid?`${esc(fn)} usa o crédito em outra aula extra. O valor pago não se perde.`:`Como a extra ainda não foi paga, a cobrança some.`):`${esc(fn)} marca outra aula quando quiser. Não gasta as mudanças dele.`}</small></span></button>
+    <button class="pk-opt" data-pkco="0" aria-pressed="false"><i></i><span><b>${ex?'Cancelar e cobrar':'Cancelar sem crédito'}</b><small>${ex?'Quando ele faltou sem avisar. A extra continua na cobrança.':'Quando ele faltou sem avisar ou vocês combinaram de não repor.'}</small></span></button>
     <p class="note" style="margin:0">${esc(fn)} recebe o aviso no app e o horário fica livre para os outros alunos.</p>
     <div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="pkcok">Cancelar aula</button></div>`,s=>{
     s.addEventListener('click',e=>{const b=e.target.closest('[data-pkco]');if(!b)return;cr=b.dataset.pkco==='1';s.querySelectorAll('[data-pkco]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});
     s.querySelector('#pkcok').onclick=async ev=>{const b=ev.currentTarget;b.disabled=true;
-      const {error}=await sb.from('classes').update({status:'cancelada',note:cr?'pcan_cr':'pcan'}).eq('id',id);if(error){b.disabled=false;return toast('Não cancelou: '+error.message)}
-      if(cr){const r=await sb.rpc('give_credit',{p_student:c.student_id,p_note:'Aula de '+pkL(d)+' às '+pkH(d)+' cancelada pelo personal'});if(r.error)toast('Cancelada, mas o crédito não entrou: '+r.error.message)}
-      s.remove();toast('Aula cancelada'+(cr?' e devolvida como crédito':'')+'. '+fn+' recebeu o aviso.');await pkRefresh()}})}
+      const {error}=await sb.from('classes').update({status:'cancelada',note:ex?(cr?(xpaid?'xcrok':'pcan'):'xdada'):(cr?'pcan_cr':'pcan')}).eq('id',id);if(error){b.disabled=false;return toast('Não cancelou: '+error.message)}
+      if(cr&&!ex){const r=await sb.rpc('give_credit',{p_student:c.student_id,p_note:'Aula de '+pkL(d)+' às '+pkH(d)+' cancelada pelo personal'});if(r.error)toast('Cancelada, mas o crédito não entrou: '+r.error.message)}
+      s.remove();toast('Aula cancelada'+(cr?(ex?(xpaid?' e devolvida como crédito de extra':''):' e devolvida como crédito'):(ex?'. A extra continua cobrada':''))+'. '+fn+' recebeu o aviso.');await pkRefresh()}})}
 async function backSt(id){try{const {data}=await sb.from('notifications').select('id').eq('ref',id).eq('kind','conf').limit(1);return data&&data.length?'confirmada':'marcada'}catch(_){return 'marcada'}}
 function pkMove(id){const c=pkCls(id);if(!c)return;const d0=new Date(c.starts_at),fn=pkFirst(c.student_id),now=new Date(),t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   let base=new Date(Math.max(+t0,+new Date(d0.getFullYear(),d0.getMonth(),d0.getDate())-3*864e5));if(base-t0<7*864e5)base=t0;
@@ -5152,7 +5152,7 @@ loadBLK().then(()=>{try{if(S.tab==='agenda'&&!document.querySelector('.scrim'))d
 /* card do aluno (aula agora ou em menos de 1 hora) */
 /* card do aluno no estilo do card antigo (aprovado), em vidro, com foto e borda pela situação */
 function a2card(e,cur,ix,nn,isT){const c=CLS.find(z=>z.id===e._id)||{},X=STU.find(z=>z._id===c.student_id)||{},ph=c.student_id?pkPh(c.student_id):'';
-  const dt=isT?e.h-NOW:null,st=e.st==='ok'?'ok':e.st==='conf'?'conf':e.st==='can'?'can':'wait',stt={ok:'Presente ✓',conf:'Confirmado',wait:'A confirmar',can:'Cancelou'}[st];
+  const dt=isT?e.h-NOW:null,st=e.st==='ok'?'ok':e.st==='conf'?'conf':e.st==='can'?'can':'wait',stt={ok:'Presente ✓',conf:'Confirmou',wait:'A confirmar',can:'Cancelou'}[st];
   const cnt=!isT?hh(e.h):cur?(e.st==='ok'?'presente':'em aula • há '+Math.max(1,Math.round(-dt*60))+' min'):dt>0?(dt<1?'em '+Math.max(1,Math.round(dt*60))+' min':'em '+Math.floor(dt)+'h'+String(Math.round((dt%1)*60)).padStart(2,'0')):'foi às '+hh(e.h);
   const lbl=cur?'Em aula agora':!isT?'Aluno do dia':dt>0?(ix&&dt>0?'Depois':'Próximo aluno'):'Aula de hoje';
   let pl='';try{pl=X.exp?'Aula experimental • grátis':(X.q?X.q[0]+' de '+X.q[1]+' aulas no mês':'')+(typeof freqOf==='function'?' • plano '+freqOf(X)+'x por semana':'')}catch(_){}
@@ -5709,7 +5709,7 @@ try{
      if(hero)side.appendChild(hero);else{const n=document.createElement('div');n.className='dka-card';n.innerHTML=wo===0?'<span class="dkh">Hoje</span><p>Sem alunos hoje.</p>':'<span class="dkh">'+(wo>0?'Semana que vem':'Semana passada')+'</span><p>O card do próximo aluno aparece na semana atual.</p><button type="button" class="dkb" data-dkwk="0">Voltar para esta semana</button>';side.appendChild(n)}
      const k=document.createElement('div');k.className='dka-kp';k.innerHTML=`<div><small>Aulas na semana</small><b>${aul.length}</b></div><div><small>Confirmadas</small><b>${cf}<em> de ${aul.length}</em></b></div>`;side.appendChild(k);
      const att=main.querySelector('[data-w3att]');if(att){const c=document.createElement('div');c.className='dka-card';c.innerHTML='<span class="dkh">Precisa de você</span>';c.appendChild(att);side.appendChild(c)}
-     const lg=document.createElement('div');lg.className='dka-card dka-lg';lg.innerHTML='<span class="dkh">Legenda</span><span><i class="g"></i>Confirmado / presente</span><span><i class="y"></i>A confirmar</span><span><i class="r"></i>Cancelou</span><span><i class="f"></i>Horário livre</span>';side.appendChild(lg);
+     const lg=document.createElement('div');lg.className='dka-card dka-lg';lg.innerHTML='<span class="dkh">Legenda</span><span><i class="g"></i>Confirmou / presente</span><span><i class="y"></i>A confirmar</span><span><i class="r"></i>Cancelou</span><span><i class="f"></i>Horário livre</span>';side.appendChild(lg);
      app.appendChild(side)}catch(err){console.warn('dka',err)}
    return r};
  document.addEventListener('click',e=>{const b=e.target.closest('[data-dkwk]');if(!b)return;S.wo=+b.dataset.dkwk;draw()});
