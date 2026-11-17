@@ -1319,7 +1319,7 @@ function toast(m){if(window.__tq&&window.__tq(m))return;document.querySelectorAl
 const evAt=i=>(S.ev[S.day]||[]).slice().sort((a,b)=>a.h-b.h)[i];
 function evSheet(i){const e=evAt(i),s0=stu(e.n);
   const scr=sheet(`<span class="lbl">${dayLbl(S.day)} • ${hh(e.h)}</span><h3 class="d">${esc(e.n)}</h3>
-    <p class="note">${s0.q[0]} de ${s0.q[1]} aulas usadas no mês${e.st==='can'?' • cancelou: '+esc(e.why||''):''}</p>
+    <p class="note">${s0.q[0]} de ${s0.q[1]} aulas usadas no mês${e.st==='can'?' • cancelou'+(e.why&&e.why!=='Cancelou'?': '+esc(e.why):''):''}</p>
     ${e.st!=='can'?`<div class="fxbox"><span><b>📍 ${esc(locOf(e).n)}</b><small>${esc(locOf(e).ad)}</small></span><a class="mini" href="https://maps.google.com/?q=${encodeURIComponent(locOf(e).ad)}" target="_blank" rel="noopener" style="text-decoration:none">Mapa</a></div>
     <span class="lbl">Local desta aula</span>${locChips(locOf(e).id,'evl')}`:''}
     ${s0.fixo&&e.st!=='can'?`<div class="fxbox"><span><b>Horário fixo</b><small>Toda ${esc(fxTxt(s0.fixo))} • ${s0.per.toLowerCase()} até o ${s0.until}</small></span><button class="mini" data-fxch="${esc(e.n)}">Mudar fixo</button></div>`:''}
@@ -1359,17 +1359,17 @@ function bookSheet(h0,opt){opt=opt||{};let who=opt.who||null,kind='plano',loc=wh
     ${who?`<div class="who sel"><span class="av0">${ini(x.n)}</span><span style="min-width:0"><b>${esc(x.n)}</b><small>${x.fixo?'Fixo: '+esc(fxTxt(x.fixo)):'Presencial'}</small></span><span class="quota ${x.q[0]>=x.q[1]?'full':''}">${x.q[0]}/${x.q[1]} no mês</span></div>`
       :`<input class="inp srch" id="bq" type="search" placeholder="Buscar aluno" value="${esc(q)}" autocomplete="off"><div class="bwl">${L.slice(0,6).map(z=>`<button class="who" data-bwho="${esc(z.n)}"><span class="av0">${ini(z.n)}</span><span style="min-width:0"><b>${esc(z.n)}</b><small>${z.q[0]}/${z.q[1]} aulas no mês</small></span><span class="go">›</span></button>`).join('')||'<p class="note">Ninguém com esse nome.</p>'}</div>`}
     <div class="bstep"><span class="bn">2</span><b>Dia</b><button class="lnk" data-bcal>${cal?'só esta semana':'📅 ver o mês todo'}</button></div>
-    ${cal?calHTML():`${fd?`<div class="fdsel"><span>📅</span><b>${DLONG[d][0].toUpperCase()+DLONG[d].slice(1)}, ${fd.getDate()} de ${MESL[fd.getMonth()]}</b><button class="lnk" data-bfdx>trocar</button></div>`:''}<div class="bdays">${WD.map((w,i)=>`<button class="bdy" data-bd="${i}" aria-pressed="${!fd&&i===d}" ${i<TODAY?'disabled':''}><small>${i===TODAY?'Hoje':w}</small><b>${DATES[i]}</b><i>${i<TODAY?'':nLv(freeH0(i).length)}</i></button>`).join('')}</div>`}
+    ${cal?calHTML():`${fd?`<div class="fdsel" data-fd="${+fd}"><span>📅</span><b>${DLONG[d][0].toUpperCase()+DLONG[d].slice(1)}, ${fd.getDate()} de ${MESL[fd.getMonth()]}</b><button class="lnk" data-bfdx>trocar</button></div>`:''}<div class="bdays">${WD.map((w,i)=>`<button class="bdy" data-bd="${i}" aria-pressed="${!fd&&i===d}" ${i<TODAY?'disabled':''}><small>${i===TODAY?'Hoje':w}</small><b>${DATES[i]}</b><i>${i<TODAY?'':nLv(freeH0(i).length)}</i></button>`).join('')}</div>`}
     <div class="bstep"><span class="bn">3</span><b>Horário</b><button class="lnk" data-bout>${out?'só meus horários':'outro horário'}</button></div>
     ${out?`<p class="note" style="margin:0">Fora do seu horário de atendimento. Os alunos não veem, só você pode marcar.</p><div class="chips">${allH(d).map(x=>`<button class="chip" data-bh="${x}" aria-pressed="${x===h}">${hh(x)}</button>`).join('')||'<p class="note">Nada livre.</p>'}</div>`
       :fh.length?`<div class="chips">${fh.map(x=>`<button class="chip" data-bh="${x}" aria-pressed="${x===h}">${hh(x)}</button>`).join('')}</div>`
       :`<div class="info warn">Sem horário livre ${dLbl()}. ${(()=>{if(fd)return '';const n=[...Array(7).keys()].find(i=>i>d&&freeH(i).length);return n!==undefined?`<button class="lnk" data-bd="${n}">Ver ${dayLbl(n).toLowerCase()} (${freeH(n).length} livres)</button>`:''})()} <button class="lnk" data-bout>Marcar fora do horário</button></div>`}
     <div class="bstep"><span class="bn">4</span><b>Detalhes</b></div>
     <span class="note" style="margin:0">Local</span>${locChips(loc,'bl')}
-    <span class="note" style="margin:0">Tipo</span><div class="vseg"><button data-k="plano" aria-pressed="${kind==='plano'}">Do plano</button><button data-k="avulsa" aria-pressed="${kind==='avulsa'}">Avulsa (cobrada à parte)</button></div>
-    ${x&&x.q[0]>=x.q[1]&&kind==='plano'?`<div class="info warn">${esc(x.n.split(' ')[0])} já usou as ${x.q[1]} aulas do mês. Marque como avulsa para cobrar à parte.</div>`:''}
+    <span class="note" style="margin:0">Tipo</span><div class="vseg"><button data-k="plano" aria-pressed="${kind==='plano'}">Do plano</button><button data-k="avulsa" aria-pressed="${kind==='avulsa'}">Extra (cobrada)</button></div>
+    ${x&&x.q[0]>=x.q[1]&&kind==='plano'?`<div class="info warn">${esc(x.n.split(' ')[0])} já usou as ${x.q[1]} aulas do mês. Marque como extra para cobrar à parte.</div>`:''}
     <label class="sw" for="rp"><span>Repetir toda ${DLONG[d]}</span><input type="checkbox" id="rp" ${rep?'checked':''}></label>
-    <div class="bsum ${who&&h!==undefined?'ok':''}">${who&&h!==undefined?`<b>${esc(x.n.split(' ')[0])} • ${fd?dLbl():dayLbl(d)} às ${hh(h)}</b><small>📍 ${esc((LOCS.find(l=>l.id===loc)||LOCS[0]).n)} • ${kind==='plano'?'do plano':'avulsa'}${rep?' • toda semana':''}</small>`:`<small>${!who?'Escolha o aluno':'Escolha o horário'}</small>`}</div>`};
+    <div class="bsum ${who&&h!==undefined?'ok':''}">${who&&h!==undefined?`<b>${esc(x.n.split(' ')[0])} • ${fd?dLbl():dayLbl(d)} às ${hh(h)}</b><small>📍 ${esc((LOCS.find(l=>l.id===loc)||LOCS[0]).n)} • ${kind==='plano'?'do plano':kind==='credito'?'com crédito':'extra'}</small>`:`<small>${!who?'Escolha o aluno':'Escolha o horário'}</small>`}</div>`};
   sheet(`<span class="lbl">Agenda</span><h3 class="d">Marcar aula</h3><div id="bkb" style="display:flex;flex-direction:column;gap:10px">${body()}</div><div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="ok">Marcar</button></div>`,s=>{
     const re=()=>{const y=s.querySelector('.sheet').scrollTop;s.querySelector('#bkb').innerHTML=body();s.querySelector('.sheet').scrollTop=y};
     s.addEventListener('input',e=>{if(e.target.id==='bq'){q=e.target.value.toLowerCase();const p=e.target.selectionStart;re();const f=s.querySelector('#bq');f.focus();f.setSelectionRange(p,p)}});
@@ -3995,7 +3995,7 @@ function w3Tight(e,d,h){if(!e)return null;const L=(S.ev[d]||[]).filter(x=>x!==e&
   if(pv&&lid(pv)!==l){const need=trv3(lid(pv),l),gap=Math.round((h-(pv.h+1))*60);if(gap<need)return {msg:`Você sai de ${lsn(pv)} às ${hh(pv.h+1)} e leva uns ${need} min até ${lsn(e)}`,short:`${need} min de ${lsn(pv)}`}}
   if(nx&&lid(nx)!==l){const need=trv3(l,lid(nx)),gap=Math.round((nx.h-(h+1))*60);if(gap<need)return {msg:`Depois você precisa estar em ${lsn(nx)} às ${hh(nx.h)} e leva uns ${need} min`,short:`${need} min até ${lsn(nx)}`}}return null}
 const pedB=p=>`<button class="wb rq" style="top:${(pedH(p)-H0)*HP}px;height:${HP-3}px" data-ped="${p.id}"><b><span>${esc(p.n.split(' ')[0])}</span></b><small><span>pedido ${hh(pedH(p))}</span></small></button>`;
-const subL=(h,ln,id)=>{const m=mvOf(id),hs=m&&pedH(m);return `<span>${hh(h)}${m?' → '+WD[(m.at.getDay()+6)%7]+' '+Math.floor(hs)+'h'+(hs%1?String(Math.round(hs%1*60)).padStart(2,'0'):''):ln?' · '+esc(ln):''}</span>`};
+const subL=(h,ln,id)=>{const m=mvOf(id),hs=m&&pedH(m);return `<span>${hh(h)}${m?' → '+WD[(m.at.getDay()+6)%7]+' '+Math.floor(hs)+'h'+(hs%1?String(Math.round(hs%1*60)).padStart(2,'0'):''):''}</span>`};
 function w3Tags(L){const A=L.filter(e=>!e.gc&&e.st!=='can'&&e.n).sort((a,b)=>a.h-b.h),m=new Map();
   A.forEach((e,k)=>{if(!k)return;const p=A[k-1];if(lid(p)===lid(e))return;const need=trv3(lid(p),lid(e)),gap=Math.round((e.h-(p.h+1))*60),bad=gap<need;
     m.set(e,`<em class="w3tv${bad?' bad':''}" title="Trajeto ${esc(lsn(p))} → ${esc(lsn(e))}">${bad?'⚠ ':''}${need} min</em>`)});return m}
@@ -4008,11 +4008,11 @@ function w3Body(){const cur=S.wo===0,days=w3Days(),s0=S.w3=w3clamp(S.w3),vis=doc
   const head=`<div class="whead"><button class="w3ar" data-w3s="-1" aria-label="Dias anteriores">‹</button>${vis.map(i=>{const dt=days[i],t=sameD(dt,TD);return `<button ${cur?`data-gday="${i}"`:`data-fday="${+dt}"`} class="${t?'td':''}"><small>${t?'Hoje':WD[i]}</small><b>${dt.getDate()}</b></button>`}).join('')}<button class="w3ar nx" data-w3s="1" aria-label="Próximos dias">›</button></div>${hasT?'':'<button class="w3h" data-w3h>Voltar para hoje</button>'}`;
   const cols=vis.map(i=>{const dt=days[i];let bl='',L,TG;
     if(cur){const E=S.ev[i]||[],sp=S.sp[i]||{};L=E;TG=w3Tags(E);
-      E.forEach(e=>{const has=sp[Math.floor(e.h)];if(e.st==='can'&&has)return;const top=(e.h-H0)*HP;
+      E.forEach(e=>{const has=sp[Math.floor(e.h)];if(e.st==='can')return;const top=(e.h-H0)*HP;
         bl+=e.gc?`<div class="wb gc" style="top:${top}px;height:${HP-3}px"><b><span>${esc(e.gc.split(' • ')[0])}</span></b><small>${hh(e.h)}</small></div>`
           :`<button class="wb ${e.st}${e.exp?' exp':''}" style="top:${top}px;height:${HP-3}px" data-wev="${i}:${e.h}" data-cid="${e._id||''}"><b><span>${esc(e.n.split(' ')[0])}</span></b><small>${subL(e.h,((LOCS||[]).find(z=>z.id===e.loc)||{}).n,e._id)}${TG.get(e)||''}</small></button>`});pedsOn(dt).forEach(p=>{bl+=pedB(p)});
       Object.entries(sp).forEach(([h,x])=>{const top=(h-H0)*HP;bl+=`<button class="wb ${x.lock?'lk':x.req?'rq':'fr'}" style="top:${top}px;height:${HP-3}px" data-wsp="${i}:${h}"><b><span>${x.lock?'Travado':x.req?esc(x.req.n.split(' ')[0])+' pediu':'Livre'}</span></b><small>${x.lock?hh(+h):x.req?({extra:'aula extra',rep:'reposição',plano:'do plano',mv:'remarcação'}[x.req.tp||'plano']):hh(+h)}</small></button>`})}
-    else{L=evOn(dt);TG=w3Tags(L);L.forEach(e=>{bl+=`<button class="wb ${e.st}" style="top:${(e.h-H0)*HP}px;height:${HP-3}px" data-fev="${+dt}|${e.h}|${esc(e.n)}" data-cid="${e._cid||''}"><b><span>${esc(e.n.split(' ')[0])}</span></b><small>${subL(e.h,e.ln,e._cid)}${TG.get(e)||''}</small></button>`});pedsOn(dt).forEach(p=>{bl+=pedB(p)})}
+    else{L=evOn(dt).filter(e=>e.st!=='can');TG=w3Tags(L);L.forEach(e=>{bl+=`<button class="wb ${e.st}" style="top:${(e.h-H0)*HP}px;height:${HP-3}px" data-fev="${+dt}|${e.h}|${esc(e.n)}" data-cid="${e._cid||''}"><b><span>${esc(e.n.split(' ')[0])}</span></b><small>${subL(e.h,e.ln,e._cid)}${TG.get(e)||''}</small></button>`});pedsOn(dt).forEach(p=>{bl+=pedB(p)})}
     const t=sameD(dt,TD),wk=(WH[i]||[]).map(([a,b])=>`<i class="wwork" style="top:${(a-H0)*HP}px;height:${(b-a)*HP}px"></i>`).join('');
     return `<div class="wcol${t?' td':''}" ${cur?`data-wcol="${i}"`:`data-fcol="${+dt}"`} style="height:${(H1-H0)*HP}px">${wk}${bl}${t&&NOW>=H0&&NOW<=H1?`<i class="wnow" style="top:${(NOW-H0)*HP}px"></i>`:''}</div>`}).join('');
   const hrs=Array.from({length:H1-H0},(_,k)=>`<span style="top:${k*HP}px">${H0+k}h</span>`).join('');
@@ -5158,6 +5158,51 @@ async function pausaSheet(n){
     if(no){let t=0;no.onclick=()=>{if(!t){t=1;no.textContent='Toque de novo para recusar';return}go(()=>sb.rpc('decidir_pausa',{p_id:P.id,p_ok:false}),()=>'Pedido recusado. O aluno foi avisado.')}}
     if(en)en.onclick=()=>go(()=>sb.rpc('encerrar_pausa',{p_id:P.id}),()=>'Pausa encerrada. As aulas fixas voltaram.')})
 }
+
+/* ---------- marcar aula (manual): avisa crédito/extra, evita excesso e salva de verdade ---------- */
+const CRD={};
+async function loadCred(id){if(!id||CRD[id]!==undefined)return;CRD[id]=null;try{const {data}=await sb.rpc('cycle_info',{p_student:id});CRD[id]=data?+data.credits||0:0}catch(_){CRD[id]=0}}
+const _bkR=bookSheet;
+bookSheet=function(h0,opt){_bkR(h0,opt);try{bkEnhance()}catch(e){console.error(e)}};
+function bkEnhance(){const sc=[...document.querySelectorAll('.scrim')].pop();if(!sc||!sc.querySelector('#bkb'))return;const box=sc.querySelector('#bkb');let sig='',touched=false,busy=false,auto=false;
+  const ctx=()=>{const wn=sc.querySelector('.who.sel b');if(!wn)return null;const x=STU.find(z=>z.n===wn.textContent.trim());if(!x||!x._id)return null;
+    const fdE=sc.querySelector('.fdsel[data-fd]'),dB=sc.querySelector('.bdy[aria-pressed="true"]'),hB=sc.querySelector('.chip[data-bh][aria-pressed="true"]');
+    let date=null;if(fdE)date=new Date(+fdE.dataset.fd);else if(dB)date=addD(TD,(+dB.dataset.bd)-TODAY);if(!date)return null;
+    const h=hB?+hB.dataset.bh:undefined,mon=new Date(date.getFullYear(),date.getMonth(),date.getDate()-((date.getDay()+6)%7)),nxt=new Date(mon.getTime()+7*864e5);
+    const mine=CLS.filter(c=>c.student_id===x._id&&c.status!=='cancelada'&&c.status!=='pedido');
+    const wk=mine.filter(c=>{const t=new Date(c.starts_at);return t>=mon&&t<nxt}),same=mine.filter(c=>{const t=new Date(c.starts_at);return t.toDateString()===date.toDateString()});
+    const p=STUD.find(z=>z.id===x._id)||{},fq=+p.freq||Math.max(1,Math.round((x.q&&x.q[1]||8)/4));
+    return {x,date,h,wk:wk.length,same,fq,cred:CRD[x._id]};};
+  const first=n=>String(n).split(' ')[0],hhm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
+  const enh=()=>{if(busy)return;busy=true;try{const lb=sc.querySelector('label.sw[for="rp"]');if(lb)lb.remove();
+    const seg=sc.querySelector('.vseg');if(!seg){return}const c=ctx();let inf=sc.querySelector('#bkinfo');if(!inf){inf=document.createElement('div');inf.id='bkinfo';seg.insertAdjacentElement('afterend',inf)}
+    if(!c){if(inf.className)inf.className='';if(inf.textContent)inf.textContent='';return}
+    if(c.cred===undefined){loadCred(c.x._id).then(()=>{try{enh()}catch(_){}})}
+    const over=c.wk>=c.fq,cr=c.cred||0,need=over?(cr>0?'credito':'avulsa'):'plano',s2=`${c.x._id}|${+c.date}|${c.h}|${cr}`;
+    if(cr>0&&!seg.querySelector('[data-k="credito"]'))seg.insertAdjacentHTML('beforeend',`<button data-k="credito" aria-pressed="false">Crédito (${cr})</button>`);
+    if(s2!==sig){sig=s2;touched=false}
+    const cur=seg.querySelector('[aria-pressed="true"]');let kind=cur?cur.dataset.k:'credito';
+    if(!touched&&kind!==need){const b=seg.querySelector(`[data-k="${need}"]`);if(b){busy=false;auto=true;b.click();auto=false;return}}
+    if(kind==='credito'){const cb=seg.querySelector('[data-k="credito"]');if(cb)cb.setAttribute('aria-pressed','true')}
+    const nm=first(c.x.n),price=+PRICE.avulsa||0,R=v=>'R$ '+v.toLocaleString('pt-BR');let m='',cls='info';
+    if(kind==='plano'&&!over)m=`${nm} tem ${c.wk} de ${c.fq} aulas nessa semana. Esta conta no plano.`;
+    else if(kind==='plano'&&over){cls='info warn';m=`${nm} já tem ${c.wk} ${c.wk===1?'aula':'aulas'} nessa semana (plano ${c.fq}x)${cr?`, mas tem ${cr} ${cr===1?'crédito':'créditos'}`:' e nenhum crédito'}. Marcar como plano passa do combinado e não cobra nada.`}
+    else if(kind==='credito'){m=`Usa 1 dos ${cr} ${cr===1?'crédito':'créditos'} de ${nm}. Sem cobrança.`}
+    else {cls=over?'info warn':'info';m=over?`${nm} já tem ${c.wk} ${c.wk===1?'aula':'aulas'} nessa semana (plano ${c.fq}x) e ${cr?cr+' créditos':'nenhum crédito'}. Esta será aula extra${price?': '+R(price)+' entra na cobrança do mês':''}.`:`${nm} ainda tem aula do plano nessa semana (${c.wk} de ${c.fq}). Extra cobra${price?' '+R(price):''} à parte.`}
+    if(c.same.length)m+=` Atenção: ${nm} já tem aula nesse dia às ${c.same.map(z=>hhm(z.starts_at)).join(' e ')}.`,cls='info warn';
+    if(inf.className!==cls)inf.className=cls;if(inf.textContent!==m)inf.textContent=m}finally{busy=false}};
+  const mo=new MutationObserver(()=>{if(!busy)enh()});mo.observe(box,{childList:true,subtree:true});
+  sc.addEventListener('click',e=>{if(!auto&&e.target.closest('.vseg [data-k]'))touched=true},true);
+  /* salvar de verdade (inclusive em outras semanas) */
+  sc.addEventListener('click',async e=>{const ok=e.target.closest('#ok');if(!ok)return;const c=ctx();if(!c||c.h===undefined)return;e.stopImmediatePropagation();e.preventDefault();
+    const seg=sc.querySelector('.vseg'),cur=seg&&seg.querySelector('[aria-pressed="true"]'),kind=cur?cur.dataset.k:'plano',lb=sc.querySelector('.chip[data-bl][aria-pressed="true"]');
+    const loc=locName(lb?+lb.dataset.bl:c.x.loc)||locName(c.x.loc)||locName((LOCS[0]||{}).id);
+    const d=new Date(c.date.getFullYear(),c.date.getMonth(),c.date.getDate(),Math.floor(c.h),Math.round((c.h%1)*60));
+    ok.disabled=true;const {error}=await sb.from('classes').insert({student_id:c.x._id,starts_at:d.toISOString(),location:loc,status:'marcada',kind:kind==='avulsa'?'extra':kind==='credito'?'credito':'plano'});
+    if(error){ok.disabled=false;return toast('Não marcou: '+error.message)}
+    sc.remove();try{await pkRefresh()}catch(_){}
+    toast(`${first(c.x.n)} ${oa(c.x.n,'marcado','marcada')} ${ddmm(d)} às ${pad(d.getHours())}:${pad(d.getMinutes())}${kind==='avulsa'?'. Extra: entra na cobrança do mês':kind==='credito'?'. Usou 1 crédito':''}.`)},true);
+  enh()}
 const DOW_S=['dom','seg','ter','qua','qui','sex','sáb'];
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a2nav],[data-a2bk],[data-a2d],[data-a2pd],[data-a2fin],[data-a2wa]');if(!b)return;e.stopPropagation();e.preventDefault();const sc=()=>{const s=document.querySelector('.scroller');if(s)s.scrollTop=0;window.scrollTo(0,0)};
   if(b.dataset.a2nav){const n=S.day+ +b.dataset.a2nav;if(n>=0&&n<=6){S.day=n;draw();sc()}else{S.view='semana';S.wo=n>6?1:-1;S.w3=n>6?0:4;draw();sc()}return}
