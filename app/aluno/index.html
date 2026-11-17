@@ -4470,7 +4470,7 @@ const _au20=renderAula;renderAula=function(){_au20();const x=AG.slots.find(y=>ag
     const h=`<div class="tl9"><div class="tr9"><i style="width:${pct}%"></i></div>${dlp>=0?`<span class="mk9" style="left:${dlp}%;transform:translateX(-${dlp<20?dlp*2.5:dlp>80?50+(dlp-80)*2.5:50}%)">remarcar até ${hm(dlAt)}</span>`:''}${past?'':`<span class="now9" style="left:${pct}%"><em style="transform:translateX(-${pct<20?pct*2.5:pct>80?50+(pct-80)*2.5:50}%);left:10px">agora ${hm(now)}</em></span>`}</div><div class="tl9l"><span>${hm(d0)}</span><span>aula ${hm(at)}</span></div>`;
     (tags||el.querySelector('.when')).insertAdjacentHTML('afterend',h)}
   const m=el.querySelector('.msg'),c=el.querySelector('.chgh93');
-  if(m&&!past){if(late&&/prazo/i.test(m.textContent)){m.innerHTML='<b>Prazo para remarcar encerrado</b><small>Se não puder vir, a aula conta como dada.</small>';if(c)c.remove()}
+  if(m&&!past){if(late&&(/prazo/i.test(m.textContent)||/Mudança sem custo/.test(m.textContent))){m.innerHTML='<b>Prazo para remarcar encerrado</b><small>Se não puder vir, a aula conta como dada.</small>';if(c)c.remove()}
     else if(/Mudança sem custo/.test(m.textContent)){m.innerHTML=`<b>Pode remarcar até ${today?hm(dlAt):dl.txt.replace(/^até /,'')}</b>`;
       try{const C=window.CHGM_X&&window.CHGM_X();if(C){const r=Math.max(0,C[1]-C[0]);m.insertAdjacentHTML('beforeend',`<small>${r?`${r} ${r===1?'mudança disponível':'mudanças disponíveis'} no plano`:'Você já usou todas as mudanças do plano'}</small>`)}}catch(_){}if(c)c.remove()}}
   const mv=el.querySelector('[data-ag-move]'),ag=el.querySelector('[data-go="agenda"]');
@@ -6625,6 +6625,8 @@ try{const [{data:at},{data:aa}]=await PF.anm;if(at&&!(aa&&aa.length)){location.r
 /* ---- tempo: o protótipo conta dias a partir de 28/10/2026 ---- */
 const BASE=new Date(2026,9,28),dayN=d=>Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-BASE)/864e5);
 R1.setNow(Math.round((Date.now()-BASE.getTime())/36e5*4)/4);
+/* relógio vivo: com o app aberto, o prazo de remarcar/cancelar passa de verdade (antes só valia a hora em que o app abriu) */
+{const tick=()=>{try{const v=Math.round((Date.now()-BASE.getTime())/36e5*4)/4;if(v===R1.NOWH||R1.AG.moving||document.querySelector('.scrim,.cbox,.tr-on'))return;R1.setNow(v);R1.agAll()}catch(_){}};setInterval(tick,60000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')tick()})}
 const freq=P.freq||(FX||[]).length||2,endD=P.access_until?new Date(P.access_until+'T12:00:00'):new Date(now.getTime()+90*864e5);
 
 /* ---- limpa a demonstração ---- */
@@ -7035,7 +7037,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
   /* bolinhas da semana: dia completo */
   R.WKDOTS=[0,1,2,3,4,5,6].map(i=>{const d=ymd(new Date(ws.getTime()+i*864e5));if(d>TODAY)return '';return complete(d)?'on':(trDays.has(d)||ciDays.has(d))?'half':''});
   /* evolução semanal (7 semanas) */
-  const W7=[6,5,4,3,2,1,0].map(k=>new Date(ws.getTime()-k*7*864e5)),wl=d=>d.getDate()+'/'+['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][d.getMonth()];
+  const W7a=[6,5,4,3,2,1,0].map(k=>new Date(ws.getTime()-k*7*864e5)),W7i=created0?W7a.findIndex(w=>ymd(new Date(w.getTime()+6*864e5))>=created0):0,W7=W7a.slice(Math.min(Math.max(0,W7i),W7a.length-2)),wl=d=>d.getDate()+'/'+['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'][d.getMonth()];
   const inWk=(d,w)=>d>=ymd(w)&&d<=ymd(new Date(w.getTime()+6*864e5));const wc=w=>[...ciDays.entries()].filter(([d])=>inWk(d,w));
   R.EVO={sem:W7.map(wl),peso:W7.map(w=>{const x=WCS.find(z=>z.week_start===ymd(w));return x&&x.weight_kg?+x.weight_kg:null}),
     rows:[['sono','Sono de 7h ou mais','noites',W7.map(w=>wc(w).filter(([,a])=>a.sono===2).length),1],['doce','Doce fora do plano','dias',W7.map(w=>wc(w).filter(([,a])=>a.doce>0).length),-1],
