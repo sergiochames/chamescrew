@@ -4901,7 +4901,7 @@ let BKL=null;
   s.querySelectorAll('[data-bl]').forEach(b=>b.onclick=()=>{BKL.loc=b.dataset.bl;s.querySelectorAll('[data-bl]').forEach(x=>x.setAttribute('aria-selected',x===b))});
   go.addEventListener('click',()=>{const B=BKL;setTimeout(()=>{const x=AG.slots.find(y=>y.d===B.d&&y.h===B.h);if(x&&B.loc){x.loc=B.loc;agAll()}},0)},true)}}
 /* qualquer aula nova sem local compatível ganha o local que encaixa */
-function fixLocs(){AG.slots.forEach(x=>{if(x.fix||agLeft(x)<=0)return;const L=fitLocs(nOf(x.d),x.h,x);if(L.length&&!L.includes(locOf(x)))x.loc=L[0]})}
+function fixLocs(){AG.slots.forEach(x=>{if(x.fix||agLeft(x)<=0||(x._id&&x.loc))return;const L=fitLocs(nOf(x.d),x.h,x);if(L.length&&!L.includes(locOf(x)))x.loc=L[0]})}
 /* confirmação automática: pedido com tempo entra confirmado na hora */
 const autoOk=x=>AUTO.on&&x.pend&&agLeft(x)>=6;
 let _auBusy=false;
