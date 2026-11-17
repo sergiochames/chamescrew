@@ -4473,7 +4473,8 @@ function finCheck(){let ch=false;
     if(rq.pay_status==='pago'&&c.st!=='pago'){c.st='pago';c.d='pago em '+ddmm(new Date());c._ok=1;ch=true}
     if(c.st==='pago'&&(rq.pay_status==='pendente'||rq.pay_status==='informado')&&!c._cf){c._cf=1;rq.pay_status='pago';sb.rpc('confirm_payment',{p_student:X._id,p_method:'manual'}).then(({error})=>{if(error)return toast('Não liberou: '+error.message);RSV=RSV.filter(r=>r.student_id!==X._id);sync().catch(()=>{})});ch=true}});
   CLS.forEach(c=>{if(c.kind!=='extra'||c.status==='pedido')return;const X=stuById(c.student_id);if(!X)return;const ref='ex:'+c.id,cur=CHG.find(z=>z.ref===ref);
-    if(c.status==='cancelada'){if(cur&&cur.st!=='pago'){CHG.splice(CHG.indexOf(cur),1);ch=true}return}
+    if(c.note==='xcred'){if(cur&&cur.st!=='pago'){CHG.splice(CHG.indexOf(cur),1);ch=true}return}
+    if(c.status==='cancelada'){if(cur&&cur.st!=='pago'){CHG.splice(CHG.indexOf(cur),1);ch=true}else if(cur&&cur.st==='pago'&&c.note==='xcr'){c.note='xcrok';try{sb.from('classes').update({note:'xcrok'}).eq('id',c.id).then(()=>{})}catch(_){}}return}
     if(!cur){const d=new Date(c.starts_at);CHG.unshift({n:X.n,pl:'Aula extra • '+ddmm(d)+' '+pad(d.getHours())+'h',v:+PRICE.avulsa||0,st:'aberto',d:'vence '+ddmm(d),ref});ch=true}});
   /* cobrança de aula extra em aberto cuja aula virou do plano (ou foi trocada) some */
   CHG.slice().forEach(z=>{if(!z.ref||!z.ref.startsWith('ex:')||z.st==='pago')return;const c=CLS.find(k=>k.id===z.ref.slice(3));if(c&&c.kind!=='extra'&&c.status!=='pedido'){CHG.splice(CHG.indexOf(z),1);ch=true;return}
@@ -4875,7 +4876,7 @@ function pkCyc(sid,plus){const ci=CYC[sid];if(!ci||!ci.cycle_start||!ci.lim)retu
 async function pkRefresh(){const v={wo:S.wo,w3:S.w3,day:S.day,view:S.view,tab:S.tab};try{await fetchAll();await loadBLK();apply()}catch(_){}Object.assign(S,v);draw()}
 function pkMoveHTML(o,at,c){const nw=`<div class="pk-bx new"><small>${o?'Quer':'Horário pedido'}</small><b>${pkL(at)} • ${pkH(at)}</b><em>${esc(c.location||'')}</em></div>`;
   return o?`<div class="pk-mv"><div class="pk-bx old"><small>${c.kind==='credito'?'Cancelou':'Sai de'}</small><b>${pkL(new Date(o.starts_at))} • ${pkH(new Date(o.starts_at))}</b><em>${esc(o.location||'')}</em></div><span class="pk-ar">→</span>${nw}</div>`:nw}
-function pkMeta(c,at,o){const cl=pkClash(c,at,o&&o.id),cy=c.kind==='extra'?('R$ '+(+PRICE.avulsa||0).toLocaleString('pt-BR')+' • cobrado à parte'):c.kind==='credito'?'':pkCyc(c.student_id,o?1:0);
+function pkMeta(c,at,o){const cl=pkClash(c,at,o&&o.id),cy=c.kind==='extra'?(c.note==='xcred'?'pago com crédito de extra':'R$ '+(+PRICE.avulsa||0).toLocaleString('pt-BR')+' • cobrado à parte'):c.kind==='credito'?'':pkCyc(c.student_id,o?1:0);
   return `<div class="pk-meta"><span>${pkType(c)}</span>${cy?`<span>${cy}</span>`:''}${cl?`<span class="w">Já tem ${esc(pkFirst(cl.student_id))} às ${pkH(new Date(cl.starts_at))}</span>`:''}${pkWork(at)?'':'<span class="w">Fora do seu horário</span>'}</div>`}
 async function pkAnswer(id,ok,el){if(el)el.disabled=true;const {error}=await sb.rpc('answer_request',{p_id:id,p_ok:ok});if(error){if(el)el.disabled=false;toast('Não deu: '+error.message);return false}
   if(PKF&&PKF.id===id)pkClear();document.querySelectorAll('.scrim').forEach(x=>x.remove());toast(ok?'Confirmado. O aluno recebeu o aviso.':'Recusado. O aluno recebeu o aviso.');await pkRefresh();return true}
