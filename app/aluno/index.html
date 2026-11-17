@@ -3916,7 +3916,7 @@ window.trRefresh=()=>{if(CFG.semTreino&&TR.on)stopTr();renderTrHome()};
 
 /* ===== agenda: semanas, mês, horários quebrados, remarcação automática ===== */
 const MES={10:'outubro',11:'novembro',12:'dezembro',1:'janeiro'},MESC=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],WDN=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-var AVU=170;
+var AVU=170;window.__setAVU=v=>{AVU=v};
 function TDN(){return Math.floor(NOWH/24)}
 function dDate(n){return new Date(2026,9,28+n)}
 function keyOf(n){if(n===0)return'Hoje';if(n===1)return'Amanhã';if(n===2)return'Sex';if(n===3)return'Sáb';const dt=new Date(2026,9,28+n),W=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];const k=W[dt.getDay()]+' '+dt.getDate()+'/'+(dt.getMonth()+1);
@@ -7290,7 +7290,7 @@ async function loadFree(){try{const {data}=await sb.rpc('free_slots',{p_days:21}
   const keep=[];AG.free.length=0;[...L,...keep].forEach(f=>AG.free.push(f));try{R1.agAll()}catch(_){}}catch(_){}}
 loadFree();
 try{sb.rpc('public_pix').then(({data})=>{if(data)window.__PIX=data})}catch(_){}
-try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=+data.avulsa;try{AVU=+data.avulsa}catch(_){}}})}catch(_){}
+try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=+data.avulsa;try{AVU=+data.avulsa}catch(_){}try{window.__setAVU&&window.__setAVU(+data.avulsa)}catch(_){}}})}catch(_){}
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 
