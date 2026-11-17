@@ -5145,7 +5145,8 @@ async function pausaSheet(n){
   const nm=esc(String(P.nome||'Aluno').split(' ')[0]),tp=P.tipo==='viagem'?'Viagem':'Congelamento';
   const per=P.fim?`${D(P.ini)} a ${D(P.fim)}`:`A partir de ${D(P.ini)} • sem data para voltar`;
   const st=P.status;
-  const info=st==='pedido'?`${P.aulas} ${P.aulas===1?'aula do plano será cancelada':'aulas do plano serão canceladas'} neste período, sem contar como dadas e sem cobrança.${P.fim?` O fim do plano sobe ${Math.round((new Date(P.fim)-new Date(P.ini))/864e5)+1} dias.`:' Quando ele voltar, o plano sobe pelos dias parados.'}`
+  const ex=[P.creditos?`${P.creditos} ${P.creditos===1?'crédito de aula volta':'créditos de aula voltam'} para ele`:'',P.extras_pagas?`${P.extras_pagas} ${P.extras_pagas===1?'extra paga vira crédito de extra':'extras pagas viram crédito de extra'}`:'',P.extras?`${P.extras} ${P.extras===1?'extra sem pagar é cancelada':'extras sem pagar são canceladas'}, sem cobrança`:''].filter(Boolean).join(' • ');
+  const info=st==='pedido'?`${P.aulas} ${P.aulas===1?'aula do plano será cancelada':'aulas do plano serão canceladas'} neste período, sem contar como dadas e sem cobrança.${ex?' '+ex+'.':''}${P.fim?` O fim do plano sobe ${Math.round((new Date(P.fim)-new Date(P.ini))/864e5)+1} dias.`:' Quando ele voltar, o plano sobe pelos dias parados.'}`
     :st==='ativa'?`Pausa ativa. ${P.fim?'Se ele voltar antes, encerre aqui.':'Quando ele voltar, encerre aqui para devolver as aulas fixas.'}`
     :st==='encerrada'?'Pausa encerrada.':'Pedido recusado.';
   const fin=async()=>{try{await sb.from('notifications').update({done_at:new Date().toISOString(),read_at:new Date().toISOString()}).eq('id',n._id);n._done=new Date().toISOString();n.new=0}catch(_){}try{await pkRefresh()}catch(_){}try{draw()}catch(_){}};
@@ -5153,7 +5154,7 @@ async function pausaSheet(n){
     ${st==='pedido'?`<div class="row2"><button class="btn" id="pz-no">Recusar</button><button class="btn solid" id="pz-ok">Aprovar</button></div>`:st==='ativa'?`<div class="row2"><button class="btn" data-close>Fechar</button><button class="btn solid" id="pz-end">Encerrar pausa</button></div>`:`<button class="btn wide" data-close>Fechar</button>`}`,sh=>{
     const go=async(fn,ok)=>{sh.querySelectorAll('button').forEach(b=>b.disabled=true);const {data,error}=await fn();if(error){sh.querySelectorAll('button').forEach(b=>b.disabled=false);return toast('Não deu: '+error.message)}sh.remove();await fin();toast(ok(data))};
     const y=sh.querySelector('#pz-ok'),no=sh.querySelector('#pz-no'),en=sh.querySelector('#pz-end');
-    if(y)y.onclick=()=>go(()=>sb.rpc('decidir_pausa',{p_id:P.id,p_ok:true}),d=>`Pausa aprovada. ${d.aulas} ${d.aulas===1?'aula cancelada':'aulas canceladas'}${d.dias?' e plano estendido em '+d.dias+' dias':''}.`);
+    if(y)y.onclick=()=>go(()=>sb.rpc('decidir_pausa',{p_id:P.id,p_ok:true}),d=>`Pausa aprovada. ${d.aulas+d.creditos+d.extras_pagas+d.extras} ${(d.aulas+d.creditos+d.extras_pagas+d.extras)===1?'aula cancelada':'aulas canceladas'}${d.dias?' e plano estendido em '+d.dias+' dias':''}.`);
     if(no){let t=0;no.onclick=()=>{if(!t){t=1;no.textContent='Toque de novo para recusar';return}go(()=>sb.rpc('decidir_pausa',{p_id:P.id,p_ok:false}),()=>'Pedido recusado. O aluno foi avisado.')}}
     if(en)en.onclick=()=>go(()=>sb.rpc('encerrar_pausa',{p_id:P.id}),()=>'Pausa encerrada. As aulas fixas voltaram.')})
 }
