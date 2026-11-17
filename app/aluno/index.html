@@ -4386,7 +4386,8 @@ renderTrHome=function(){if(CFG.semTreino){_rh18();return}const h=$('#trh');if(!h
   else if(k&&!P.c)acts=ks.length?`<button class="btn wide" data-redo="${k}">Refazer este treino</button>`:i===TODAYI?`<button class="btn solid wide" data-trgo="${k}">Começar treino</button>`:'';
   else if(P.c&&!I.some(x=>x.c))acts=`<button class="btn solid wide" data-rg="${i}:cardio">Registrar cardio</button>`;
   const more=past?`<div class="twmore"><button data-rg="${i}:menu">+ Registrar ${i===TODAYI?'hoje':'neste dia'}</button>${i===TODAYI&&!did(i)&&!I.some(x=>x.skip)?'<button data-rg="'+i+':skip">Não vou treinar hoje</button>':''}</div>`:'';
-  h.innerHTML=`<div class="tws"><div class="twh"><span class="lbl">Sua semana</span><small><b>${done}</b> de 4 treinos</small></div><div class="twr">${chips}</div>
+  const meta=window.__RD?(WKP.filter(x=>x.k).length||ORD.length):4;
+  h.innerHTML=`<div class="tws"><div class="twh"><span class="lbl">Sua semana</span><small><b>${done}</b> de ${meta} ${meta===1?'treino':'treinos'}</small></div><div class="twr">${chips}</div>
      <div class="twl"><span><i class="g"></i>feito</span><span><i class="r"></i>não feito</span><span><i class="t"></i>hoje</span><span>toque num dia para ver ou registrar</span></div></div>
    <div class="block ink trbig twc2">${main}${reg}${acts?`<div style="margin-top:14px">${acts}</div>`:''}${more}</div>
    <div class="sec-h"><span class="d">Outros treinos</span></div>
@@ -4463,7 +4464,7 @@ const _au20=renderAula;renderAula=function(){_au20();const x=AG.slots.find(y=>ag
   const at=new Date(BASE.getTime()+(DOFF[x.d]+x.h)*36e5),now=new Date(),today=same(at,now),past=now>=at,dl=agDl(x),dlAt=new Date(BASE.getTime()+dl.h*36e5),late=now>dlAt;
   const w=el.querySelector('.when');if(w&&today)w.textContent='Hoje • '+hm(at);
   const pill=el.querySelector('.row .pill');if(pill&&!past&&!/^em /.test(pill.textContent)&&/\d/.test(pill.textContent))pill.textContent='em '+pill.textContent;
-  if(today&&!el.querySelector('.tl9')){const d0=new Date(at);d0.setHours(Math.min(6,Math.max(0,at.getHours()-1)),0,0,0);const span=at-d0,pc=v=>Math.max(0,Math.min(100,(v-d0)/span*100));
+  if(today&&!el.querySelector('.tl9')){const d0=new Date(at);d0.setHours(Math.min(6,Math.max(0,at.getHours()-1)),0,0,0);if(now<d0){d0.setTime(now.getTime());d0.setMinutes(0,0,0)}const span=at-d0,pc=v=>Math.max(0,Math.min(100,(v-d0)/span*100));
     const pct=pc(now),dlp=same(dlAt,at)&&dlAt>d0?pc(dlAt):-1;
     const tags=[...el.children].find(n=>n.querySelector&&n.querySelector('.tag'));
     const h=`<div class="tl9"><div class="tr9"><i style="width:${pct}%"></i></div>${dlp>=0?`<span class="mk9" style="left:${dlp}%;transform:translateX(-${dlp<20?dlp*2.5:dlp>80?50+(dlp-80)*2.5:50}%)">remarcar até ${hm(dlAt)}</span>`:''}${past?'':`<span class="now9" style="left:${pct}%"><em style="transform:translateX(-${pct<20?pct*2.5:pct>80?50+(pct-80)*2.5:50}%);left:10px">agora ${hm(now)}</em></span>`}</div><div class="tl9l"><span>${hm(d0)}</span><span>aula ${hm(at)}</span></div>`;
