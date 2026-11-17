@@ -1152,8 +1152,8 @@ body,button,input,select,textarea{font-family:var(--body)!important}
 .wk3 .wb small{display:flex;justify-content:space-between;align-items:center;gap:4px}.wk3 .wb small>span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .w3tv{font-style:normal;font-size:10px;font-weight:700;color:var(--muted);white-space:nowrap;line-height:14px;padding:0 3px;border-radius:3px}
 .w3tv.bad{background:var(--a82bg);color:var(--a82)}
-.wk3 .wcol{background:var(--card)!important;background-image:repeating-linear-gradient(135deg,color-mix(in srgb,var(--fg) 5%,transparent) 0 1px,transparent 1px 8px)!important}
-.wk3 .wwork{background:var(--card)!important;border:0!important}
+.wk3 .wcol{background:color-mix(in srgb,#000 44%,var(--card))!important;background-image:none!important}
+.wk3 .wwork{background:color-mix(in srgb,var(--fg) 4%,var(--card))!important;border:0!important}
 .wk3 .wbody{border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .wk3 .whrs{background:var(--bg)}
 /* ficha da aula: limpa e neutra */
@@ -4027,7 +4027,7 @@ function w3Body(){const cur=S.wo===0,days=w3Days(),s0=S.w3=w3clamp(S.w3),vis=doc
     return `<div class="wcol${t?' td':''}" ${cur?`data-wcol="${i}"`:`data-fcol="${+dt}"`} style="height:${(H1-H0)*HP}px">${wk}${bl}${t&&NOW>=H0&&NOW<=H1?`<i class="wnow" style="top:${(NOW-H0)*HP}px"></i>`:''}</div>`}).join('');
   const hrs=Array.from({length:H1-H0},(_,k)=>`<span style="top:${k*HP}px">${H0+k}h</span>`).join('');
   return rul+nav+`<section class="card wk wk3">${head}<div class="wbody"><div class="whrs" style="height:${(H1-H0)*HP}px">${hrs}</div>${cols}</div>
-    <p class="note">${cur||true?'Toque numa aula para ver o local. Segure e arraste para mudar o horário, ou solte num dia da régua lá em cima. Entre aulas em locais diferentes aparece o tempo de trajeto, em amarelo quando não dá tempo.':S.wo>0?'Semana futura: mostra os horários fixos e as aulas já marcadas. Toque numa aula para ver ou remarcar.':'Semana passada.'}</p></section>`}
+    <p class="note">${cur||true?'Toque numa aula para ver. Segure e arraste para mudar o horário. A faixa mais clara é o seu horário de atendimento.':S.wo>0?'Semana futura: mostra os horários fixos e as aulas já marcadas. Toque numa aula para ver ou remarcar.':'Semana passada.'}</p></section>`}
 weekView=function(nb,R,pend){const P=[];if(R.length)P.push(`<b>${R.length} ${R.length===1?'pedido':'pedidos'}</b>`);if(pend.length)P.push(`${pend.length} ${pend.length===1?'aviso':'avisos'}`);
   return (P.length?`<button class="att82" data-w3att><i></i><span>${P.join(' • ')}</span><em>ver ›</em></button>`:'')+w3Body()};
 farWeek=function(){return w3Body()};
