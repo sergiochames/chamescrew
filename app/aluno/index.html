@@ -7290,6 +7290,27 @@ setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&wi
     hab('agua','agua',a.agua===2,'Meta de água','Abaixo da meta de água hoje.');hab('sono','sono',a.sono===2,'7h ou mais de sono','Menos de 7h hoje.');
     return _mr.call(this,null,it)}}
 }
+/* ===== manual do aluno: fica em Minha conta, sem cartão no início ===== */
+{const IC={cal:'<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/>',x:'<circle cx="12" cy="12" r="8"/><path d="M9 9l6 6M15 9l-6 6"/>',plus:'<circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/>',clk:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',ok:'<circle cx="12" cy="12" r="8"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/>',pau:'<path d="M3 11l18-7-7 18-2.5-7.5z"/>',book:'<path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/>'};
+const sv=n=>`<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+const T=[
+ {i:'cal',t:'Marcar uma aula',s:'Horário fixo e aula avulsa',h:'Suas aulas fixas já entram na agenda sozinhas',p:['Abra a <b>Agenda</b>.','Toque num horário livre do seu personal.','Escolha o horário e confirme.'],n:'Passou do que o seu plano prevê na semana? Ela vira <b>aula extra</b>, e o valor aparece antes de você aceitar.'},
+ {i:'x',t:'Cancelar e crédito',s:'Quando vira crédito',h:'Avisou a tempo, não perde a aula',p:['Abra a aula na agenda e toque em <b>Cancelar</b>.','Dentro do prazo, ela vira <b>1 crédito</b>.','Use o crédito quando quiser, em <b>Marcar aula</b>.'],n:'Fora do prazo ou faltando sem avisar, a aula conta como dada. <b>O prazo aparece em cada aula</b>, por exemplo “sem custo até 19:00”.'},
+ {i:'plus',t:'Aula extra',s:'Como funciona',h:'Uma aula além do seu plano',p:['Marque normalmente pela <b>Agenda</b>.','O app mostra o valor <b>antes</b> de você aceitar.','Cancelando dentro do prazo, a extra não é cobrada.'],n:'Crédito de cancelamento não vira extra: ele usa uma aula do seu plano.'},
+ {i:'clk',t:'Pedir outro horário',s:'O personal confirma',h:'Não consegue ir? Peça outro horário',p:['Abra a aula e toque em <b>Remarcar</b>.','Escolha entre os horários livres.','Aguarde o personal confirmar.'],n:'Até ele responder, <b>a sua aula atual continua garantida</b>.'},
+ {i:'ok',t:'Confirmar presença',s:'Um toque antes da aula',h:'Perto da aula, o app pede a confirmação',p:['Chega o aviso de confirmação.','Toque em <b>Confirmar</b> na aula.'],n:'Sem confirmar, a aula continua marcada. A confirmação só ajuda o personal a se organizar.'},
+ {i:'pau',t:'Viagem ou pausa',s:'Avise sem perder aulas',h:'Vai viajar ou parar um tempo?',p:['Peça a pausa pelo app, informando o período.','O personal aprova.','As aulas desse período saem da agenda e voltam quando a pausa termina.'],n:'Se o personal não aprovar, ele te chama no WhatsApp para combinar.'}];
+let seen={};try{seen=JSON.parse(localStorage.getItem('rl-man')||'{}')}catch(_){}
+const mark=i=>{seen[i]=1;try{localStorage.setItem('rl-man',JSON.stringify(seen))}catch(_){}};
+function man(i){document.querySelectorAll('.scrim[data-man]').forEach(x=>x.remove());let h;
+ if(i==null||i<0){const n=Object.keys(seen).length;h=`<span class="lbl">Manual</span><p class="d" style="font-size:34px;margin:4px 0 8px">Aprenda a usar o app</p><div class="cl">${T.map((x,k)=>`<button class="ci" data-mt="${k}"><span style="display:grid;place-items:center">${sv(x.i)}</span><span><b>${x.t}</b><small>${x.s}</small></span><span class="go">${seen[k]?'✓':'›'}</span></button>`).join('')}</div>${n?`<p class="meta" style="font-size:12.5px;margin:8px 0 0">${n} de ${T.length} lidos</p>`:''}`}
+ else{const x=T[i];mark(i);h=`<div style="display:flex;justify-content:space-between"><button class="skip" data-mt="-1" style="text-decoration:none">‹ Manual</button><span class="lbl">${i+1} de ${T.length}</span></div><span class="lbl" style="margin-top:10px;display:block">${x.t}</span><p class="d" style="font-size:32px;margin:4px 0 12px">${x.h}</p>
+  <ol class="rules">${x.p.map((p,k)=>`<li><b>${k+1}</b><span>${p}</span></li>`).join('')}</ol><p class="meta" style="margin:12px 0 0;font-size:13px">${x.n}</p>${i<T.length-1?`<button class="btn solid wide" style="margin-top:14px" data-mt="${i+1}">Próximo: ${T[i+1].t}</button>`:''}`}
+ const s=window.sheet(h,s=>{s.dataset.man=1;s.addEventListener('click',e=>{const b=e.target.closest('[data-mt]');if(!b)return;e.stopPropagation();man(+b.dataset.mt)})});if(s)s.querySelector('.sheet').scrollTop=0}
+window.__man=man;
+new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim')].pop();if(!s||s.dataset.man||s.querySelector('[data-m="man"]'))return;const out=s.querySelector('#rl-sv');if(!out||!s.querySelector('#rl-out'))return;
+  out.insertAdjacentHTML('beforebegin',`<div class="cl" style="margin:4px 0 14px"><button class="ci" data-m="man"><span style="display:grid;place-items:center">${sv('book')}</span><span><b>Manual do app</b><small>Marcar, cancelar, crédito e mais</small></span><span class="go">›</span></button></div>`);
+  s.addEventListener('click',e=>{if(e.target.closest('[data-m="man"]')){e.stopPropagation();e.preventDefault();s.remove();man(-1)}},true)}).observe(document.body,{childList:true});}
 
 
 document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha conta'&&b.id!=='h-me')b.onclick=e=>{e.stopImmediatePropagation();document.getElementById('h-me').click()}});
