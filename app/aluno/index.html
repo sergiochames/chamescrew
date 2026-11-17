@@ -4364,7 +4364,7 @@ renderTrHome();
 const HEART='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.1 3.1 4 7 4c2.1 0 3.6 1.1 5 2.8C13.4 5.1 14.9 4 17 4c3.9 0 6.1 4.1 4.6 7.7C19.5 16.4 12 21 12 21z"/></svg>';
 const MOON='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15 3a9 9 0 1 0 6 15.7A7.5 7.5 0 0 1 15 3z"/></svg>';
 const XIC='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
-TR.man={};TR.log={};
+TR.man={};if(!window.__RD)TR.log={};
 const CTIPOS=['Corrida','Bike','Esteira','Caminhada','Natação','Elíptico','Outro'],CINT=['Leve','Moderada','Forte'],SKIPW=['Cansaço','Dor','Trabalho','Viagem','Outro'];
 function items(i){if(TR.man[i]&&(TR.man[i].some(x=>x.k||x.c)||(i===TODAYI&&ORD.some(k=>TR.done[k]==='hoje'))))TR.man[i]=TR.man[i].filter(x=>!x.skip&&!x.rest);return [...(TR.man[i]||[]),...(i===TODAYI?[...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])].map(k=>({k,app:1})):[])]}
 const did=i=>items(i).some(x=>x.k||x.c);
