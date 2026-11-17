@@ -7098,7 +7098,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
 try{window.__RKD=((await PF.rk)||{}).data||[]}catch(_){window.__RKD=[]}
 const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
 /* o protótipo já desenhou com __RD; se mudou, guarda e abre de novo (uma vez) */
-{let same=false;try{const cmp=o=>{const c=JSON.parse(JSON.stringify(o));if(c&&c.TR)c.TR={done:c.TR.done,last:c.TR.last};return JSON.stringify(c)};same=!!window.__RD&&cmp(window.__RD)===cmp(RDN)}catch(_){}
+{let same=false;try{const cmp=o=>{const c=JSON.parse(JSON.stringify(o));if(c&&c.TR)c.TR={done:c.TR.done,last:c.TR.last};if(c&&c.WEEK)['limite','resist'].forEach(k=>{if(c.WEEK[k])delete c.WEEK[k].t});return JSON.stringify(c)};same=!!window.__RD&&cmp(window.__RD)===cmp(RDN)}catch(_){}
  try{localStorage.setItem('rd',RDJ)}catch(_){}
  if(!same){if(!window.__RD||window.__RD.uid!==uid)try{sessionStorage.setItem('rl-clean','1')}catch(_){}let n=0;try{n=+sessionStorage.getItem('rl-rl')||0}catch(_){}if(n<2){try{sessionStorage.setItem('rl-rl',String(n+1))}catch(_){}location.reload();return}}
  else{try{sessionStorage.removeItem('rl-rl')}catch(_){}}}
