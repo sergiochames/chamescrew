@@ -4868,11 +4868,11 @@ function pkOrigin(c){if(!c)return null;if(c.note&&c.note.startsWith('mv:'))retur
 const pkType=c=>c.note&&c.note.startsWith('mv:')?'Remarcação':c.kind==='credito'?'Usa 1 crédito':c.kind==='extra'?'Aula extra':'Aula do plano';
 function pkClash(c,at,skip){return CLS.find(z=>z.id!==c.id&&z.id!==skip&&z.status!=='cancelada'&&z.status!=='pedido'&&Math.abs(new Date(z.starts_at)-at)<36e5)||null}
 const pkWork=at=>{try{return isWork((at.getDay()+6)%7,at.getHours()+at.getMinutes()/60)}catch(_){return true}};
-function pkCyc(sid){const ci=CYC[sid];if(!ci||!ci.cycle_start||!ci.lim)return '';const f=s=>{const d=new Date(s+'T12:00:00');return pad(d.getDate())+'/'+pad(d.getMonth()+1)};return `${ci.used} de ${ci.lim} mudanças • ${f(ci.cycle_start)} a ${f(ci.cycle_end)}`}
+function pkCyc(sid,plus){const ci=CYC[sid];if(!ci||!ci.cycle_start||!ci.lim)return '';const f=(s,k)=>{const d=new Date(s+'T12:00:00');d.setDate(d.getDate()-(k||0));return pad(d.getDate())+'/'+pad(d.getMonth()+1)};return `${Math.min(ci.lim,(ci.used||0)+(plus||0))} de ${ci.lim} mudanças • ${f(ci.cycle_start)} a ${f(ci.cycle_end,1)}`}
 async function pkRefresh(){const v={wo:S.wo,w3:S.w3,day:S.day,view:S.view,tab:S.tab};try{await fetchAll();await loadBLK();apply()}catch(_){}Object.assign(S,v);draw()}
 function pkMoveHTML(o,at,c){const nw=`<div class="pk-bx new"><small>${o?'Quer':'Horário pedido'}</small><b>${pkL(at)} • ${pkH(at)}</b><em>${esc(c.location||'')}</em></div>`;
   return o?`<div class="pk-mv"><div class="pk-bx old"><small>${c.kind==='credito'?'Cancelou':'Sai de'}</small><b>${pkL(new Date(o.starts_at))} • ${pkH(new Date(o.starts_at))}</b><em>${esc(o.location||'')}</em></div><span class="pk-ar">→</span>${nw}</div>`:nw}
-function pkMeta(c,at,o){const cl=pkClash(c,at,o&&o.id),cy=pkCyc(c.student_id);
+function pkMeta(c,at,o){const cl=pkClash(c,at,o&&o.id),cy=pkCyc(c.student_id,o?1:0);
   return `<div class="pk-meta"><span>${pkType(c)}</span>${cy?`<span>${cy}</span>`:''}${cl?`<span class="w">Já tem ${esc(pkFirst(cl.student_id))} às ${pkH(new Date(cl.starts_at))}</span>`:''}${pkWork(at)?'':'<span class="w">Fora do seu horário</span>'}</div>`}
 async function pkAnswer(id,ok,el){if(el)el.disabled=true;const {error}=await sb.rpc('answer_request',{p_id:id,p_ok:ok});if(error){if(el)el.disabled=false;toast('Não deu: '+error.message);return false}
   if(PKF&&PKF.id===id)pkClear();document.querySelectorAll('.scrim').forEach(x=>x.remove());toast(ok?'Confirmado. O aluno recebeu o aviso.':'Recusado. O aluno recebeu o aviso.');await pkRefresh();return true}
