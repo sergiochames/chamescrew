@@ -5889,8 +5889,142 @@ body.dsk .wk3 .w3ar,body.dsk .wk3 .w3h{display:none!important}body.dsk .wk3 .whe
 }
 
 }catch(err){console.error('dsk',err)}
+/* ===== configuração guiada do personal novo (boas-vindas estilo Apple) ===== */
+{const st=document.createElement('style');st.textContent=`
+#onb{position:fixed;inset:0;z-index:2000;background:radial-gradient(120% 60% at 50% 0%,#1c2b27 0%,#0d1115 52%,#090b0e 100%);color:#f4f4f2;display:flex;flex-direction:column;align-items:center;font-family:-apple-system,"SF Pro Text",Manrope,system-ui,sans-serif}
+#onb *{box-sizing:border-box}
+#onb .ob-w{width:100%;max-width:460px;height:100%;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 14px) 22px calc(env(safe-area-inset-bottom,0px) + 18px)}
+#onb .ob-top{display:flex;align-items:center;justify-content:space-between;height:34px;flex:none}
+#onb .ob-top button{background:none;border:0;color:#8f97a2;font:600 14px -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif;padding:8px 2px;min-width:64px}
+#onb .ob-top button:last-child{text-align:right}
+#onb .ob-dots{display:flex;gap:5px}#onb .ob-dots i{width:5px;height:5px;border-radius:50%;background:#2c333c;transition:all .3s}#onb .ob-dots i.on{width:18px;border-radius:3px;background:#f4f4f2}#onb .ob-dots i.dn{background:#7fd1a8}
+#onb .ob-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:6px 2px 14px;-webkit-overflow-scrolling:touch}
+#onb .ob-step{animation:obIn .38s cubic-bezier(.2,.8,.2,1) both}
+#onb[data-dir="back"] .ob-step{animation-name:obInB}
+@keyframes obIn{from{opacity:0;transform:translateY(14px) scale(.955)}to{opacity:1;transform:none}}
+@keyframes obInB{from{opacity:0;transform:translateY(-10px) scale(1.04)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#onb .ob-step{animation:none}}
+#onb .ob-ic{width:58px;height:58px;border-radius:19px;background:linear-gradient(160deg,rgba(255,255,255,.15),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;margin:26px 0 4px}
+#onb .ob-ic svg{width:27px;height:27px;stroke:#f4f4f2;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+#onb h1{font:800 31px/1.07 -apple-system,"SF Pro Display",Archivo,sans-serif;letter-spacing:-.03em;margin:14px 0 8px}
+#onb .ob-p{color:#9aa1ab;font-size:15px;line-height:1.42;margin:0 0 6px}
+#onb .ob-l{display:block;color:#8f97a2;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin:20px 2px 8px}
+#onb .ob-g{border-radius:18px;background:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.1);padding:12px 15px;margin-top:10px}
+#onb .ob-g small{display:block;color:#8f97a2;font-size:12px;margin-bottom:2px}
+#onb input.ob-i{width:100%;background:none;border:0;outline:0;color:#f4f4f2;font:700 17px -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif;padding:2px 0;min-height:26px}
+#onb input.ob-i::placeholder{color:#59616c;font-weight:600}
+#onb .ob-r{display:flex;align-items:center;gap:8px}#onb .ob-r>span{color:#8f97a2;font-weight:700;font-size:17px}
+#onb .ob-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+#onb .ob-chip{padding:10px 15px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.11);color:#f4f4f2;font:600 14px -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif;min-height:40px}
+#onb .ob-chip[aria-pressed="true"]{background:#f4f4f2;color:#0b0e12;border-color:#f4f4f2}
+#onb .ob-chip:disabled{opacity:.45}
+#onb .ob-sw{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}#onb .ob-sw button{width:38px;height:38px;border-radius:50%;border:2px solid transparent;padding:0}#onb .ob-sw button[aria-pressed="true"]{border-color:#f4f4f2;box-shadow:0 0 0 3px #0d1115 inset}
+#onb .ob-stp{display:flex;align-items:center;justify-content:space-between;gap:10px}#onb .ob-stp b{font:800 20px -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif;font-variant-numeric:tabular-nums}
+#onb .ob-stp button{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#f4f4f2;font:600 22px/1 -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif}
+#onb .ob-tip{display:flex;gap:9px;align-items:flex-start;margin-top:14px;color:#9aa1ab;font-size:13px;line-height:1.4}#onb .ob-tip s{flex:none;width:6px;height:6px;border-radius:50%;background:#7fd1a8;margin-top:6px}
+#onb .ob-btns{flex:none;display:flex;flex-direction:column;gap:8px;padding-top:8px}
+#onb .ob-b{height:52px;border-radius:999px;background:#f4f4f2;color:#0b0e12;border:0;font:700 16px -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif}#onb .ob-b:disabled{opacity:.4}
+#onb .ob-b.g{background:rgba(255,255,255,.08);color:#f4f4f2;border:1px solid rgba(255,255,255,.12);height:46px;font-size:14.5px;font-weight:600}
+#onb .ob-x{background:none;border:0;color:#d98a82;font:600 13px -apple-system,"SF Pro Text",Manrope,system-ui,sans-serif;padding:6px 0 0}
+#onb .ob-loc{position:relative}#onb .ob-loc .ob-x{position:absolute;top:6px;right:8px}
+#onb .ob-ring{width:104px;height:104px;margin:22px auto 8px;position:relative}#onb .ob-ring svg{width:104px;height:104px;transform:rotate(-90deg)}#onb .ob-ring b{position:absolute;inset:0;display:grid;place-items:center;font:800 26px -apple-system}
+#onb .ob-lst div{display:flex;align-items:center;gap:11px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:15px;font-weight:600}#onb .ob-lst em{font-style:normal;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;background:#7fd1a8;color:#07210f;flex:none}#onb .ob-lst em.o{background:transparent;border:1.5px solid #3a424c;color:transparent}#onb .ob-lst span{color:#8f97a2;font-weight:500;font-size:13px;margin-left:auto}
+#onb .ob-opt{display:flex;flex-direction:column;gap:3px;text-align:left;width:100%;border-radius:18px;background:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,.035));border:1.5px solid rgba(255,255,255,.1);padding:14px 16px;margin-top:10px;color:#f4f4f2;font:inherit}
+#onb .ob-opt b{font-size:16px}#onb .ob-opt small{color:#9aa1ab;font-size:13px;line-height:1.35}#onb .ob-opt[aria-pressed="true"]{border-color:#f4f4f2}#onb .ob-opt:disabled{opacity:.5}
+#onb .ob-pv{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}#onb .ob-pv span{font-size:12.5px;color:#9aa1ab;background:rgba(255,255,255,.05);border-radius:999px;padding:5px 10px}
+`;document.head.appendChild(st)}
+const OB={i:0,dir:'fwd',el:null};
+const OBI={star:'<path d="M12 3l2.4 5.2 5.6.7-4.1 3.9 1 5.6L12 15.6 7.1 18.4l1-5.6L4 8.9l5.6-.7z"/>',user:'<circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.8-3.6 3.6-5.4 7-5.4s6.2 1.8 7 5.4"/>',pin:'<path d="M12 21s6.5-5.6 6.5-11A6.5 6.5 0 0 0 5.5 10c0 5.4 6.5 11 6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',card:'<rect x="3" y="6" width="18" height="12.5" rx="3"/><path d="M3 10.5h18M7 15h3"/>',undo:'<path d="M7 4 3 8l4 4M3 8h13a5 5 0 0 1 0 10h-3"/>',wallet:'<path d="M4 8.5A2.5 2.5 0 0 1 6.5 6H18a2 2 0 0 1 2 2v9.5a2 2 0 0 1-2 2H6.5A2.5 2.5 0 0 1 4 17z"/><path d="M4 9h14M16 14h2"/>',send:'<path d="M4 12l16-8-6 16-3-6.5z"/>'};
+const obIc=k=>`<div class="ob-ic"><svg viewBox="0 0 24 24">${OBI[k]}</svg></div>`;
+const obHrs=h=>String(h).padStart(2,'0')+':00';
+const obSlug=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,30);
+const OBR={1:1,2:.88,3:.76,4:.59,5:.56,6:.53,7:.5};
+const OBD={lim:RULES.lim,tab:JSON.parse(JSON.stringify(RULES.tab||{}))};
+/* o que o personal já preencheu (para o checklist e para retomar) */
+const obDays=()=>[0,1,2,3,4,5,6].filter(d=>(WH[d]||[]).length);
+const obState=()=>({perfil:!!String(PERS.name||'').trim(),locais:LOCS.some(l=>String(l.n||'').trim()),horarios:obDays().length>0,precos:(+PRICE.aula[2]||+PRICE.aula[1]||0)>0,regras:!!(NEWP.flow&&NEWP.flow.reg),receber:!!(NEWP.flow&&NEWP.flow.rec)});
+const OBS=[
+ {k:'welcome',t:'Boas-vindas',render:()=>`${obIc('star')}<h1>Vamos montar o seu app</h1><p class="ob-p">Em poucos minutos o seu aluno já consegue marcar aula. Você muda tudo depois, quando quiser.</p><div class="ob-tip"><s></s><span>Um passo de cada vez. Dá pra pular e voltar.</span></div>`,btn:'Começar',skipAll:true},
+ {k:'perfil',t:'Perfil',render:()=>`${obIc('user')}<h1>Quem é você?</h1><p class="ob-p">É assim que o aluno vê você no app dele.</p>
+   <div class="ob-g"><small>Seu nome</small><input class="ob-i" data-f="name" value="${esc(PERS.name||'')}" placeholder="Seu nome" autocomplete="name"></div>
+   <div class="ob-g"><small>Nome do seu app (marca)</small><input class="ob-i" data-f="brand" value="${esc(PERS.brand||'')}" placeholder="Ex.: Equipe Silva Treinos" autocomplete="off"></div>
+   <span class="ob-l">Cor do seu app</span><div class="ob-sw">${Object.entries(THEMES).map(([k,t])=>`<button data-c="${k}" aria-pressed="${PERS.color===k}" aria-label="${t[0]}" style="background:${t[2]}"></button>`).join('')}</div>`,ok:()=>String(PERS.name||'').trim().length>1},
+ {k:'locais',t:'Locais',render:()=>{if(!LOCS.length)LOCS.push({id:Date.now(),n:'',ad:''});return `${obIc('pin')}<h1>Onde você dá aula?</h1><p class="ob-p">Pode ser mais de um lugar. Cada aluno tem um local padrão, e cada aula pode ter outro.</p>
+   ${LOCS.map((l,i)=>`<div class="ob-g ob-loc"><small>Local ${i+1}</small><input class="ob-i" data-ln="${i}" value="${esc(l.n)}" placeholder="Ex.: Smart Fit Bosque" autocomplete="off"><input class="ob-i" data-la="${i}" value="${esc(l.ad)}" placeholder="Endereço (abre no mapa)" style="font-size:14.5px;font-weight:600;margin-top:6px" autocomplete="off">${LOCS.length>1?`<button class="ob-x" data-ldel="${i}">Tirar</button>`:''}</div>`).join('')}
+   <button class="ob-chip" data-ladd style="margin-top:12px">+ Outro lugar</button>
+   <div class="ob-tip"><s></s><span>Atende online? Isso fica em planos, mais pra frente.</span></div>`},ok:()=>LOCS.some(l=>String(l.n||'').trim())},
+ {k:'horarios',t:'Horários',render:()=>{const ds=obDays(),f=ds.length?WH[ds[0]][0]:[6,21];if(!OB.wh)OB.wh={d:ds.length?ds:[0,1,2,3,4],a:f[0],b:f[1]};const w=OB.wh,N=['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+   return `${obIc('cal')}<h1>Quando você atende?</h1><p class="ob-p">Só nesses horários o aluno consegue marcar.</p>
+   <div class="ob-chips">${N.map((n,d)=>`<button class="ob-chip" data-d="${d}" aria-pressed="${w.d.includes(d)}">${n}</button>`).join('')}</div>
+   <div class="ob-g"><div class="ob-stp"><span>Das</span><button data-h="a:-1" aria-label="Mais cedo">−</button><b>${obHrs(w.a)}</b><button data-h="a:1" aria-label="Mais tarde">+</button></div></div>
+   <div class="ob-g"><div class="ob-stp"><span>Até</span><button data-h="b:-1" aria-label="Mais cedo">−</button><b>${obHrs(w.b)}</b><button data-h="b:1" aria-label="Mais tarde">+</button></div></div>
+   <div class="ob-tip"><s></s><span>Tem pausa no meio do dia ou horário diferente em algum dia? Você ajusta depois em Configurações, dia por dia.</span></div>`},ok:()=>!!(OB.wh&&OB.wh.d.length)},
+ {k:'precos',t:'Preços',render:()=>{const P=PRICE;if(OB.flat===undefined)OB.flat=!(P.aula[1]&&P.aula[1]!==P.aula[2]);const b=+P.aula[2]||+P.aula[1]||0,ex=+P.avulsa||0;
+   return `${obIc('card')}<h1>Quanto você cobra?</h1><p class="ob-p">Dois valores: a aula presencial do plano e a aula extra.</p>
+   <span class="ob-l">Aula presencial do plano</span><div class="ob-g"><small>Valor de cada aula</small><div class="ob-r"><span>R$</span><input class="ob-i" data-p="base" inputmode="numeric" value="${b||''}" placeholder="150"></div></div>
+   <div class="ob-chips"><button class="ob-chip" data-flat="1" aria-pressed="${OB.flat}">Mesmo valor para todos</button><button class="ob-chip" data-flat="0" aria-pressed="${!OB.flat}">Mais barato quem treina mais</button></div>
+   ${b?`<div class="ob-pv"><span>1x: ${brl(P.aula[1]||0)}</span><span>2x: ${brl(P.aula[2]||0)}</span><span>3x: ${brl(P.aula[3]||0)}</span><span>5x: ${brl(P.aula[5]||0)}</span></div><div class="ob-tip"><s></s><span>Aluno que treina 2x por semana paga ${brl((P.aula[2]||0)*2*(P.wk||4))} por mês (8 aulas).</span></div>`:''}
+   <span class="ob-l">Aula extra</span><div class="ob-g"><small>Valor da aula extra</small><div class="ob-r"><span>R$</span><input class="ob-i" data-p="extra" inputmode="numeric" value="${ex||''}" placeholder="170"></div></div>
+   <div class="ob-tip"><s></s><span>Extra é a aula além do plano. Entra na cobrança do mês, separada.</span></div>`},ok:()=>(+PRICE.aula[2]||0)>0},
+ {k:'regras',t:'Faltas e créditos',render:()=>{const R=RULES,m=R.lim==='livre'?'livre':(Object.values(R.tab).every(v=>v==1)?'1':Object.values(R.tab).every(v=>v==2)?'2':'plano');
+   return `${obIc('undo')}<h1>Se o aluno não puder ir</h1><p class="ob-p">Ele avisa no prazo e escolhe: pedir outro horário agora ou guardar a aula como crédito.</p>
+   <span class="ob-l">Avisar até quantas horas antes</span><div class="ob-chips">${[2,6,12,24,48].map(v=>`<button class="ob-chip" data-rl="rem:${v}" aria-pressed="${R.rem==v}">${v}h</button>`).join('')}</div>
+   <span class="ob-l">Quantos créditos por mês</span><div class="ob-chips">${[['livre','Sem limite'],['1','1 por mês'],['2','2 por mês'],['plano','Pelo plano']].map(([v,t])=>`<button class="ob-chip" data-ml="${v}" aria-pressed="${m===v}">${t}</button>`).join('')}</div>
+   <div class="ob-tip"><s></s><span>${m==='plano'?'Pelo plano: quem treina mais vezes ganha mais mudanças (1x = 1, 3x = 2, 6x = 4).':m==='livre'?'O aluno muda quantas vezes quiser, sempre dentro do prazo.':'Passou disso, a aula perdida conta como dada.'}</span></div>
+   <span class="ob-l">O crédito vale por</span><div class="ob-chips">${[30,60,90].map(v=>`<button class="ob-chip" data-rl="canVal:${v}" aria-pressed="${R.canVal==v}">${v} dias</button>`).join('')}</div>
+   <span class="ob-l">Avisou fora do prazo ou faltou</span><div class="ob-chips"><button class="ob-chip" data-rl="late:dada" aria-pressed="${R.late==='dada'}">Conta como aula dada</button><button class="ob-chip" data-rl="late:decide" aria-pressed="${R.late==='decide'}">Eu decido na hora</button></div>`},mark:'reg'},
+ {k:'receber',t:'Recebimento',render:()=>`${obIc('wallet')}<h1>Como você recebe?</h1><p class="ob-p">Você pode mudar quando quiser.</p>
+   <button class="ob-opt" aria-pressed="true"><b>Manual (Pix)</b><small>Você recebe do seu jeito e marca como pago no app. O aluno vê o que deve.</small></button>
+   <button class="ob-opt" disabled><b>Cobrança automática (Asaas)</b><small>Pix e cartão com baixa automática. Chega em breve.</small></button>`,mark:'rec'},
+ {k:'fim',t:'Pronto',final:true}];
+const obLast=OBS.length-1;
+function obClose(skip){const e=document.getElementById('onb');if(e)e.remove();document.documentElement.style.overflow='';OB.el=null;NEWP.flow=NEWP.flow||{};if(skip)NEWP.flow.skip=1;try{saveSoon();draw()}catch(_){}}
+function obApply(){/* grava horários escolhidos nas mesmas variáveis do app */
+  if(OB.wh){const w=OB.wh;[0,1,2,3,4,5,6].forEach(d=>{WH[d]=w.d.includes(d)?[[w.a,w.b]]:[]})}
+  const cl=LOCS.filter(l=>String(l.n||'').trim()||String(l.ad||'').trim());LOCS.length=0;cl.forEach(l=>{if(!String(l.n||'').trim())l.n=String(l.ad).trim();LOCS.push(l)});
+  if(!PERS.slug&&PERS.brand)PERS.slug=obSlug(PERS.brand)}
+function obSetPrice(){const P=PRICE,b=+OB.base||0;if(OB.flat===false){[1,2,3,4,5,6,7].forEach(k=>{P.aula[k]=Math.round(b*OBR[k]/5)*5})}else{[1,2,3,4,5,6,7].forEach(k=>{P.aula[k]=b})}}
+function obRender(){const root=document.getElementById('onb');if(!root)return;const s=OBS[OB.i],st=obState(),n=OBS.length;root.dataset.dir=OB.dir;
+  let body='',btn='';
+  if(s.final){const L=[['perfil','Perfil e cor'],['locais','Locais de atendimento'],['horarios','Horários'],['precos','Preços'],['regras','Faltas e créditos'],['receber','Recebimento']],dn=L.filter(([k])=>st[k]).length,pc=Math.round(dn/L.length*100),C=276;
+    body=`<div class="ob-ring"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="#222a31" stroke-width="7"/><circle cx="50" cy="50" r="44" fill="none" stroke="#7fd1a8" stroke-width="7" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${Math.round(C*(1-pc/100))}"/></svg><b>${pc}%</b></div>
+      <h1 style="text-align:center;font-size:27px">${dn===L.length?'Tudo pronto':'Quase lá'}</h1><div class="ob-lst">${L.map(([k,t])=>`<div><em class="${st[k]?'':'o'}">✓</em>${t}${st[k]?'':`<span>falta</span>`}</div>`).join('')}<div><em class="o">✓</em>Convidar o primeiro aluno</div></div>`;
+    btn=`<button class="ob-b" data-go="invite">Convidar aluno</button><button class="ob-b g" data-go="done">Ver meu app</button>`}
+  else{body=s.render();const okF=s.ok?s.ok():true;btn=`<button class="ob-b" data-next ${okF?'':'disabled'}>${s.btn||'Continuar'}</button>`}
+  const top=`<div class="ob-top"><button data-back style="visibility:${OB.i>0&&!s.final?'visible':'hidden'}">‹ Voltar</button><div class="ob-dots">${OBS.map((x,i)=>`<i class="${i===OB.i?'on':i<OB.i?'dn':''}"></i>`).join('')}</div><button data-skip style="visibility:${s.final?'hidden':'visible'}">${s.skipAll?'Agora não':'Pular'}</button></div>`;
+  root.innerHTML=`<div class="ob-w">${top}<div class="ob-body"><div class="ob-step">${body}</div></div><div class="ob-btns">${btn}</div></div>`;
+  const b=root.querySelector('.ob-body');if(b)b.scrollTop=0}
+function obGo(i,dir){OB.dir=dir||(i<OB.i?'back':'fwd');OB.i=Math.max(0,Math.min(obLast,i));NEWP.flow=NEWP.flow||{};NEWP.flow.step=OB.i;obRender()}
+function obLeave(){const s=OBS[OB.i];if(s.mark){NEWP.flow=NEWP.flow||{};NEWP.flow[s.mark]=1}obApply();saveSoon()}
+function onbOpen(from){if(document.getElementById('onb'))return;NEWP.flow=NEWP.flow||{};delete NEWP.flow.skip;OB.wh=null;OB.flat=undefined;OB.base=+PRICE.aula[2]||+PRICE.aula[1]||0;OB.i=Math.min(from||0,obLast);OB.dir='fwd';
+  const r=document.createElement('div');r.id='onb';r.setAttribute('role','dialog');r.setAttribute('aria-modal','true');document.body.appendChild(r);document.documentElement.style.overflow='hidden';OB.el=r;obRender();
+  r.addEventListener('click',e=>{const t=e.target,s=OBS[OB.i];let b;
+    if(t.closest('[data-next]')){obLeave();return obGo(OB.i+1,'fwd')}
+    if(t.closest('[data-back]')){obApply();return obGo(OB.i-1,'back')}
+    if(t.closest('[data-skip]')){if(s.skipAll)return obClose(true);obApply();return obGo(OB.i+1,'fwd')}
+    if((b=t.closest('[data-go]'))){NEWP.flow.done=1;const w=b.dataset.go;const st=obState();Object.entries(st).forEach(([k,v])=>{if(v)NEWP.done[k]=1});obClose(false);if(w==='invite')setTimeout(()=>{try{inviteSheet()}catch(_){}},60);return}
+    if((b=t.closest('[data-c]'))){PERS.color=b.dataset.c;try{applyTheme()}catch(_){}r.querySelectorAll('[data-c]').forEach(x=>x.setAttribute('aria-pressed',x===b));return}
+    if(t.closest('[data-ladd]')){LOCS.push({id:Date.now()+LOCS.length,n:'',ad:''});return obRender()}
+    if((b=t.closest('[data-ldel]'))){LOCS.splice(+b.dataset.ldel,1);return obRender()}
+    if((b=t.closest('[data-d]'))){const d=+b.dataset.d,w=OB.wh;w.d=w.d.includes(d)?w.d.filter(x=>x!==d):[...w.d,d].sort();return obRender()}
+    if((b=t.closest('[data-h]'))){const [k,v]=b.dataset.h.split(':'),w=OB.wh;w[k]=Math.max(5,Math.min(23,w[k]+ +v));if(w.b<=w.a){if(k==='a')w.b=w.a+1;else w.a=w.b-1;w.a=Math.max(5,w.a);w.b=Math.min(23,w.b)}return obRender()}
+    if((b=t.closest('[data-flat]'))){OB.flat=b.dataset.flat==='1';obSetPrice();return obRender()}
+    if((b=t.closest('[data-rl]'))){const [k,v]=b.dataset.rl.split(':');RULES[k]=isNaN(+v)?v:+v;return obRender()}
+    if((b=t.closest('[data-ml]'))){const v=b.dataset.ml;if(v==='livre')RULES.lim='livre';else{RULES.lim='num';if(v==='plano')RULES.tab={1:1,2:2,3:2,4:3,5:3,6:4,7:4};else{const n=+v;RULES.tab={1:n,2:n,3:n,4:n,5:n,6:n,7:n}}}return obRender()}});
+  r.addEventListener('input',e=>{const t=e.target,a=t.dataset;if(a.f){PERS[a.f]=t.value;if(a.f==='brand'&&(!PERS.slug||PERS.slug===obSlug(OB.prevBrand||'')))PERS.slug=obSlug(t.value);OB.prevBrand=t.value;const bt=r.querySelector('[data-next]');if(bt&&OBS[OB.i].ok)bt.disabled=!OBS[OB.i].ok();return}
+    if(a.ln!==undefined||a.la!==undefined){const l=LOCS[+(a.ln!==undefined?a.ln:a.la)];if(l){if(a.ln!==undefined)l.n=t.value;else l.ad=t.value}const bt=r.querySelector('[data-next]');if(bt)bt.disabled=!OBS[OB.i].ok();return}
+    if(a.p){const v=+t.value.replace(/\D/g,'')||0;if(a.p==='base'){OB.base=v;obSetPrice();const pv=r.querySelector('.ob-pv');if(pv||v){const pos=t.selectionStart;obRender();const ni=r.querySelector('[data-p="base"]');if(ni){ni.focus();try{ni.setSelectionRange(pos,pos)}catch(_){}}}}else PRICE.avulsa=v;const bt=r.querySelector('[data-next]');if(bt)bt.disabled=!OBS[OB.i].ok();}});
+  r.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.matches('input')){e.preventDefault();e.target.blur()}})}
+/* abre sozinho no primeiro acesso de um personal novo; retoma pelo cartão */
+function onbAuto(){try{const f=NEWP.flow||{};if(!NEWP.on||document.getElementById('onb'))return;
+  if(!f.done&&!f.skip&&!document.querySelector('.scrim')){onbOpen(f.step||0);return}
+  if(f.skip&&!f.done){const c=document.querySelector('.fsteps');if(c&&!c.querySelector('[data-onbgo]')){c.insertAdjacentHTML('afterbegin','<button class="btn solid" data-onbgo style="margin-bottom:12px">Continuar configuração guiada</button>')}}}catch(e){console.error(e)}}
+{const _dO=draw;draw=function(){_dO.apply(this,arguments);onbAuto()}}
+document.addEventListener('click',e=>{if(e.target.closest('[data-onbgo]')){e.stopPropagation();e.preventDefault();onbOpen((NEWP.flow&&NEWP.flow.step)||0)}
+  if(e.target.closest('[data-newon]')){NEWP.flow=null}},true);
+window.__onbOpen=onbOpen;
+
 })().catch(e=>{console.error(e);window.__lastErr=String(e.stack).slice(0,600);try{window.__unCover&&window.__unCover()}catch(_){}const l=document.getElementById('rl-ld');if(l)l.innerHTML='Erro ao abrir: '+e.message});
 {const st=document.createElement('style');st.textContent="html body.ag3 .wk3 .wb.rq{background:linear-gradient(180deg,#f3c76b,#e7aa3c)!important;border:0!important;color:#2b1d00!important;z-index:4;box-shadow:0 0 0 1.5px #f3c76b,0 6px 16px rgba(243,199,107,.32)!important}html body.ag3 .wk3 .wb.rq b,html body.ag3 .wk3 .wb.rq small,html body.ag3 .wk3 .wb.rq small span{color:#2b1d00!important;opacity:1}";document.head.appendChild(st)}
-
 </script>
 </body></html>
