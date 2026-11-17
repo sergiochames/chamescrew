@@ -916,6 +916,7 @@ body{font-size:14px}
 #app section.card:has(.tl) .r82{padding:0 4px}
 #app .card.expfu{background:var(--card)!important;border:1px solid var(--line)!important}
 #app .card.expfu b.d{font-size:20px!important}
+.avsh .card.expfu{background:var(--card)!important;border:1px solid var(--line)!important}.avsh .card.expfu>.row{background:none!important}.avsh .card.expfu b.d{font-size:20px!important}
 #app .tl .c82 .s82{margin-left:auto}
 
 #app section.card:has(.tl)>.row{background:transparent!important;border:0!important;margin:0!important;padding:0 4px!important}
@@ -3464,12 +3465,12 @@ function expSheet(d0,h0){let d=d0===undefined?(S.day<TODAY?TODAY:S.day):d0,h=h0,
    s.querySelector('#xok').onclick=()=>{const n=s.querySelector('#xn').value.trim(),ph=s.querySelector('#xp').value.replace(/\D/g,'');if(n.length<2){toast('Escreva o nome');return}if(ph.length<10){toast('WhatsApp com DDD');return}if(h===undefined){toast('Escolha o horário');return}
      const go=()=>{EXP.push({n,ph,orig,d,h,res:null});(S.ev[d]=S.ev[d]||[]).push({h,n,st:'conf',exp:true});s.remove();S.day=d;draw();toast(`Experimental de ${fn(n)} marcada ${dayLbl(d).toLowerCase()} às ${hh(h)}`);waChip(n,(window.__rlMsg&&window.__rlMsg('exp',{nome:fn(n),personal:PERS.name||'',quando:dTxt(d,h)}))||`Oi, ${fn(n)}! Sua aula experimental está marcada ${dTxt(d,h)} 💪 Vem com roupa de treino e uma garrafinha d'água. Qualquer coisa me chama!`,true)};
      const old=EXP.find(x=>x.ph===ph);if(old)confirmBox('Já fez experimental',`${esc(old.n)} já fez uma experimental com esse número. Marcar outra mesmo assim?`,'Sim, marcar',go);else go()}})}
-const expFU=x=>`<section class="card expfu"><div class="row"><span class="lbl">Aula experimental • ${hh(x.h)}</span><span class="expt">grátis</span></div><b class="d" style="font-size:24px">Como foi com a ${esc(fn(x.n))}?</b>
-  <div class="row2"><button class="btn solid" data-xr="sim:${esc(x.n)}">Virou aluna 🎉</button><button class="btn" data-xr="msg:${esc(x.n)}">Mandar mensagem</button></div><button class="lnk" data-xr="nao:${esc(x.n)}" style="align-self:center">Não fechou</button></section>`;
+const expFU=x=>`<section class="card expfu"><div class="row"><span class="lbl">Aula experimental • ${hh(x.h)}</span><span class="expt">grátis</span></div><b class="d" style="font-size:24px">Como foi a aula de ${esc(fn(x.n))}?</b>
+  <div class="row2"><button class="btn solid" data-xr="sim:${esc(x.n)}">Fechou plano</button><button class="btn" data-xr="msg:${esc(x.n)}">Mandar mensagem</button></div><button class="lnk" data-xr="nao:${esc(x.n)}" style="align-self:center">Não fechou</button></section>`;
 /* sheet da aula experimental */
 const _evs3=evSheet;evSheet=function(i){const e=evAt(i);if(!e||!e.exp){_evs3(i);return}const x=EXP.find(z=>z.n===e.n)||{},past=S.day<TODAY||(S.day===TODAY&&e.h<NOW);
   sheet(`<span class="lbl">${dayLbl(S.day)} • ${hh(e.h)} • experimental</span><h3 class="d">${esc(e.n)}</h3><p class="note" style="margin:0">WhatsApp ${esc(fmtPhone?fmtPhone(x.ph||''):x.ph||'')} • veio por ${esc(x.orig||'—')}</p>
-   ${past?(x.res?`<div class="info ok">${x.res==='sim'?'Virou aluna ✓':'Não fechou'}</div>`:expFU(x)):`<div class="row2"><a class="btn" href="https://wa.me/55${x.ph}" target="_blank" rel="noopener" style="text-decoration:none">WhatsApp</a><button class="btn" data-re="${S.day}:${e.h}">Remarcar</button></div><button class="btn bad" data-xcan="${S.day}:${e.h}">Cancelar experimental</button>`}
+   ${past?(x.res?`<div class="info ok">${x.res==='sim'?'Fechou plano ✓':'Não fechou'}</div>`:expFU(x)):`<div class="row2"><a class="btn" href="https://wa.me/55${x.ph}" target="_blank" rel="noopener" style="text-decoration:none">WhatsApp</a><button class="btn" data-re="${S.day}:${e.h}">Remarcar</button></div><button class="btn bad" data-xcan="${S.day}:${e.h}">Cancelar experimental</button>`}
    <button class="btn" data-close>Fechar</button>`)};
 document.addEventListener('click',ev=>{const t=ev.target;let b;
   if((b=t.closest('[data-xexp]'))){ev.stopPropagation();const sc=t.closest('.scrim'),h=b.dataset.xexp===''?undefined:+b.dataset.xexp;sc&&sc.remove();expSheet(S.day,h);return}
@@ -3866,7 +3867,13 @@ const hxTxt=t=>t.replace(/\b(\d{2}):(\d{2})\b/g,(m,a,b)=>hx(+a+ +b/60));
     if(R.length)P.push(`<b>${R.length} ${R.length===1?'pedido':'pedidos'}</b>`);if(pend.length)P.push(`${pend.length} ${pend.length===1?'aviso':'avisos'}`);bd.forEach(x=>P.push(`${esc(x.ap||x.n.split(' ')[0])} faz ${ageOf(x.nasc)}`));if(ex)P.push(ex===1?'1 experimental para responder':ex+' experimentais');
     if(P.length){const at=`<button class="att82" data-att><i></i><span>${P.join(' • ')}</span><em>ver ↓</em></button>`;(nx||app.querySelector('.days')).insertAdjacentHTML('afterend',at)}}
 };}
-document.addEventListener('click',e=>{const b=e.target.closest('[data-att]');if(!b)return;e.stopPropagation();const a=document.getElementById('avisos');if(a)a.scrollIntoView({behavior:'smooth',block:'start'})},true);
+document.addEventListener('click',e=>{const b=e.target.closest('[data-att]');if(!b)return;e.stopPropagation();const a=document.getElementById('avisos');if(!a)return;
+  if(a.getBoundingClientRect().height>0){a.scrollIntoView({behavior:'smooth',block:'start'});return}
+  /* layout novo esconde a seção antiga: abre os avisos numa janela */
+  const it=[...a.children].filter(x=>!x.matches('span.lbl')&&!(x.matches('section.card')&&/Precisa de você|^Avisos/.test((x.querySelector('.row>.lbl')||{}).textContent||'')));
+  if(!it.length){const p=[...document.querySelectorAll('#app button,#app section')].find(x=>/Pra hoje/.test(x.textContent||'')&&x.getBoundingClientRect().height>0);if(p)p.scrollIntoView({behavior:'smooth',block:'center'});return}
+  sheet('<span class="lbl">Avisos</span><h3 class="d">Para responder</h3><div class="avsh" style="display:flex;flex-direction:column;gap:12px"></div><button class="btn" data-close>Fechar</button>',sh=>{const box=(sh.querySelector?sh:document).querySelector('.avsh')||[...document.querySelectorAll('.scrim .avsh')].pop();it.forEach(x=>box.appendChild(x))});
+  const box=[...document.querySelectorAll('.scrim .avsh')].pop();if(box&&!box.children.length)it.forEach(x=>box.appendChild(x))},true);
 
 /* ===== v82b: bloquear período (calendário) + desbloquear ===== */
 const BLK=[];
