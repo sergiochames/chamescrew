@@ -4366,7 +4366,7 @@ const MOON='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill=
 const XIC='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
 TR.man={};if(!window.__RD)TR.log={};
 const CTIPOS=['Corrida','Bike','Esteira','Caminhada','Natação','Elíptico','Outro'],CINT=['Leve','Moderada','Forte'],SKIPW=['Cansaço','Dor','Trabalho','Viagem','Outro'];
-function items(i){if(TR.man[i]&&(TR.man[i].some(x=>x.k||x.c)||(i===TODAYI&&ORD.some(k=>TR.done[k]==='hoje'))))TR.man[i]=TR.man[i].filter(x=>!x.skip&&!x.rest);return [...(TR.man[i]||[]),...(i===TODAYI?[...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])].map(k=>({k,app:1})):[])]}
+function items(i){if(TR.man[i]&&(TR.man[i].some(x=>x.k||x.c)||(i===TODAYI&&ORD.some(k=>TR.done[k]==='hoje'))))TR.man[i]=TR.man[i].filter(x=>!x.skip&&!x.rest);return [...(TR.man[i]||[]),...(i===TODAYI?[...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])].map(k=>({k,app:1})):((TR.log&&TR.log[i])||[]).filter(k=>k!=='cardio'&&!(TR.man[i]||[]).some(m=>m.k===k)).map(k=>({k,app:1})))]}
 const did=i=>items(i).some(x=>x.k||x.c);
 dayState=function(i){const P=WKP[i],I=items(i);if(did(i))return 'ok';if(I.some(x=>x.skip))return 'miss';if(I.some(x=>x.rest)||P.r)return 'off';if(i<TODAYI&&CFG.modo!=='livre')return 'miss';if(i===TODAYI)return 'today';return 'next'};
 function chipLab(i){const I=items(i),P=WKP[i],ks=I.filter(x=>x.k);if(ks.length)return ks[ks.length-1].k;if(I.some(x=>x.c))return HEART;if(I.some(x=>x.skip))return XIC;if(I.some(x=>x.rest))return MOON;if(P.c)return HEART;if(P.r)return '–';return P.k}
