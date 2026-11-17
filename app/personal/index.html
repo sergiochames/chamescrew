@@ -3977,7 +3977,7 @@ function w3Tags(L){const A=L.filter(e=>!e.gc&&e.st!=='can'&&e.n).sort((a,b)=>a.h
     m.set(e,`<em class="w3tv${bad?' bad':''}" title="Trajeto ${esc(lsn(p))} → ${esc(lsn(e))}">${bad?'⚠ ':''}${need} min</em>`)});return m}
 const w3Days=()=>{const s0=wkStart(S.wo);return [0,1,2,3,4,5,6].map(i=>addD(s0,i))};
 const stL=st=>(ST[st]||[])[1]||'';
-function w3Body(){const cur=S.wo===0,days=w3Days(),s0=S.w3=w3clamp(S.w3),vis=[s0,s0+1,s0+2],hasT=cur&&vis.includes(TODAY);
+function w3Body(){const cur=S.wo===0,days=w3Days(),s0=S.w3=w3clamp(S.w3),vis=document.body.classList.contains('dsk')?[0,1,2,3,4,5,6]:[s0,s0+1,s0+2],hasT=cur&&vis.includes(TODAY);
   const rul=`<div class="w3rul" role="group" aria-label="Dias da semana">${days.map((dt,i)=>`<button data-w3d="${i}" class="${vis.includes(i)?'vis':''}${sameD(dt,TD)?' td':''}${dDiff(dt)<0?' past':''}" aria-label="${DLL[i]} ${dt.getDate()}"><small>${WD[i]}</small><b>${dt.getDate()}</b></button>`).join('')}</div>`;
   const a=days[vis[0]],b=days[vis[2]];
   const nav='';
@@ -3998,7 +3998,7 @@ weekView=function(nb,R,pend){const P=[];if(R.length)P.push(`<b>${R.length} ${R.l
   return (P.length?`<button class="att82" data-w3att><i></i><span>${P.join(' • ')}</span><em>ver ›</em></button>`:'')+w3Body()};
 farWeek=function(){return w3Body()};
 {const _da=drawAgenda;drawAgenda=function(){_da();if(S.view==='semana')app.querySelectorAll('.wnav').forEach(x=>x.remove())}}
-function w3Shift(n){const t=S.w3+n;if(t>4){if(S.w3<4)S.w3=4;else{S.wo++;S.w3=0}}else if(t<0){if(S.w3>0)S.w3=0;else{S.wo--;S.w3=4}}else S.w3=t;draw()}
+function w3Shift(n){if(document.body.classList.contains('dsk')){S.wo+=n>0?1:-1;draw();return}const t=S.w3+n;if(t>4){if(S.w3<4)S.w3=4;else{S.wo++;S.w3=0}}else if(t<0){if(S.w3>0)S.w3=0;else{S.wo--;S.w3=4}}else S.w3=t;draw()}
 function w3Hot(x,y,st){const r=document.querySelector('.w3rul');if(!r)return false;r.classList.add('drop');r.querySelectorAll('.hot').forEach(b=>b.classList.remove('hot'));
   const el=document.elementFromPoint(x,y),b=el&&el.closest('.w3rul button');if(!b){st.rd=null;return false}
   b.classList.add('hot');st.rd=+b.dataset.w3d;if(st.g){st.g.dataset.lab=`Soltar: ${WD[st.rd]} ${w3Days()[st.rd].getDate()}`;st.g.classList.remove('warn')}return true}
@@ -5643,6 +5643,24 @@ try{
  /* arrastar da biblioteca para o treino */
  document.addEventListener('dragover',e=>{if(e.target.closest&&e.target.closest('.dk-mid')){e.preventDefault();document.querySelector('.dkdrop')&&document.querySelector('.dkdrop').classList.add('hv')}});
  document.addEventListener('drop',e=>{const m=e.target.closest&&e.target.closest('.dk-mid');document.body.classList.remove('dkdrag');if(!m)return;e.preventDefault();const k=e.dataTransfer.getData('text/plain'),P=P_();if(!k||!P)return;const ne=mkEx(k,3,'10-12',0,60);try{if(isCardioN(k)){ne.cd=mkCd();ne.rest=0}}catch(_){}P.ex.push(ne);toast(k+' adicionado');save();drawBuilder()});
+
+ /* ---------- agenda no computador: semana inteira + coluna lateral ---------- */
+ const _drD=draw;draw=function(){const dk=document.body.classList.contains('dsk');app.classList.remove('dkag');if(!dk||S.tab!=='agenda')return _drD.apply(this,arguments);
+   if(!S._dkv){S._dkv=1;S.view='semana'}
+   if(S.view!=='semana')return _drD.apply(this,arguments);
+   let hero=null;const day=S.day,wo=S.wo;
+   if(wo===0){try{S.view='dia';S.day=TODAY;_drD.apply(this,arguments);const h=document.getElementById('a2x');if(h)hero=h.cloneNode(true)}catch(_){}S.view='semana';S.day=day;S.wo=wo}
+   const r=_drD.apply(this,arguments);
+   try{const main=app;app.classList.add('dkag');
+     const side=document.createElement('aside');side.className='dka-side';
+     const W=[...main.querySelectorAll('.wk3 .wb')],aul=W.filter(b=>!/\b(fr|lk|gc|can|rq)\b/.test(b.className)),cf=aul.filter(b=>/\b(conf|ok)\b/.test(b.className)).length;
+     if(hero)side.appendChild(hero);else{const n=document.createElement('div');n.className='dka-card';n.innerHTML=wo===0?'<span class="dkh">Hoje</span><p>Sem alunos hoje.</p>':'<span class="dkh">'+(wo>0?'Semana que vem':'Semana passada')+'</span><p>O card do próximo aluno aparece na semana atual.</p><button type="button" class="dkb" data-dkwk="0">Voltar para esta semana</button>';side.appendChild(n)}
+     const k=document.createElement('div');k.className='dka-kp';k.innerHTML=`<div><small>Aulas na semana</small><b>${aul.length}</b></div><div><small>Confirmadas</small><b>${cf}<em> de ${aul.length}</em></b></div>`;side.appendChild(k);
+     const att=main.querySelector('[data-w3att]');if(att){const c=document.createElement('div');c.className='dka-card';c.innerHTML='<span class="dkh">Precisa de você</span>';c.appendChild(att);side.appendChild(c)}
+     const lg=document.createElement('div');lg.className='dka-card dka-lg';lg.innerHTML='<span class="dkh">Legenda</span><span><i class="g"></i>Confirmado / presente</span><span><i class="y"></i>A confirmar</span><span><i class="r"></i>Cancelou</span><span><i class="f"></i>Horário livre</span>';side.appendChild(lg);
+     app.appendChild(side)}catch(err){console.warn('dka',err)}
+   return r};
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-dkwk]');if(!b)return;S.wo=+b.dataset.dkwk;draw()});
  /* atalhos */
  document.addEventListener('keydown',e=>{if(!document.body.classList.contains('dsk')||S.tab!=='treinos'||!document.querySelector('.dk-grid'))return;const tg=e.target,typing=tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'||tg.isContentEditable);const P=P_();
    if(e.key==='/'&&!typing){e.preventDefault();const q=document.querySelector('.dkpick #pq');q&&q.focus();return}
@@ -5669,7 +5687,7 @@ body.dsk #dkextra{display:flex;flex-direction:column;gap:3px}body.dsk #dkextra .
 body:not(.dsk) #dkbrand,body:not(.dsk) #dkextra{display:none!important}
 body.dsk .scroller{margin-left:228px!important;width:auto!important}
 body.dsk .scroller>.wrap{max-width:1180px!important;padding-left:24px!important;padding-right:24px!important;padding-bottom:40px!important}
-body.dsk:has(.dk-grid) .scroller>.wrap{max-width:none!important}
+body.dsk:has(.dk-grid) .scroller>.wrap,body.dsk:has(.dkag) .scroller>.wrap{max-width:none!important}
 body.dsk .scrim:not(.dkpick){justify-content:flex-end!important;align-items:stretch!important}
 body.dsk .scrim:not(.dkpick)>.sheet{max-width:460px!important;width:460px!important;height:100%!important;max-height:none!important;border-radius:24px 0 0 24px!important;margin:0!important}
 .dk-top{display:flex;align-items:flex-end;gap:10px;margin:6px 0 16px}.dk-top small{font:600 13px var(--body);color:var(--muted)}.dk-top h1{font:900 italic 36px var(--disp,var(--body));letter-spacing:-.8px;text-transform:uppercase;line-height:1;margin-top:4px}
@@ -5705,6 +5723,16 @@ body.dsk .dk-mid .bsave{position:static!important;background:none!important;padd
 .dk-right .scrim.dkpick .lx{cursor:grab}
 body.dsk .dk-mid .bhead,body.dsk .dk-mid [data-mbback]:not(.dkb){display:none!important}
 body.dsk .dock .tabs nav>button:not([data-tab]):not(.gtab){display:none}
+body.dsk #app.dkag{display:grid!important;grid-template-columns:minmax(0,1fr) 330px;column-gap:18px;align-items:start;max-width:none}body.dsk #app.dkag>*{grid-column:1;min-width:0}
+.dka-side{grid-column:2!important;grid-row:1/span 40;position:sticky;top:12px;display:flex;flex-direction:column;gap:12px}
+.dka-side #a2x{margin:0!important}
+.dka-card{padding:14px;border-radius:20px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px}.dka-card p{font:600 13px var(--body);color:var(--muted)}.dka-card .att82{margin:0!important;width:100%}
+.dka-kp{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dka-kp div{padding:12px 14px;border-radius:18px;background:var(--card);border:1px solid var(--line)}.dka-kp small{font:700 11px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}.dka-kp b{display:block;font:900 italic 28px var(--disp,var(--body));margin-top:2px}.dka-kp em{font:700 13px var(--body);font-style:normal;color:var(--muted)}
+.dka-lg span:not(.dkh){display:flex;align-items:center;gap:8px;font:600 12.5px var(--body);color:var(--muted)}.dka-lg i{width:10px;height:10px;border-radius:3px}.dka-lg i.g{background:#34b268}.dka-lg i.y{background:#e2b23c}.dka-lg i.r{background:#e0555b}.dka-lg i.f{border:1.5px dashed var(--muted)}
+body.dsk .wk3 .whead,body.dsk .wk3 .wbody{grid-template-columns:44px repeat(7,minmax(0,1fr))!important}
+body.dsk .w3rul{display:none!important}
+body.dsk .wk3 .w3ar,body.dsk .wk3 .w3h{display:none!important}body.dsk .wk3 .whead::before{content:"";display:block}body.dsk .wk3 .whead{min-height:0!important;padding-top:8px!important;padding-bottom:8px!important;align-items:center}
+
 }`;document.head.appendChild(css);
  setTimeout(brand,1500);
 }
