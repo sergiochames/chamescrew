@@ -3649,7 +3649,7 @@ const fmtL=l=>l<=0?'agora':(l>=24?Math.floor(l/24)+'d ':'')+(l%24>=1?Math.floor(
 function sortSlots(){AG.slots.sort((a,b)=>agLeft(a)-agLeft(b));AG.free.sort((a,b)=>(DOFF[a[0]]+a[1])-(DOFF[b[0]]+b[1]))}
 function renderAula(){const next=AG.slots.find(x=>agLeft(x)>-1.5);const el=$('#aula');
   if(!next){el.innerHTML=`<div class="row"><span class="lbl">Treino presencial</span>${AG.credit?`<span class="pill">${AG.credit} crédito</span>`:''}</div><p class="d" style="font-size:34px;margin:0">Sem aula marcada</p><button class="btn small" data-go="agenda">Ver horários livres</button>`;return}
-  const left=agLeft(next),isToday=next.d==='Hoje',dl=agDl(next),start=next.h-12,past=left<=0;
+  const left=agLeft(next),isToday=next.d==='Hoje',dl=agDl(next),start=next.h-Math.max(12,(window.__RLH||6)+2),past=left<=0;
   const pct=Math.max(0,Math.min(100,(NOWH-start)/(next.h-start)*100)),dlp=Math.max(0,(dl.h-start)/(next.h-start)*100);
   const hot=isToday&&left<=2&&left>0,late=!inTime(next);
   const col=hot?'#f08a7a':late?'#d9bf7f':'var(--on-ink)';
@@ -3661,7 +3661,7 @@ function renderAula(){const next=AG.slots.find(x=>agLeft(x)>-1.5);const el=$('#a
   el.innerHTML=`<div class="row"><span class="lbl">Treino presencial com o Sérgio</span><span class="pill">${past?'hoje':fmtL(left)}</span></div>
    <span class="when">${next.d} • ${hh2(next.h)}</span>
    <div class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap">${next.extra?'<span class="tag t-extra">Extra • cobrada à parte</span>':''}${next.conf?(past?'<span class="tag t-conf">Presença confirmada ✓</span>':`<button class="tag t-conf" data-ag-unconf="${AG.slots.indexOf(next)}">Presença confirmada ✓</button>`):'<span class="tag t-wait">Presença a confirmar</span>'}</div>
-   ${isToday?`<div class="tl"><i class="f" style="width:${pct}%;background:${col}"></i><span class="mk" style="left:${dlp}%">prazo ${hh2(next.h-6)}</span><span class="now" style="left:${pct}%"></span></div>
+   ${isToday?`<div class="tl"><i class="f" style="width:${pct}%;background:${col}"></i><span class="mk" style="left:${dlp}%">prazo ${hh2(((dl.h%24)+24)%24)}</span><span class="now" style="left:${pct}%"></span></div>
    <div class="tlab"><span>${hh2(start)}</span><span>aula ${hh2(next.h)}</span></div>`:''}
    <p class="msg" style="color:${hot?'#f6a294':'inherit'};margin:0">${msg}</p>
    ${past?'':`<div class="row" style="gap:8px">${next.conf?'':`<button class="btn small" data-ag-conf="${AG.slots.indexOf(next)}" style="flex:1.4">Confirmar presença</button>`}<button class="btn small line" data-ag-move="${AG.slots.indexOf(next)}" style="flex:1">Remarcar</button><button class="btn small line" data-ag-cancel="${AG.slots.indexOf(next)}" style="flex:1">Cancelar</button></div>`}
@@ -3925,8 +3925,11 @@ function keyOf(n){if(n===0)return'Hoje';if(n===1)return'Amanhã';if(n===2)return
 function nOf(k){return DOFF[k]/24}
 function monOf(k){const d=dDate(DOFF[k]/24),A=window.__CYA||1;return d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}
 function wkOf(k){return Math.floor((DOFF[k]/24+2)/7)}
-function agDlX(x){const n=DOFF[x.d]/24;if(x.h<10){const p=n-1;const nm=p===0?'hoje':p===-1?'ontem':p===1?'amanhã':keyOf(p).toLowerCase();return{h:DOFF[x.d]-2,txt:`até 22:00 de ${nm}`}}
-  return{h:DOFF[x.d]+x.h-6,txt:`até ${hh2(x.h-6)}${n===0?'':' de '+x.d.toLowerCase()}`}}
+function agDlX(x){const n=DOFF[x.d]/24,H=window.__RLH>0?window.__RLH:0;
+  if(!H){if(x.h<10){const p=n-1;const nm=p===0?'hoje':p===-1?'ontem':p===1?'amanhã':keyOf(p).toLowerCase();return{h:DOFF[x.d]-2,txt:`até 22:00 de ${nm}`}}
+    return{h:DOFF[x.d]+x.h-6,txt:`até ${hh2(x.h-6)}${n===0?'':' de '+x.d.toLowerCase()}`}}
+  const dh=DOFF[x.d]+x.h-H,p=Math.floor(dh/24),t=dh-p*24;const nm=p===0?'hoje':p===-1?'ontem':p===1?'amanhã':keyOf(p).toLowerCase();
+  return{h:dh,txt:`até ${hh2(t)}${p===n?(n===0?'':' de '+x.d.toLowerCase()):' de '+nm}`}}
 AG.remM={};const remOf=m=>m===10?AG.rem:(AG.remM[m]||0);const remInc=m=>{if(m===10)AG.rem++;else AG.remM[m]=(AG.remM[m]||0)+1};
 /* dias até dezembro: aula fixa da Ana (qua 18:00 e sex 07:00) e horários livres do personal, com minutos quebrados */
 const RECUR=[[3,18],[5,7]];
@@ -4700,7 +4703,12 @@ setTimeout(()=>{const _lab=window.labSheetX;window.labSheetX=function(){_lab();c
 agAll();
 /* ===== v29: extra com prazo próprio, só o mês atual, mês seguinte travado, tela reorganizada, cores neutras ===== */
 const IW2=p=>`<svg class="lic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const XCAN=24;AG.xcob=AG.xcob||[];
+let XCAN=24;AG.xcob=AG.xcob||[];
+window.__setRules=function(r){try{if(!r||typeof r!=='object')return;const H=Math.max(+r.can||0,+r.rem||0);if(H>0)window.__RLH=H;if(+r.xcan>0)XCAN=+r.xcan;if(+r.canVal>0)AG.credVal=+r.canVal;window.__RULES_REAL=r;
+  if(H>0){const f=t=>String(t).replace(/Avise até 6 horas antes \(aulas antes das 10h: até 22h da véspera\)/,'Avise até '+H+' horas antes').replace(/até 6h antes \(aulas antes das 10h: até 22h da véspera\)/,'até '+H+'h antes');
+    for(let i=0;i<RULES_TXT.length;i++)RULES_TXT[i]=f(RULES_TXT[i]);document.querySelectorAll('.sub').forEach(e=>{if(/6h antes/.test(e.textContent))e.textContent=f(e.textContent)})}
+  if(+r.canVal>0)for(let i=0;i<RULES_TXT.length;i++)RULES_TXT[i]=RULES_TXT[i].replace(/vale 30 dias/,'vale '+r.canVal+' dias')}catch(e){console.error(e)}};
+
 var NOWMO=()=>Math.max(monOf(keyOf(TDN())),window.__CYM0||0);
 const lockedK=k=>monOf(k)!==NOWMO()&&nOf(k)>TDN()+7;
 /* extra: cancelar até XCAN h sem cobrança */
@@ -6591,7 +6599,7 @@ const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise
   pz:GO(sb.rpc('minhas_pausas')),ml:GO(sb.from('meal_logs').select('day,meal_idx').eq('user_id',uid).not('done_at','is',null).gte('day',new Date(Date.now()-150*864e5).toISOString().slice(0,10)).limit(2000)),
   ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),pp:GO(sb.rpc('public_pers')),rk:GO(sb.rpc('public_rank')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
-  pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
+  rl:GO(sb.rpc('public_rules')),pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
   pq:pExp.then(()=>GO(sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1)))};
 const {data:P,error:e1}=await sb.from('profiles').select('*').eq('id',uid).single();
 if(e1||!P)return fail('Não deu para abrir seu perfil.');
@@ -6623,6 +6631,7 @@ try{const {data:lcs}=await PF.locs;window.__LOCS=(lcs||[]).filter(Boolean)}catch
 if(!window.__LOC0)window.__LOC0=(window.__LOCS||[])[0]||'';
 try{LOCAL=window.__LOC0}catch(_){}try{const A=window.ALOCX;if(A){A.length=0;(window.__LOC0?[window.__LOC0]:window.__LOCS).forEach(x=>A.push(x))}}catch(_){}try{PLOCS.length=0;window.__LOCS.forEach(x=>PLOCS.push(x))}catch(_){}
 let CI={lim:4,used:0,credits:0,auto:false};try{const {data}=await PF.ci;if(data)CI=data}catch(_){}window.__CI2=CI;window.__AUTO=!!CI.auto;
+try{const {data:rl}=await PF.rl;if(rl&&window.__setRules)window.__setRules(rl)}catch(_){}
 let PAYR=null;try{const {data:pq}=await PF.pq;PAYR=(pq||[])[0]||null}catch(_){}window.__PAYR=PAYR;
 if(!(CL||[]).length&&!PAYR){location.replace('/app/');return}
 try{const [{data:at},{data:aa}]=await PF.anm;if(at&&!(aa&&aa.length)){location.replace('/app/');return}}catch(_){}
@@ -7304,13 +7313,22 @@ let seen={};try{seen=JSON.parse(localStorage.getItem('rl-man')||'{}')}catch(_){}
 const mark=i=>{seen[i]=1;try{localStorage.setItem('rl-man',JSON.stringify(seen))}catch(_){}};
 function man(i){document.querySelectorAll('.scrim[data-man]').forEach(x=>x.remove());let h;
  if(i==null||i<0){const n=Object.keys(seen).length;h=`<span class="lbl">Manual</span><p class="d" style="font-size:34px;margin:4px 0 8px">Aprenda a usar o app</p><div class="cl">${T.map((x,k)=>`<button class="ci" data-mt="${k}"><span style="display:grid;place-items:center">${sv(x.i)}</span><span><b>${x.t}</b><small>${x.s}</small></span><span class="go">${seen[k]?'✓':'›'}</span></button>`).join('')}</div>${n?`<p class="meta" style="font-size:12.5px;margin:8px 0 0">${n} de ${T.length} lidos</p>`:''}`}
- else{const x=T[i];mark(i);h=`<div style="display:flex;justify-content:space-between"><button class="skip" data-mt="-1" style="text-decoration:none">‹ Manual</button><span class="lbl">${i+1} de ${T.length}</span></div><span class="lbl" style="margin-top:10px;display:block">${x.t}</span><p class="d" style="font-size:32px;margin:4px 0 12px">${x.h}</p>
-  <ol class="rules">${x.p.map((p,k)=>`<li><b>${k+1}</b><span>${p}</span></li>`).join('')}</ol><p class="meta" style="margin:12px 0 0;font-size:13px">${x.n}</p>${i<T.length-1?`<button class="btn solid wide" style="margin-top:14px" data-mt="${i+1}">Próximo: ${T[i+1].t}</button>`:''}`}
+ else{const x=T[i];mark(i);const RR=window.__RULES_REAL||{},HH=window.__RLH;const pz=(i===1||i===3)&&HH?` Com o seu personal, o prazo é de <b>${HH}h antes</b> da aula.`:(i===2&&+RR.xcan>0?` Para a extra, o prazo é de <b>${RR.xcan}h antes</b>.`:'');h=`<div style="display:flex;justify-content:space-between"><button class="skip" data-mt="-1" style="text-decoration:none">‹ Manual</button><span class="lbl">${i+1} de ${T.length}</span></div><span class="lbl" style="margin-top:10px;display:block">${x.t}</span><p class="d" style="font-size:32px;margin:4px 0 12px">${x.h}</p>
+  <ol class="rules">${x.p.map((p,k)=>`<li><b>${k+1}</b><span>${p}</span></li>`).join('')}</ol><p class="meta" style="margin:12px 0 0;font-size:13px">${x.n}${pz}</p>${i<T.length-1?`<button class="btn solid wide" style="margin-top:14px" data-mt="${i+1}">Próximo: ${T[i+1].t}</button>`:''}`}
  const s=window.sheet(h,s=>{s.dataset.man=1;s.addEventListener('click',e=>{const b=e.target.closest('[data-mt]');if(!b)return;e.stopPropagation();man(+b.dataset.mt)})});if(s)s.querySelector('.sheet').scrollTop=0}
 window.__man=man;
+
+function planSheet(){let h='';try{const f=d=>d?String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear():'';const pe=String(P.plan_period||'Mensal'),fr=freq,end=f(endD);const H=window.__PAYH||[];const pq=window.__PAYR;
+  h=`<span class="lbl">Meu plano</span><p class="d" style="font-size:34px;margin:4px 0 10px">${pe} • ${fr}x por semana</p>
+  <div class="cl"><div class="ci" style="grid-template-columns:minmax(0,1fr) auto"><span><b>Válido até</b><small>${end||'sem data definida'}</small></span></div>
+  <div class="ci" style="grid-template-columns:minmax(0,1fr) auto"><span><b>Créditos de aula</b><small>Para marcar quando quiser</small></span><b>${(CI&&CI.credits)||0}</b></div>
+  <div class="ci" style="grid-template-columns:minmax(0,1fr) auto"><span><b>Mudanças neste mês</b><small>Remarcar ou guardar crédito</small></span><b>${(CI&&CI.used)||0} de ${(CI&&CI.lim)||'-'}</b></div></div>
+  ${pq&&(pq.pay_status==='pendente'||pq.pay_status==='informado')?`<div class="info warn" style="margin-top:10px">Pagamento ${pq.pay_status==='informado'?'em conferência':'pendente'}${+pq.pay_amount?': R$ '+(+pq.pay_amount).toLocaleString('pt-BR'):''}${pq.pay_due?' • vence '+String(pq.pay_due).split('-').reverse().slice(0,2).join('/'):''}</div>`:''}
+  <span class="lbl" style="display:block;margin-top:16px">Pagamentos</span>${H.length?H.map(r=>`<div class="hist"><span><b>${r[0]}</b><small>${r[1]}</small></span><b>${r[2]?'R$ '+r[2].toLocaleString('pt-BR'):'-'}</b></div>`).join(''):'<p class="meta" style="margin:6px 0 0;font-size:13px">Nenhum pagamento registrado ainda.</p>'}`}catch(e){h='<p class="meta">Não consegui carregar o plano agora.</p>'}
+  window.sheet(h)}
 new MutationObserver(()=>{const s=[...document.querySelectorAll('.scrim')].pop();if(!s||s.dataset.man||s.querySelector('[data-m="man"]'))return;const out=s.querySelector('#rl-sv');if(!out||!s.querySelector('#rl-out'))return;
-  out.insertAdjacentHTML('beforebegin',`<div class="cl" style="margin:4px 0 14px"><button class="ci" data-m="man"><span style="display:grid;place-items:center">${sv('book')}</span><span><b>Manual do app</b><small>Marcar, cancelar, crédito e mais</small></span><span class="go">›</span></button></div>`);
-  s.addEventListener('click',e=>{if(e.target.closest('[data-m="man"]')){e.stopPropagation();e.preventDefault();s.remove();man(-1)}},true)}).observe(document.body,{childList:true});}
+  out.insertAdjacentHTML('beforebegin',`<div class="cl" style="margin:4px 0 14px">${[['plan','Meu plano','Validade, créditos e pagamentos'],['anam','Minha anamnese','Atualize se mudou algo: lesão, remédio, rotina'],['man','Manual do app','Marcar, cancelar, crédito e mais']].map(([k,t,d])=>`<button class="ci" data-m="${k}"><span style="display:grid;place-items:center">${sv(k==='plan'?'cal':k==='anam'?'ok':'book')}</span><span><b>${t}</b><small>${d}</small></span><span class="go">›</span></button>`).join('')}</div>`);
+  s.addEventListener('click',e=>{const b=e.target.closest('[data-m="man"],[data-m="plan"],[data-m="anam"]');if(!b)return;e.stopPropagation();e.preventDefault();s.remove();const k=b.dataset.m;if(k==='man')man(-1);else if(k==='plan')planSheet();else location.href='/app/?anam=1'},true)}).observe(document.body,{childList:true});}
 
 
 document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha conta'&&b.id!=='h-me')b.onclick=e=>{e.stopImmediatePropagation();document.getElementById('h-me').click()}});

@@ -343,7 +343,8 @@ function anamQs(t){const Q=[];
   else (t.form||[]).forEach(x=>Q.push({s:'',q:x.q,t:x.t,o:x.opts||[],other:!!x.other}));
   const O={body:['Glúteo','Pernas','Braços','Abdômen','Costas','Peito','Ombros'],obj:['Ganhar massa','Emagrecer','Saúde','Performance'],hor:['Manhã','Tarde','Noite'],yn:['Sim','Não']};
   return Q.map(x=>{const t2=x.t;if(O[t2])return {...x,o:O[t2],t:t2==='body'?'check':t2==='yn'?'yn':'one'};if(t2==='multi')return {...x,t:'one'};if(t2==='check')return {...x,t:'check'};if(t2==='num')return {...x,t:'num'};if(t2==='par'||t2==='long')return {...x,t:'par'};return {...x,t:'txt'}})}
-async function anamFlow(tpl){const Q=anamQs(tpl),A=Q.map(q=>q.t==='check'?[]:''),W=Q.map(()=>'');let k=0;if(!Q.length){location.replace('/app/aluno/');return}
+async function anamFlow(tpl,prev){const Q=anamQs(tpl),A=Q.map(q=>q.t==='check'?[]:''),W=Q.map(()=>'');let k=0;
+  if(Array.isArray(prev))Q.forEach((q,i)=>{const z=prev.find(y=>y&&y.q===q.q);if(!z)return;let a=z.a;if(q.why&&typeof a==='string'&&/^Sim:/.test(a)){W[i]=a.replace(/^Sim:\s*/,'');a='Sim'}if(q.t==='check')A[i]=Array.isArray(a)?a:[];else A[i]=Array.isArray(a)?a.join(', '):String(a==null?'':a)});if(!Q.length){location.replace('/app/aluno/');return}
   const DK='anam_draft_'+(ST.user&&ST.user.id)+'_'+(tpl.id||'');const dsave=()=>{try{localStorage.setItem(DK,JSON.stringify({n:Q.length,k,A,W}))}catch(_){}};
   try{const d=JSON.parse(localStorage.getItem(DK)||'null');if(d&&d.n===Q.length&&Array.isArray(d.A)){d.A.forEach((v,i)=>{A[i]=v});(d.W||[]).forEach((v,i)=>{W[i]=v});k=Math.min(d.k||0,Q.length-1)}}catch(_){}
   const pg=()=>{const q=Q[k],v=A[k];
@@ -367,6 +368,7 @@ async function anamFlow(tpl){const Q=anamQs(tpl),A=Q.map(q=>q.t==='check'?[]:'')
       R.innerHTML=`<div class="scr" style="text-align:center"><div class="okc">✓</div><p class="q" style="margin-top:0">Anamnese enviada!</p><p class="qs">O ${PN} usa suas respostas para montar seu treino.</p><div class="cta"><a class="b1" href="/app/aluno/" style="display:grid;place-items:center;text-decoration:none">Entrar no app</a></div></div>`};
     window.scrollTo(0,0)};pg()}
 async function home(fresh){R.innerHTML='<div class="ld">Carregando…</div>';try{await sb.rpc('expire_reservations')}catch(_){}
+  if(qp.get('anam')==='1'){try{const [{data:t},{data:pa}]=await Promise.all([sb.rpc('public_anm'),sb.from('anam_answers').select('answers').eq('user_id',ST.user.id).order('created_at',{ascending:false}).limit(1)]);if(t)return anamFlow(t,(pa&&pa[0]&&pa[0].answers)||null)}catch(_){}}
   const [{data:rq},{data:cl}]=await Promise.all([sb.from('requests').select('*,proposals(*)').eq('student_id',ST.user.id).order('created_at',{ascending:false}).limit(1),
     sb.from('classes').select('*').eq('student_id',ST.user.id).gte('starts_at',new Date(Date.now()-36e5).toISOString()).order('starts_at').limit(12)]);
   const r=rq&&rq[0],pr=r&&(r.proposals||[]).sort((a,b)=>b.created_at.localeCompare(a.created_at))[0],nm=(ST.prof&&ST.prof.name||'').split(' ')[0];
