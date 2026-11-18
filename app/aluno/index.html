@@ -2653,7 +2653,7 @@ $('#exs').addEventListener('click',e=>{
   if(c){const on=c.getAttribute('aria-pressed')!=='true';c.setAttribute('aria-pressed',on);c.classList.toggle('on',on);
     const [P,i,s]=c.dataset.ck.split('-');const ex=PLANS[P].ex[+i];
     if(on&&!tStart&&P===__TK)tStart=Date.now();
-    if(on){const kg=$(`#kg-${P}-${i}-${s}`),rp=$(`#rp-${P}-${i}-${s}`);if(!kg.value)kg.value=kg.placeholder;if(!rp.value)rp.value=rp.placeholder;if(!exDone(P,+i))startRest(ex.rest);else{clearInterval(restTimer);$('#rest').hidden=true}
+    if(on){const kg=$(`#kg-${P}-${i}-${s}`),rp=$(`#rp-${P}-${i}-${s}`);if(!kg.value)kg.value=kg.placeholder;if(!rp.value)rp.value=rp.placeholder;{window.__aud&&window.__aud();const row=c.closest('.srow')||c;if(!exDone(P,+i)){const ns=PLANS[P].ex[+i].prev.findIndex((_,k)=>$(`[data-ck="${P}-${i}-${k}"]`).getAttribute('aria-pressed')!=='true');startRest(ex.rest,{after:row,lbl:'Série '+(ns+1)})}else{const nx=PLANS[P].ex[+i+1],lkd=ex.lkid&&nx&&nx.lkid===ex.lkid,rx=ex.rx==null?ex.rest:ex.rx;if(nx&&!lkd&&rx>0)startRest(rx,{after:$(`#ex-${P}-${i}`)||row,nx:nx.name,lbl:'Próximo exercício'});else{clearInterval(restTimer);$('#rest').hidden=true}}}
       if(exDone(P,+i)&&exReps(P,+i).every(r=>r>ex.reps)){const k=exKg(P,+i)[0],inc=INC[ex.eq]||2;toast(`Passou da meta! Próximo treino: ${Math.round(k*1.05/inc)*inc} kg`)}}
     closeIfDone(P,+i,on);countSets();return}
   const r=e.target.closest('[data-rep]');
@@ -3905,13 +3905,26 @@ const sa=$('#start-a');if(sa){const n=sa.cloneNode(true);sa.replaceWith(n);n.add
 document.addEventListener('click',e=>{const g=e.target.closest('[data-trgo],[data-trjump],[data-trfin]');
   if(g){if(g.dataset.trgo)startTr(g.dataset.trgo);else if(g.dataset.trjump!==undefined){const a=$(`#ex-${curPlan}-${g.dataset.trjump}`);if(a){a.classList.remove('closed');a.scrollIntoView({behavior:'smooth',block:'center'})}}else{curPlan===__TK?$('#finish').click():$('#finish2').click()}return}
   if(TR.on&&e.target.closest('#exs'))setTimeout(renderNow,520)});
-/* descanso com +30s */
-$('#rest').innerHTML='<div class="rbx"><div><small>Descanso</small><b id="rest-t">1:30</b></div><div class="bar"><i id="rest-b" style="width:100%"></i></div><button class="btn small" id="rest-add">+30s</button><button class="btn small solid" id="rest-skip">Pular</button></div>';
-let rLeft=0,rTot=1;
-const rUpd=()=>{$('#rest-t').textContent=`${Math.floor(rLeft/60)}:${String(rLeft%60).padStart(2,'0')}`;$('#rest-b').style.width=Math.min(100,rLeft/rTot*100)+'%'};
-startRest=function(sec){clearInterval(restTimer);rLeft=sec;rTot=sec;$('#rest').hidden=false;rUpd();restTimer=setInterval(()=>{rLeft--;if(rLeft<=0){clearInterval(restTimer);$('#rest').hidden=true;toast('Descanso terminou. Próxima série!');return}rUpd()},1000)};
-$('#rest-add').onclick=()=>{rLeft+=30;rTot=Math.max(rTot,rLeft);rUpd()};
-$('#rest-skip').onclick=()=>{clearInterval(restTimer);$('#rest').hidden=true};
+/* descanso: faixa fininha logo abaixo da série feita, bip no fim, "Próximo" entre exercícios */
+const restEl=$('#rest');restEl.innerHTML='<div class="rbx"><div><small id="rest-l">Descanso</small><b id="rest-t">1:30</b></div><div class="bar"><i id="rest-b" style="width:100%"></i></div><button class="btn small" id="rest-add">+30s</button><button class="btn small solid" id="rest-skip">Pular</button></div><small class="rnx" id="rest-nx" hidden></small>';
+const rq=q=>restEl.querySelector(q);let rLeft=0,rTot=1,rEnd=0;
+window.__audC=null;window.__aud=()=>{try{if(!window.__audC){const A=window.AudioContext||window.webkitAudioContext;if(A)window.__audC=new A()}if(window.__audC&&window.__audC.state==='suspended')window.__audC.resume()}catch(_){}return window.__audC};
+window.__beep=()=>{window.__beeps=(window.__beeps||0)+1;try{const a=window.__aud();if(a){[0,.22].forEach((d,n)=>{const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+d;o.type='sine';o.frequency.value=n?1175:880;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.18);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.2)})}}catch(_){}try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(_){}};
+const rUpd=()=>{rq('#rest-t').textContent=`${Math.floor(rLeft/60)}:${String(rLeft%60).padStart(2,'0')}`;rq('#rest-b').style.width=Math.min(100,rLeft/rTot*100)+'%'};
+const rHide=()=>{clearInterval(restTimer);restEl.hidden=true;restEl.classList.remove('fim')};
+window.__restHide=rHide;
+startRest=function(sec,ctx){if(window.__restoring)return;clearInterval(restTimer);ctx=ctx||{};sec=+sec||0;if(sec<=0){rHide();return}
+  restEl.classList.add('inl');restEl.classList.remove('fim');if(ctx.after&&ctx.after.after)ctx.after.after(restEl);
+  rLeft=sec;rTot=sec;rq('#rest-l').textContent='Descanso';const nx=rq('#rest-nx');if(ctx.nx){nx.textContent='Próximo: '+ctx.nx;nx.hidden=false}else nx.hidden=true;
+  restEl.hidden=false;rUpd();rEnd=Date.now()+sec*1000;
+  restTimer=setInterval(()=>{rLeft=Math.max(0,Math.round((rEnd-Date.now())/1000));if(rLeft<=0){clearInterval(restTimer);window.__beep();restEl.classList.add('fim');rq('#rest-l').textContent='Descanso acabou';rq('#rest-t').textContent=ctx.lbl||'Próxima série';rq('#rest-b').style.width='100%';return}rUpd()},500)};
+rq('#rest-add').onclick=()=>{rEnd+=30000;rLeft+=30;rTot=Math.max(rTot,rLeft);restEl.classList.remove('fim');if(!restTimer||rLeft>0)rUpd()};
+rq('#rest-skip').onclick=()=>rHide();
+/* tela acesa durante o treino (o bip só toca com a tela ligada) */
+{let wl=null;const want=()=>TR.on&&document.visibilityState==='visible';const get=async()=>{try{if(want()&&!wl&&navigator.wakeLock){wl=await navigator.wakeLock.request('screen');wl.addEventListener('release',()=>{wl=null})}}catch(_){}};
+ const rel=()=>{try{wl&&wl.release()}catch(_){}wl=null};
+ const _stw=startTr;startTr=function(){const r=_stw.apply(this,arguments);get();return r};const _spw=stopTr;stopTr=function(){const r=_spw.apply(this,arguments);rel();rHide();return r};
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')get()})}
 document.querySelector('.tabs button[data-go="treino"]').addEventListener('click',()=>{if(!TR.on)renderTrHome()});
 window.trRefresh=()=>{if(CFG.semTreino&&TR.on)stopTr();renderTrHome()};
 
@@ -4333,6 +4346,12 @@ const tick=()=>{const T=window.__TRS,on=document.body.classList.contains('tr-on'
   if(T&&T.started&&(TR.done&&TR.done[T.k]==='hoje'&&finishedToday)){clear();return}
   const show=!!(T&&T.started&&!on);chip.hidden=!show;document.body.classList.toggle('tr-run',show);if(show)$('#tc-t').textContent=title(T.k)+' rodando • '+mm(Date.now()-T.t0)};
 setInterval(tick,1000);
+/* treino aberto vindo do servidor: volta o cronômetro e, ao reabrir o treino, as séries que já estavam marcadas */
+window.__trClear=clear;
+window.__trSet=function(row){window.__TRS={k:row.letter,started:true,t0:new Date(row.started_at).getTime()};window.__TRPEND=row;try{sessionStorage.setItem('cc_trs',JSON.stringify(window.__TRS))}catch(_){}};
+{const _stp=startTr;startTr=function(k,force){const r=_stp.apply(this,arguments);const P=window.__TRPEND;
+  if(P&&P.letter===k){window.__TRPEND=null;window.__restoring=1;try{(P.sets||[]).forEach(z=>{const kg=$(`#kg-${k}-${z.i}-${z.s}`),rp=$(`#rp-${k}-${z.i}-${z.s}`),ck=$(`[data-ck="${k}-${z.i}-${z.s}"]`);if(!ck)return;if(kg)kg.value=z.kg;if(rp)rp.value=z.reps;if(ck.getAttribute('aria-pressed')!=='true')ck.click()})}catch(e){console.error(e)}finally{window.__restoring=0}}
+  return r}}
 /* treino finalizado de verdade (confirmou): encerra o cronômetro, mesmo sendo outro treino ou refazer */
 document.addEventListener('click',e=>{if(!e.target.closest('#ctok'))return;setTimeout(()=>{const T=window.__TRS;if(T&&T.started&&!document.body.classList.contains('tr-on'))clear()},700)},true);
 /* voltou para o app com treino rodando: lembra */
@@ -6572,7 +6591,10 @@ p,small,.meta,.sub,li,label,.tag,.avb span{text-wrap:pretty}
 .pay94 .tot{display:flex;justify-content:space-between;font-weight:800;font-size:16px;padding:4px 0 2px}
 .pay94 .cc{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;margin:14px 0 10px}.pay94 .cc i{font-style:normal;font-weight:800;font-size:12px;border:1px solid var(--line);border-radius:5px;padding:3px 6px}
 .pay94 .cc span{flex:1;font-weight:650;font-size:14px}.pay94 .cc button{background:none;border:0;color:var(--muted);font:inherit;font-weight:700;font-size:13px}</style>
-<style>#sumbar{display:none!important}</style>
+<style>#sumbar{display:none!important}
+body:has(.scrim) #trchip{visibility:hidden!important}
+.rest.inl{grid-column:1/-1;position:static;left:auto;right:auto;bottom:auto;padding:0;margin:6px 0;z-index:auto}.rest.inl .rbx{padding:6px 10px;border-radius:14px;gap:6px 10px;grid-template-columns:auto minmax(0,1fr) auto auto}.rest.inl .rbx>div:first-child{display:flex;align-items:baseline;gap:8px}.rest.inl .rbx b{font-size:17px}.rest.inl .rbx small{font-size:10px}.rest.inl .rbx .bar{height:4px;width:100%;background:rgba(128,128,128,.28)}.rest.inl .rbx .bar>i{background:var(--ok)!important;min-width:2px}.rest.inl .rbx .btn{padding:4px 10px;font-size:12px;border-radius:10px;min-height:0}.rest.inl .rnx{display:block;padding:3px 12px 0;font-size:11.5px;font-weight:700;color:var(--muted)}.rest.inl.fim .rbx{border-color:var(--ok);background:var(--ok-bg)}.rest.inl.fim .rbx .bar>i{background:var(--ok)}
+</style>
 <style>
 /* modo real: esconde o que ainda é demonstração (treino, dieta, check-in, matilha) */
 body.rl-wait>*:not(#rl-ld){visibility:hidden}
@@ -6608,7 +6630,7 @@ const PF={locs:GO(sb.rpc('public_locs')),ci:GO(sb.rpc('cycle_info')),anm:Promise
   pz:GO(sb.rpc('minhas_pausas')),ml:GO(sb.from('meal_logs').select('day,meal_idx').eq('user_id',uid).not('done_at','is',null).gte('day',new Date(Date.now()-150*864e5).toISOString().slice(0,10)).limit(2000)),
   ref:GO(sb.rpc('my_ref')),  cic:GO(sb.rpc('public_ci')),gm:GO(sb.rpc('public_game')),pp:GO(sb.rpc('public_pers')),rk:GO(sb.rpc('public_rank')),tr:Promise.all([GO(sb.from('workouts').select('*').eq('user_id',uid).order('position')),GO(sb.from('workout_logs').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),
     GO(sb.from('daily_checkins').select('*').eq('user_id',uid).order('day',{ascending:false}).limit(400)),GO(sb.from('week_closes').select('*').eq('user_id',uid).order('week_start',{ascending:false})),GO(sb.from('awards').select('medal_id,tier').eq('user_id',uid))]),
-  rl:GO(sb.rpc('public_rules')),pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
+  rl:GO(sb.rpc('public_rules')),tra:GO(sb.from('treino_andamento').select('*').eq('user_id',uid).maybeSingle()),pr:GO(sb.rpc('public_prices')),ph:GO(sb.from('requests').select('created_at,plan_period,pay_amount,freq').eq('student_id',uid).eq('pay_status','pago').order('created_at',{ascending:false})),
   pq:pExp.then(()=>GO(sb.from('requests').select('pay_status,pay_due,pay_amount').eq('student_id',uid).in('pay_status',['pendente','informado']).limit(1)))};
 const {data:P,error:e1}=await sb.from('profiles').select('*').eq('id',uid).single();
 if(e1||!P)return fail('Não deu para abrir seu perfil.');
@@ -7149,7 +7171,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   P.forEach(w=>{const k=w.letter,days=w.exercises.days||[];ORD.push(k);MUS[k]=[];FIXN[k]=days.length?DS[days[0]]:'';
     (window.__PLOBS=window.__PLOBS||{})[k]=String((w.exercises&&w.exercises.obs)||'').trim();PLANS[k]={title:'Treino '+k,focus:w.title||('Treino '+k),day:days.length?days.map(d=>DL[d]).join(' e '):'quando puder',
       ex:w.exercises.ex.filter(e=>!e.cd).map(e=>{const S=(e.s&&e.s.length?e.s:[[0,10]]),reps=String(S[0][1]||10),rn=parseInt(reps)||10,lp=lastSets(e.n);
-        return {rr:String(S[0][1]||10).replace('-',' a '),mt:Array.isArray(e.mets)?e.mets:[],lk:!!e.link,name:e.n,yt:/^https?:\/\//i.test(e.yt||'')?e.yt:'',sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
+        return {rr:String(S[0][1]||10).replace('-',' a '),mt:Array.isArray(e.mets)?e.mets:[],lk:!!e.link,lkid:e.link||0,rx:(e.rx==null?undefined:(+e.rx||0)),name:e.n,yt:/^https?:\/\//i.test(e.yt||'')?e.yt:'',sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
           tg:S.some(z=>+z[0]>0)?S.map(z=>[+z[0]||0,rn]):undefined}})}});
   const WKP=[0,1,2,3,4,5,6].map(i=>{const k=ORD.find(k=>(P.find(w=>w.letter===k).exercises.days||[]).includes(i));return k?{k}:(cf.cardio||[]).includes(i)?{c:1}:{r:1}});
   const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-TI),we=new Date(ws.getTime()+6*864e5),inW=d=>d>=ymd(ws)&&d<=ymd(we);
@@ -7186,7 +7208,27 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
    else{const r=await sb.from('workout_logs').insert(row);error=r.error;if(!error)LOGS.unshift(row)}
    if(error)toast('Não salvou o treino: '+error.message);else delete t0[k]};
  /* só salva quando o aluno confirma (#ctok). Antes, o clique em Finalizar já salvava o treino pela metade. */
- let busy=0;document.addEventListener('click',e=>{const b=e.target.closest('#ctok');if(!b||busy)return;const k=window.__curPlan,data=grab(k);busy=1;setTimeout(async()=>{try{if((window.__TRX&&window.__TRX.done[k]==='hoje')||(k===window.__TK&&window.__finToday))await fin(k,data)}finally{busy=0}},400)},true)}
+ let busy=0;document.addEventListener('click',e=>{const b=e.target.closest('#ctok');if(!b||busy)return;const k=window.__curPlan,data=grab(k);busy=1;window.__trFinAt=Date.now();setTimeout(async()=>{try{if((window.__TRX&&window.__TRX.done[k]==='hoje')||(k===window.__TK&&window.__finToday)){await fin(k,data);try{await sb.from('treino_andamento').delete().eq('user_id',uid)}catch(_){}}}finally{busy=0}},400)},true);
+
+ /* treino aberto: guarda no servidor (séries, cargas, hora de início) para sobreviver ao fechar o app */
+ let sy=null;const syncOpen=()=>{clearTimeout(sy);sy=setTimeout(async()=>{try{if(Date.now()-(window.__trFinAt||0)<6000)return;const T=window.__TRS;if(!T||!T.started)return;const d=grab(T.k);if(!d)return;
+   await sb.from('treino_andamento').upsert({user_id:uid,letter:T.k,started_at:new Date(T.t0||Date.now()).toISOString(),sets:d.sets,updated_at:new Date().toISOString()},{onConflict:'user_id'})}catch(_){}},900)};
+ document.addEventListener('click',e=>{if(e.target.closest('.ck[data-ck]'))syncOpen()},false);document.addEventListener('input',e=>{if(e.target.closest('[id^="kg-"],[id^="rp-"]'))syncOpen()},false)}
+
+
+/* treino que ficou aberto: volta o que estava marcado e avisa */
+try{const R=((await PF.tra)||{}).data;
+ if(R&&R.letter&&window.__RD&&window.__RD.PLANS&&window.__RD.PLANS[R.letter]){const age=Date.now()-new Date(R.started_at).getTime();
+  if(age>=24*36e5){try{await sb.rpc('finish_my_treino')}catch(_){}}
+  else{window.__trSet&&window.__trSet(R);
+   const forgot=()=>{const P=window.__RD.PLANS[R.letter],mm=Math.max(1,Math.round((Date.now()-new Date(R.started_at))/6e4)),h=Math.floor(mm/60),m=mm%60,when=h?h+'h'+String(m).padStart(2,'0'):mm+' min',n=(R.sets||[]).length,tot=P.ex.reduce((a,e)=>a+e.sets,0);
+    window.sheet(`<span class="lbl">Treino ainda aberto</span><p class="d" style="font-size:32px;margin:6px 0 6px">${P.title} não foi finalizado</p><p class="meta">Começou há ${when}. ${n?`Você marcou ${n} de ${tot} séries. Quer salvar o que já fez?`:'Você ainda não marcou nenhuma série.'}</p>
+     ${n?'<button class="btn solid wide" id="fg-ok" style="margin-top:12px">Finalizar e salvar</button>':''}<button class="btn wide" id="fg-go" style="margin-top:8px">Continuar treinando</button><button class="lnk" id="fg-no" style="display:block;margin:12px auto 0;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;font-weight:700;text-decoration:underline">Descartar treino</button>`,s=>{
+     const ok=s.querySelector('#fg-ok');if(ok)ok.onclick=async()=>{ok.disabled=true;const {error}=await sb.rpc('finish_my_treino');if(error){ok.disabled=false;return window.toast('Não salvou: '+error.message)}location.reload()};
+     s.querySelector('#fg-go').onclick=()=>{s.remove();const c=document.getElementById('trchip');if(c)c.click()};
+     const no=s.querySelector('#fg-no');let armed=0;no.onclick=async()=>{if(!armed){armed=1;no.textContent='Tem certeza? Toque de novo para descartar';return}await sb.from('treino_andamento').delete().eq('user_id',uid);window.__TRPEND=null;window.__trClear&&window.__trClear();s.remove();window.toast('Treino descartado')}})};
+   window.__trForgot=forgot;
+   if(age>=60*6e4)setTimeout(forgot,1500)}}}catch(e){console.error(e)}
 document.addEventListener('click',e=>{if(e.target.closest('#finish,#finish2,#ctok,[data-finish]')){const k=()=>{const r=document.getElementById('rest');if(r&&!r.hidden){const sk=document.getElementById('rest-skip');sk&&sk.click();r.hidden=true}};setTimeout(k,30);setTimeout(k,400)}},true);
 setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&window.__finToday&&!document.querySelector('#v-treino:not([hidden]) .ck[aria-pressed="false"]')){const sk=document.getElementById('rest-skip');sk&&sk.click()}}catch(_){}},1500);
 {const st=document.createElement('style');st.textContent=`.toast{position:fixed!important;left:50%!important;top:auto!important;right:auto!important;bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;transform:translateX(-50%)!important;background:rgba(32,33,37,.96)!important;color:#f1f0eb!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;padding:10px 14px!important;font:650 13.5px/1.35 inherit!important;max-width:min(340px,calc(100% - 40px))!important;width:max-content!important;text-align:center!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important;z-index:9999!important;animation:rlT .22s ease-out!important;pointer-events:none}@keyframes rlT{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}`;document.head.appendChild(st)}

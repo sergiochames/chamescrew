@@ -1830,6 +1830,7 @@ function exSheet(i){const P=CUR().plans[T2.sel],e=P.ex[i],last=i===P.ex.length-1
       <div class="exr"><span><b>Repetições</b><small>${rv?'todas iguais • ':''}<button class="lnk" data-ess>${e._ss?'fechar série a série':'série a série'}</button></small></span><span class="stp"><button data-erp="-1" aria-label="Menos repetições" ${rv?'':'disabled'}>−</button><b data-rpall class="tapv">${rv||'variam'}</b><button data-erp="1" aria-label="Mais repetições" ${rv?'':'disabled'}>+</button></span></div>
       ${e._ss?`<div class="exss">${e.s.map((r,k)=>`<div class="serl"><span class="sn">${k+1}ª</span><button class="repbtn" data-rp="${k}">${esc(String(r[1]).replace('-',' a '))} <small>reps</small> <i>▾</i></button><button class="xx" data-erm="${k}" aria-label="Tirar série ${k+1}" ${e.s.length<2?'disabled':''}>×</button></div>`).join('')}</div>`:''}
       <div class="exr"><span><b>Descanso</b>${e.link&&P.ex[i+1]&&P.ex[i+1].link===e.link?'<small>conjugado • vai direto pro próximo</small>':''}</span><span class="stp"><button data-ert="-15" aria-label="Menos descanso">−</button><b>${e.rest}s</b><button data-ert="15" aria-label="Mais descanso">+</button></span></div>
+      ${i<P.ex.length-1&&!(e.link&&P.ex[i+1]&&P.ex[i+1].link===e.link)?`<div class="exr"><span><b>Descanso até o próximo exercício</b><small>${esc(P.ex[i+1].n)}</small></span><span class="stp"><button data-ertx="-15" aria-label="Menos descanso entre exercícios">−</button><b>${e.rx==null?e.rest:e.rx}s</b><button data-ertx="15" aria-label="Mais descanso entre exercícios">+</button></span></div>`:''}
     </div>
     <p class="note" style="margin:-4px 2px 0">A carga quem registra é o aluno.${Math.max(0,...e.s.map(r=>+r[0]||0))?` Última dele: <b>${String(Math.max(...e.s.map(r=>+r[0]||0))).replace('.',',')} kg</b>.`:''}</p>
     <div class="exg">
@@ -1871,6 +1872,7 @@ function exSheet(i){const P=CUR().plans[T2.sel],e=P.ex[i],last=i===P.ex.length-1
     if(t.closest('[data-eadd]')){e.s.push([...e.s[e.s.length-1]]);re()}
     if((b=t.closest('[data-erm]'))){if(e.s.length>1)e.s.splice(+b.dataset.erm,1);re()}
     if((b=t.closest('[data-ert]'))){e.rest=Math.max(0,e.rest+ +b.dataset.ert);re()}
+    if((b=t.closest('[data-ertx]'))){e.rx=Math.max(0,(e.rx==null?e.rest:e.rx)+ +b.dataset.ertx);re()}
     if(t.closest('[data-ess]')){ev.preventDefault();e._ss=!e._ss;re();return}
     if((b=t.closest('[data-erp]'))){const d=+b.dataset.erp;e.s.forEach(z=>{const m=String(z[1]).split('-').map(Number);z[1]=m.length>1&&m[1]?Math.max(1,m[0]+d)+'-'+Math.max(2,m[1]+d):Math.max(1,(m[0]||10)+d)});re();return}
     if((b=t.closest('[data-emt]'))){const k=b.dataset.emt;e.mets=e.mets.includes(k)?e.mets.filter(x=>x!==k):[...e.mets,k];if(k==='fst7'&&e.mets.includes(k)){e.s=Array.from({length:7},()=>[e.s[0][0],10]);e.rest=40}if(k==='gvt'&&e.mets.includes(k)){e.s=Array.from({length:10},()=>[e.s[0][0],10]);e.rest=75}re()}
