@@ -4333,6 +4333,8 @@ const tick=()=>{const T=window.__TRS,on=document.body.classList.contains('tr-on'
   if(T&&T.started&&(TR.done&&TR.done[T.k]==='hoje'&&finishedToday)){clear();return}
   const show=!!(T&&T.started&&!on);chip.hidden=!show;document.body.classList.toggle('tr-run',show);if(show)$('#tc-t').textContent=title(T.k)+' rodando • '+mm(Date.now()-T.t0)};
 setInterval(tick,1000);
+/* treino finalizado de verdade (confirmou): encerra o cronômetro, mesmo sendo outro treino ou refazer */
+document.addEventListener('click',e=>{if(!e.target.closest('#ctok'))return;setTimeout(()=>{const T=window.__TRS;if(T&&T.started&&!document.body.classList.contains('tr-on'))clear()},700)},true);
 /* voltou para o app com treino rodando: lembra */
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')return;const T=window.__TRS;if(!T||!T.started||document.body.classList.contains('tr-on'))return;
   try{sheet(`<span class="lbl">Treino em andamento</span><p class="d" style="font-size:30px;margin:4px 0 8px">${title(T.k)} está rodando</p><p class="meta">Começou há ${mm(Date.now()-T.t0)}. Volte para marcar as séries e finalizar, senão não conta no seu dia.</p><button class="btn solid wide" id="tr-rv" style="margin-top:12px">Voltar ao treino</button>`,s=>{s.querySelector('#tr-rv').onclick=()=>{s.remove();chip.click()}})}catch(_){}});
@@ -7177,8 +7179,14 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
    const kgI=document.getElementById(`kg-${k}-${i}-${s}`),rpI=document.getElementById(`rp-${k}-${i}-${s}`);const kg=parseFloat(String((kgI&&(kgI.value||kgI.placeholder))||0).replace(',','.'))||0,rp=parseInt((rpI&&(rpI.value||rpI.placeholder))||0)||0;
    vol+=kg*rp;sets.push({i,s,n:e.name,kg,reps:rp,done:true})}});return {sets,vol}};
  const fin=async(k,data)=>{if(!data||!data.sets.length)return;const row={user_id:uid,letter:k,day:TODAY,sets:data.sets,volume_kg:Math.round(data.vol*10)/10,duration_min:t0[k]?Math.max(1,Math.round((Date.now()-t0[k])/60000)):null,finished_at:new Date().toISOString()};
-   const w=(WK||[]).find(x=>x.letter===k);if(w)row.workout_id=w.id;const {error}=await sb.from('workout_logs').insert(row);if(error)toast('Não salvou o treino: '+error.message);else{delete t0[k];LOGS.unshift(row)}};
- const saved=new Set();document.addEventListener('click',e=>{const b=e.target.closest('#finish,#finish2,#ctok');if(!b)return;const k=window.__curPlan,data=grab(k);setTimeout(()=>{if(saved.has(k))return;if((window.__TRX&&window.__TRX.done[k]==='hoje')||(k===window.__TK&&window.__finToday)){saved.add(k);fin(k,data)}},400)},true)}
+   const w=(WK||[]).find(x=>x.letter===k);if(w)row.workout_id=w.id;
+   /* refazer no mesmo dia: atualiza o registro de hoje em vez de ignorar (o dia conta uma vez só) */
+   const ex=LOGS.findIndex(l=>l.day===TODAY&&l.letter===k);let error;
+   if(ex>=0){const r=await sb.from('workout_logs').update({sets:row.sets,volume_kg:row.volume_kg,duration_min:row.duration_min,finished_at:row.finished_at}).eq('user_id',uid).eq('letter',k).eq('day',TODAY);error=r.error;if(!error)Object.assign(LOGS[ex],row)}
+   else{const r=await sb.from('workout_logs').insert(row);error=r.error;if(!error)LOGS.unshift(row)}
+   if(error)toast('Não salvou o treino: '+error.message);else delete t0[k]};
+ /* só salva quando o aluno confirma (#ctok). Antes, o clique em Finalizar já salvava o treino pela metade. */
+ let busy=0;document.addEventListener('click',e=>{const b=e.target.closest('#ctok');if(!b||busy)return;const k=window.__curPlan,data=grab(k);busy=1;setTimeout(async()=>{try{if((window.__TRX&&window.__TRX.done[k]==='hoje')||(k===window.__TK&&window.__finToday))await fin(k,data)}finally{busy=0}},400)},true)}
 document.addEventListener('click',e=>{if(e.target.closest('#finish,#finish2,#ctok,[data-finish]')){const k=()=>{const r=document.getElementById('rest');if(r&&!r.hidden){const sk=document.getElementById('rest-skip');sk&&sk.click();r.hidden=true}};setTimeout(k,30);setTimeout(k,400)}},true);
 setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&window.__finToday&&!document.querySelector('#v-treino:not([hidden]) .ck[aria-pressed="false"]')){const sk=document.getElementById('rest-skip');sk&&sk.click()}}catch(_){}},1500);
 {const st=document.createElement('style');st.textContent=`.toast{position:fixed!important;left:50%!important;top:auto!important;right:auto!important;bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;transform:translateX(-50%)!important;background:rgba(32,33,37,.96)!important;color:#f1f0eb!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;padding:10px 14px!important;font:650 13.5px/1.35 inherit!important;max-width:min(340px,calc(100% - 40px))!important;width:max-content!important;text-align:center!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important;z-index:9999!important;animation:rlT .22s ease-out!important;pointer-events:none}@keyframes rlT{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}`;document.head.appendChild(st)}
