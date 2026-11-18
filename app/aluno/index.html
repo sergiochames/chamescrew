@@ -6770,7 +6770,7 @@ function agBox(){const V=document.getElementById('v-hoje'),au=document.getElemen
  const A=window.__CYA||1,m=now.getDate()>=A?now.getMonth()+1:(now.getMonth()||12),cc=AG.canc.filter(c=>c.ok).length;AG.remM[m]=Math.max(0,(CI.used||0)-Math.min(cc,CI.used||0));AG.credM[m]=Math.min(cc,CI.used||0);if(m===10)AG.rem=AG.remM[m]}
 /* pedidos aguardando o personal */
 (CL||[]).filter(c=>c.status==='pedido').forEach(c=>{const d=new Date(c.starts_at),k=keyOf(dayN(d)),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:'pedido',note:c.note,k,h,kind:c.kind};
-  if(c.note&&c.note.startsWith('mv:')){const x=AG.slots.find(z=>z._id===c.note.slice(3));if(x){x.pend={d:x.d,h:x.h,over:false,wasExtra:!!x.extra,mo:d.getMonth()+1};x.d=k;x.h=h;x._req=c.id}return}
+  if(c.note&&c.note.startsWith('mv:')){const x=AG.slots.find(z=>z._id===c.note.slice(3));if(x){const mo=window.MONOF_X?window.MONOF_X(x.d):(d.getMonth()+1);/* pedido de remarcação aguardando já gasta uma mudança, como logo depois de pedir (antes sumia ao atualizar) */AG.remM[mo]=(AG.remM[mo]||0)+1;if(mo===10)AG.rem=AG.remM[mo];x.pend={d:x.d,h:x.h,over:false,wasExtra:!!x.extra,mo};x.d=k;x.h=h;x._req=c.id}return}
   AG.slots.push({d:k,h,conf:false,extra:c.kind==='extra',paid:c.note==='xcred'||c.note==='xpix'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,pend:{novo:true,credit:c.kind==='credito'},_id:c.id,_ped:1,loc:c.location||window.__LOC0})});
 try{R1.syncCred&&R1.syncCred()}catch(_){}
 {const fc=(CL||[]).find(c=>c.status!=='cancelada');if(fc){const d=new Date(fc.starts_at),A=window.__CYA;window.__CYM0=d.getDate()>=A?d.getMonth()+1:(d.getMonth()||12)}}
