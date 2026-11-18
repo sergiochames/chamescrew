@@ -7204,8 +7204,11 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
    const w=(WK||[]).find(x=>x.letter===k);if(w)row.workout_id=w.id;
    /* refazer no mesmo dia: atualiza o registro de hoje em vez de ignorar (o dia conta uma vez só) */
    const ex=LOGS.findIndex(l=>l.day===TODAY&&l.letter===k);let error;
-   if(ex>=0){const r=await sb.from('workout_logs').update({sets:row.sets,volume_kg:row.volume_kg,duration_min:row.duration_min,finished_at:row.finished_at}).eq('user_id',uid).eq('letter',k).eq('day',TODAY);error=r.error;if(!error)Object.assign(LOGS[ex],row)}
-   else{const r=await sb.from('workout_logs').insert(row);error=r.error;if(!error)LOGS.unshift(row)}
+   let upd=false;
+   if(ex>=0){const r=await sb.from('workout_logs').update({sets:row.sets,volume_kg:row.volume_kg,duration_min:row.duration_min,finished_at:row.finished_at}).eq('user_id',uid).eq('letter',k).eq('day',TODAY).select('id');error=r.error;
+    /* o registro pode ter sumido (outro aparelho, equipe): se nada foi atualizado, cria de novo em vez de perder o treino */
+    if(!error&&r.data&&r.data.length){upd=true;Object.assign(LOGS[ex],row)}else if(!error)LOGS.splice(ex,1)}
+   if(!upd&&!error){const r=await sb.from('workout_logs').insert(row);error=r.error;if(!error)LOGS.unshift(row)}
    if(error)toast('Não salvou o treino: '+error.message);else delete t0[k]};
  /* só salva quando o aluno confirma (#ctok). Antes, o clique em Finalizar já salvava o treino pela metade. */
  let busy=0;document.addEventListener('click',e=>{const b=e.target.closest('#ctok');if(!b||busy)return;const k=window.__curPlan,data=grab(k);busy=1;window.__trFinAt=Date.now();setTimeout(async()=>{try{if((window.__TRX&&window.__TRX.done[k]==='hoje')||(k===window.__TK&&window.__finToday)){await fin(k,data);try{await sb.from('treino_andamento').delete().eq('user_id',uid)}catch(_){}}}finally{busy=0}},400)},true);
