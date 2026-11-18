@@ -971,6 +971,10 @@ body:has(#trprev:not([hidden])) #v-treino .ck{opacity:.45}
 #v-treino .ex.fut{opacity:.6;cursor:pointer}
 #v-treino .ex.fut h3{font-size:20px!important}
 #v-treino .ex.fut .exn{display:none}
+
+/* fim do descanso: só um anel na próxima série */
+#v-treino .sets .ck.nxt{border-color:var(--ok)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 35%,transparent);animation:nxp 1.4s ease-in-out 3}
+@keyframes nxp{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--ok) 10%,transparent)}}
 </style>
 
 <div class="app">
@@ -3937,12 +3941,12 @@ window.__audC=null;window.__aud=()=>{try{if(!window.__audC){const A=window.Audio
 window.__beep=()=>{window.__beeps=(window.__beeps||0)+1;try{const a=window.__aud();if(a){[0,.22].forEach((d,n)=>{const o=a.createOscillator(),g=a.createGain(),t=a.currentTime+d;o.type='sine';o.frequency.value=n?1175:880;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(.4,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+.18);o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+.2)})}}catch(_){}try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(_){}};
 const rUpd=()=>{rq('#rest-t').textContent=`${Math.floor(rLeft/60)}:${String(rLeft%60).padStart(2,'0')}`;rq('#rest-b').style.width=Math.min(100,rLeft/rTot*100)+'%'};
 const rHide=()=>{clearInterval(restTimer);restEl.hidden=true;restEl.classList.remove('fim')};
-window.__restHide=rHide;
+window.__restHide=rHide;document.addEventListener('click',e=>{if(e.target.closest('.ck[data-ck]'))document.querySelectorAll('.ck.nxt').forEach(c=>c.classList.remove('nxt'))},true);
 startRest=function(sec,ctx){if(window.__restoring)return;clearInterval(restTimer);ctx=ctx||{};sec=+sec||0;if(sec<=0){rHide();return}
   restEl.classList.add('inl');restEl.classList.remove('fim');if(ctx.after&&ctx.after.after)ctx.after.after(restEl);
   rLeft=sec;rTot=sec;rq('#rest-l').textContent='Descanso';const nx=rq('#rest-nx');if(ctx.nx){nx.textContent='Próximo: '+ctx.nx;nx.hidden=false}else nx.hidden=true;
   restEl.hidden=false;rUpd();rEnd=Date.now()+sec*1000;
-  restTimer=setInterval(()=>{rLeft=Math.max(0,Math.round((rEnd-Date.now())/1000));if(rLeft<=0){clearInterval(restTimer);window.__beep();restEl.classList.add('fim');rq('#rest-l').textContent='Descanso acabou';rq('#rest-t').textContent=ctx.lbl||'Próxima série';rq('#rest-b').style.width='100%';return}rUpd()},500)};
+  restTimer=setInterval(()=>{rLeft=Math.max(0,Math.round((rEnd-Date.now())/1000));if(rLeft<=0){clearInterval(restTimer);window.__beep();rHide();try{const P=window.__curPlan;document.querySelectorAll('.ck.nxt').forEach(c=>c.classList.remove('nxt'));const n=[...document.querySelectorAll(`#v-treino .ck[data-ck^="${P}-"]`)].find(c=>c.getAttribute('aria-pressed')!=='true'&&c.offsetParent);if(n)n.classList.add('nxt')}catch(_){}return}rUpd()},500)};
 rq('#rest-add').onclick=()=>{rEnd+=30000;rLeft+=30;rTot=Math.max(rTot,rLeft);restEl.classList.remove('fim');if(!restTimer||rLeft>0)rUpd()};
 rq('#rest-skip').onclick=()=>rHide();
 /* tela acesa durante o treino (o bip só toca com a tela ligada) */
@@ -4350,7 +4354,7 @@ const title=k=>{try{return PLANS[k].title}catch(_){return 'Treino'}};
 const start=()=>{const T=window.__TRS;if(!T||T.started)return;T.started=true;T.t0=Date.now();bar.hidden=true;try{sessionStorage.setItem('cc_trs',JSON.stringify(T))}catch(_){}};
 const clear=()=>{window.__TRS=null;chip.hidden=true;bar.hidden=true;document.body.classList.remove('tr-run');try{sessionStorage.removeItem('cc_trs')}catch(_){}};
 window.__trClear=clear;
-const _st=startTr;startTr=function(k,force){const T=window.__TRS;if(!T||T.k!==k){window.__TRS={k,started:false,t0:null}}_st(k,force);place();bar.hidden=!!window.__TRS.started||!!finishedToday;chip.hidden=true};
+const _st=startTr;startTr=function(k,force){const T=window.__TRS;if(!T||T.k!==k){window.__TRS={k,started:false,t0:null}}_st(k,force);place();bar.hidden=!!window.__TRS.started;chip.hidden=true};
 document.addEventListener('click',e=>{if(e.target.closest('#tp-go')){start();return}if(e.target.closest('#tp-pdf,#tp-pdf2')){try{const MN={drop:'Drop-set',rest:'Rest-pause',cluster:'Cluster',pirc:'Pirâmide crescente',pird:'Pirâmide decrescente',fst7:'FST-7',gvt:'GVT 10×10',neg:'Negativa',iso:'Isometria',myo:'Myo-reps',s21:'Série 21'};
     let pp={};try{pp=JSON.parse(localStorage.getItem('cc_pers')||'{}')||{}}catch(_){}const now=new Date(),MS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     const ks=(typeof ORD!=='undefined'&&ORD.length?ORD:Object.keys(PLANS)).filter(k=>PLANS[k]&&PLANS[k].ex&&PLANS[k].ex.length);
