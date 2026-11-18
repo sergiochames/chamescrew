@@ -4103,8 +4103,8 @@ const _ac8=actSheet;actSheet=function(i){const x=AG.slots[i];if(!x||!x.pend){_ac
   sheet(`<span class="lbl">${x.pend.novo?'Pedido de aula':'Pedido de remarcação'}</span><p class="d" style="font-size:40px;margin:6px 0 2px">${dlab(x.d)} • ${hh2(x.h)}</p>
    <div class="avb"><b>Aguardando o ${PN()} confirmar.</b><span>${x.pend.novo?'Você recebe um aviso quando ele responder.':`Enquanto isso, sua aula de ${dlab(x.pend.d)} • ${hh2(x.pend.h)} continua garantida.`}</span></div>
    <button class="btn wide" id="pc-x">Cancelar pedido</button>
-   <p class="lbl" style="margin:16px 0 6px">Prévia: resposta do personal</p><div class="grid2"><button class="btn small solid" id="pc-ok">${PN()} confirmou</button><button class="btn small" id="pc-no">${PN()} recusou</button></div>`,
-   s=>{s.querySelector('#pc-x').onclick=()=>{s.remove();resolvePend(x,false,true);toast('Pedido cancelado.')};s.querySelector('#pc-ok').onclick=()=>{s.remove();resolvePend(x,true)};s.querySelector('#pc-no').onclick=()=>{s.remove();resolvePend(x,false)}})};
+   `,
+   s=>{s.querySelector('#pc-x').onclick=()=>{s.remove();resolvePend(x,false,true);toast('Pedido cancelado.')}})};
 const _rc8=renderCal;renderCal=function(){_rc8();$$('#ag-free [data-agact]').forEach(r=>{const x=AG.slots[+r.getAttribute('data-agact')];if(x&&x.pend){r.classList.add('pend');const sp=r.querySelector('span');if(sp)sp.innerHTML=`Aguardando<small>${PN()} ainda vai confirmar</small>`}})};
 const _rn8=renderNext;renderNext=function(){_rn8();const x=nextSlot();if(!x||!x.pend)return;const el=$('#ag-next .agn');if(!el)return;
   el.querySelector('.agtg').innerHTML=`<span class="tag t-mv">⏳ Aguardando o ${PN()} confirmar</span>`;el.querySelector('.agnm').textContent=x.pend.novo?'Você recebe um aviso quando ele responder.':`Se ele não puder, sua aula volta para ${dlab(x.pend.d)} • ${hh2(x.pend.h)}.`;
@@ -6693,7 +6693,7 @@ const DB={};
 (CL||[]).forEach(c=>{if(c.status==='pedido')return;const d=new Date(c.starts_at),n=dayN(d),k=keyOf(n),h=d.getHours()+d.getMinutes()/60;DB[c.id]={st:c.status,note:c.note,k,h,kind:c.kind};
   if(c.status==='cancelada'&&c.kind==='extra'){if(c.note==='xcrok'||(/^xusado:/.test(c.note||'')&&!(CL||[]).some(z=>z.id===c.note.slice(7)))){AG.xcr++;AG.xcrIds.push(c.id)}return}
   if(c.status==='cancelada'&&c.note==='pausa')return;
-  if(c.status==='cancelada'){const cr=c.note==='credito',tc=/^pcan/.test(c.note||'');AG.canc.push({d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
+  if(c.status==='cancelada'){const cr=c.note==='credito',tc=/^pcan/.test(c.note||'');AG.canc.push({_at:new Date(c.updated_at||Date.now()).getTime(),d:k,h,ok:cr,why:cr?'':'dada',kind:cr?'credito':'dada',mo:d.getMonth()+1,slot:{d:k,h,conf:false,fix:1,_id:c.id,loc:c.location}});
     if(cr&&d>new Date(now.getTime()-30*864e5))AG.creds.push({from:k,exp:n+30,_id:c.id});if(!cr&&!tc)AG.dadas.push({d:k,h});return}
   AG.slots.push({d:k,h,conf:c.status==='confirmada'||c.status==='feita',here:c.status==='feita'&&/^chegou /.test(c.note||'')?c.note.slice(7):undefined,fix:c.fixed_id?1:0,extra:c.kind==='extra',paid:c.note==='xcred'||c.note==='xpix'||undefined,_xcred:c.note==='xcred'||undefined,rep:c.kind==='credito'?'cr':undefined,_id:c.id,loc:c.location||window.__LOC0||undefined})});
 try{sb.rpc('extra_em_aberto_qtd',{p_student:uid}).then(({data})=>{window.__XOPEN=+data||0})}catch(_){}
@@ -7397,8 +7397,13 @@ document.querySelectorAll('button').forEach(b=>{if(b.textContent.trim()==='Minha
 let busy=false;
 async function sync(){if(busy)return;busy=true;try{
   const live=new Map(AG.slots.filter(x=>x._id).map(x=>[x._id,x]));
+  /* pedido cancelado pelo aluno: apaga no banco (antes só sumia da tela e voltava ao atualizar) */
+  for(const id in DB){const db=DB[id];if(db.st!=='pedido'||db._gone)continue;const mvx=AG.slots.find(z=>z._req===id);
+    const alive=mvx?!!mvx.pend:AG.slots.some(z=>z._id===id);if(alive)continue;db._gone=1;
+    const {error}=await sb.rpc('cancel_my_pedido',{p_id:id});if(error){db._gone=0;toast('Não cancelou o pedido: '+error.message);continue}
+    if(mvx)delete mvx._req;delete DB[id]}
   for(const id in DB){const x=live.get(id),db=DB[id];if(db.st==='pedido')continue;let to=null,note=db.note;
-    if(x){if(db.st==='cancelada')to=x.conf?'confirmada':'marcada';else if(x.conf&&db.st!=='confirmada'&&db.st!=='feita')to='confirmada';else if(!x.conf&&db.st==='confirmada')to='marcada'}
+    if(x){if(db.st==='cancelada'){to=x.conf?'confirmada':'marcada';note=null}else if(x.conf&&db.st!=='confirmada'&&db.st!=='feita')to='confirmada';else if(!x.conf&&db.st==='confirmada')to='marcada'}
     else if(db.st!=='cancelada'){const c=AG.canc.find(c=>c.slot&&c.slot._id===id);if(c){to='cancelada';note=c.kind==='extra'?(c.xok?'xcr':'xdada'):(c.kind==='credito'||c.ok?'credito':'dada')}}
     if(!to)continue;const {error}=await sb.from('classes').update({status:to,note}).eq('id',id);
     if(error){toast(/próxima/.test(error.message)?'Só dá para confirmar a próxima aula':'Não salvou: '+error.message);if(x&&to==='confirmada')x.conf=false;continue}
@@ -7422,6 +7427,9 @@ async function loadFree(){try{const {data}=await sb.rpc('free_slots',{p_days:21}
 loadFree();
 try{sb.rpc('public_pix').then(({data})=>{if(data)window.__PIX=data})}catch(_){}
 try{sb.rpc('public_prices').then(({data})=>{if(data&&+data.avulsa>0){window.AVU=+data.avulsa;try{AVU=+data.avulsa}catch(_){}try{window.__setAVU&&window.__setAVU(+data.avulsa)}catch(_){}}})}catch(_){}
+/* desfazer cancelamento: só no mesmo dia em que cancelou (depois confunde créditos e agenda) */
+try{window.AUTOX&&(window.AUTOX.on=!!window.__AUTO)}catch(_){}
+{const _u=window.UNC_OK;if(_u)window.UNC_OK=c=>{if(!c)return false;if(!c._at)c._at=Date.now();return new Date(c._at).toDateString()===new Date().toDateString()&&_u(c)}}
 const _aaR=R1.agAll;R1.setAA(function(){_aaR.apply(this,arguments);setTimeout(sync,0)});
 window.addEventListener('click',()=>setTimeout(sync,50),true);
 
