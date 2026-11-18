@@ -946,6 +946,9 @@ body:not(.dlock) #dlock{display:none}
 .dup,.dpdf{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:12px;align-items:center;cursor:pointer}
 .dup b,.dpdf b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dup small,.dpdf small{display:block;color:var(--muted);font-weight:600;font-size:12.5px}
 .dform .agree span{font-weight:700;font-size:14px}
+
+/* ao passar para o próximo exercício, o nome fica abaixo do topo fixo */
+#v-treino [id^="ex-"]{scroll-margin-top:74px}
 </style>
 
 <div class="app">
