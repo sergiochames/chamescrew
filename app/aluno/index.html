@@ -975,6 +975,44 @@ body:has(#trprev:not([hidden])) #v-treino .ck{opacity:.45}
 /* fim do descanso: só um anel na próxima série */
 #v-treino .sets .ck.nxt{border-color:var(--ok)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 35%,transparent);animation:nxp 1.4s ease-in-out 3}
 @keyframes nxp{50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--ok) 10%,transparent)}}
+
+/* ===== treino em vidro (liquid glass) ===== */
+body.tr-on{--gl1:color-mix(in srgb,var(--fg) 11%,transparent);--gl2:color-mix(in srgb,var(--fg) 4%,transparent);--glb:color-mix(in srgb,var(--fg) 14%,transparent);--glh:color-mix(in srgb,var(--fg) 18%,transparent)}
+body.tr-on::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+ background:radial-gradient(420px 300px at 8% 10%,rgba(120,200,160,.22),transparent 62%),radial-gradient(380px 320px at 100% 48%,rgba(110,130,255,.17),transparent 62%),radial-gradient(360px 300px at 15% 98%,rgba(255,170,120,.12),transparent 62%)}
+body.tr-on #v-treino article.ex:not(.closed){background:linear-gradient(160deg,var(--gl1),var(--gl2))!important;border:1px solid var(--glb)!important;border-radius:26px!important;
+ box-shadow:inset 0 1px 0 var(--glh),0 10px 30px rgba(0,0,0,.28)!important;backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);padding:16px!important;margin:12px 0!important;color:var(--fg)!important}
+body.tr-on #v-treino .sets input{background:color-mix(in srgb,var(--bg) 55%,transparent)!important;border:1px solid var(--glb)!important}
+body.tr-on #v-treino .sets .ck{border-color:color-mix(in srgb,var(--fg) 30%,transparent)!important;background:transparent}
+body.tr-on #v-treino .sets .ck[aria-pressed="true"]{background:var(--ok)!important;border-color:var(--ok)!important;color:var(--bg)!important}
+/* exercício feito: faixa verde fina */
+body.tr-on #v-treino article.ex.closed{margin:8px 0!important}
+body.tr-on #v-treino article.ex.closed .exsum{min-height:0!important;padding:11px 14px!important;border-radius:18px!important;background:linear-gradient(160deg,color-mix(in srgb,var(--ok) 20%,transparent),color-mix(in srgb,var(--ok) 7%,transparent))!important;border:1px solid color-mix(in srgb,var(--ok) 38%,transparent)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);gap:10px!important;align-items:center}
+body.tr-on #v-treino article.ex.closed .exsum b{font:800 14px var(--body)!important;text-transform:none!important;letter-spacing:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+body.tr-on #v-treino article.ex.closed .exsum small{font-size:12px!important}
+body.tr-on #v-treino article.ex.closed .okc{width:22px!important;height:22px!important;flex:none}
+body.tr-on #v-treino article.ex.closed .okc svg{width:12px;height:12px}
+/* próximos: uma linha de vidro */
+body.tr-on #v-treino article.ex.fut{padding:13px 16px!important;opacity:.75;border-radius:20px!important}
+body.tr-on #v-treino article.ex.fut .exk{display:none!important}
+body.tr-on #v-treino article.ex.fut h3{font:800 14px var(--body)!important;text-transform:none!important;letter-spacing:0!important;display:inline}
+body.tr-on #v-treino article.ex.fut .exbody{display:flex!important;flex-direction:column;align-items:flex-start;gap:2px}
+body.tr-on #v-treino article.ex.fut h3{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.tr-on #v-treino article.ex.fut .meta{display:block!important;margin:0!important;font-size:12px!important}
+body.tr-on #v-treino article.ex.fut h3{max-width:100%}
+/* descanso: linha fina dentro do cartão */
+body.tr-on #rest.inl{background:none!important;border:0!important;box-shadow:none!important;padding:4px 2px!important;margin:6px 0!important;grid-column:1/-1}
+body.tr-on #rest.inl .rbx{display:flex!important;align-items:center;gap:10px;background:none!important;border:0!important;padding:0!important;box-shadow:none!important}
+body.tr-on #rest.inl .rbx>div:first-child{display:flex;align-items:baseline;gap:8px}
+body.tr-on #rest.inl #rest-l{font-size:12px;color:var(--muted)}
+body.tr-on #rest.inl #rest-t{font:800 16px var(--body)!important;font-style:normal!important}
+body.tr-on #rest.inl .bar{flex:1;height:3px!important;border-radius:2px;background:color-mix(in srgb,var(--fg) 12%,transparent)!important}
+body.tr-on #rest.inl .bar i{background:var(--ok)!important}
+body.tr-on #rest.inl .btn.small{min-height:0!important;padding:2px 4px!important;border:0!important;background:none!important;color:var(--muted)!important;font-size:12px!important;font-weight:800!important;box-shadow:none!important}
+body.tr-on #rest.inl #rest-nx{font-size:11px;color:var(--muted)}
+/* topo e botões */
+body.tr-on #trbar{background:linear-gradient(160deg,var(--gl1),var(--gl2))!important;border:1px solid var(--glb)!important;box-shadow:inset 0 1px 0 var(--glh)!important;border-radius:22px!important}
+body.tr-on #trprev .trgo{box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.6);border-radius:22px}
 </style>
 
 <div class="app">
@@ -7215,7 +7253,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
           tg:S.some(z=>+z[0]>0)?S.map(z=>[+z[0]||0,rn]):undefined}})}});
   const WKP=[0,1,2,3,4,5,6].map(i=>{const k=ORD.find(k=>(P.find(w=>w.letter===k).exercises.days||[]).includes(i));return k?{k}:(cf.cardio||[]).includes(i)?{c:1}:{r:1}});
   const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-TI),we=new Date(ws.getTime()+6*864e5),inW=d=>d>=ymd(ws)&&d<=ymd(we);
-  const done={},TRLOG={};LOGS.filter(l=>inW(l.day)&&ORD.includes(l.letter)).forEach(l=>{const i=(new Date(l.day+'T12:00:00').getDay()+6)%7;if(l.day!==TODAY)(TRLOG[i]=TRLOG[i]||[]).push(l.letter);done[l.letter]=l.day===TODAY?'hoje':DS[i].toLowerCase()});
+  const done={},TRLOG={};LOGS.filter(l=>inW(l.day)&&ORD.includes(l.letter)).forEach(l=>{const i=(new Date(l.day+'T12:00:00').getDay()+6)%7;if(l.day!==TODAY)(TRLOG[i]=TRLOG[i]||[]).push(l.letter);/* logs vêm do mais novo pro mais antigo: o de hoje não pode ser sobrescrito pelo de segunda */if(!done[l.letter]||l.day===TODAY)done[l.letter]=l.day===TODAY?'hoje':DS[i].toLowerCase()});
   DCS.filter(c=>inW(c.day)&&c.answers&&c.answers.cardio>0&&c.day!==TODAY).forEach(c=>{const i=(new Date(c.day+'T12:00:00').getDay()+6)%7;(TRLOG[i]=TRLOG[i]||[]).push('cardio')});
   const L0=LOGS.find(l=>ORD.includes(l.letter)),fd=d=>{const x=new Date(d+'T12:00:00');return ['dom','seg','ter','qua','qui','sex','sáb'][x.getDay()]+' '+x.getDate()+'/'+(x.getMonth()+1)};
   const last=L0?{k:L0.letter,when:L0.day===TODAY?'hoje':fd(L0.day)}:{k:ORD[ORD.length-1],when:''};
