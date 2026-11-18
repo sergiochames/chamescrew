@@ -1016,6 +1016,22 @@ body.tr-on #trbar::before,body.tr-on #trbar::after,body.tr-on #trbar>*::before,b
 body.tr-on #trbar>*{background:color-mix(in srgb,var(--fg) 6%,transparent)!important;background-image:none!important;border:1px solid var(--glb)!important;color:var(--fg)!important;opacity:1!important;animation:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important}
 body.tr-on #tr-cnt{font-weight:800!important}
 body.tr-on #trprev .trgo{box-shadow:0 10px 30px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.6);border-radius:22px}
+
+/* Sua evolução */
+body.tr-on #v-treino #spark-card,body.tr-on #v-treino #prog-card{display:none!important}
+#evo-card{margin:16px 0;border-radius:26px;padding:16px;background:linear-gradient(160deg,color-mix(in srgb,var(--fg) 11%,transparent),color-mix(in srgb,var(--fg) 4%,transparent));border:1px solid color-mix(in srgb,var(--fg) 14%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,var(--fg) 18%,transparent),0 10px 30px rgba(0,0,0,.25);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+#evo-card .evh{display:flex;justify-content:space-between;gap:8px}
+.evbig{display:flex;align-items:flex-end;flex-wrap:wrap;gap:8px 10px;margin-top:6px}.evbig b{font-family:var(--display);font-weight:900;font-size:44px;line-height:.9;text-transform:uppercase}.evbig span{font-size:13px;color:var(--muted);padding-bottom:4px}
+.evch{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}.evch div{border-radius:14px;padding:8px 10px;background:color-mix(in srgb,var(--fg) 6%,transparent);border:1px solid color-mix(in srgb,var(--fg) 10%,transparent);font-size:11px;color:var(--muted)}.evch b{display:block;font-size:16px;color:var(--fg)}
+.evbest{display:flex;gap:12px;align-items:center;border-radius:20px;padding:11px 14px;margin-top:12px;background:linear-gradient(160deg,color-mix(in srgb,var(--ok) 22%,transparent),color-mix(in srgb,var(--ok) 7%,transparent));border:1px solid color-mix(in srgb,var(--ok) 38%,transparent)}
+.evbest i{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--ok) 25%,transparent);color:var(--ok);flex:none}.evbest b{display:block;font-size:14px}.evbest small{font-size:12px;color:var(--muted)}
+.evl{margin-top:8px}.evr{width:100%;display:grid;grid-template-columns:minmax(0,1fr) 84px 70px;gap:8px;align-items:center;padding:11px 0;border:0;border-top:1px solid color-mix(in srgb,var(--fg) 8%,transparent);background:none;color:var(--fg);font:inherit;text-align:left;cursor:pointer}
+.evr b{display:block;font-size:14px}.evr small{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.evr em,.evbig em{justify-self:end;font-style:normal;font-weight:800;font-size:12px;padding:5px 9px;border-radius:999px;white-space:nowrap}
+.ev-up{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}.ev-dn{background:rgba(232,165,152,.14);color:#e8a598}.ev-eq{background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--muted)}
+.evft{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.evtabs{display:flex;gap:6px;margin:10px 0 4px}.evtabs button{border:0;border-radius:999px;padding:7px 13px;font:800 12px var(--body);background:color-mix(in srgb,var(--fg) 7%,transparent);color:var(--muted)}.evtabs button[aria-selected="true"]{background:var(--fg);color:var(--bg)}
+.evsheet .evbig b{font-size:46px}
 </style>
 
 <div class="app">
@@ -3879,7 +3895,7 @@ const TR=(window.__RD&&window.__RD.TR)||{done:{},last:{k:'D',when:'sáb 24/10'},
 const trMin=k=>Math.round(PLANS[k].ex.reduce((a,e)=>a+e.sets*((e.rest||30)+40)/60,0)/5)*5+5;
 function seqNext(from){const i=ORD.indexOf(from||TR.last.k);for(let j=1;j<=ORD.length;j++){const k=ORD[(i+j)%ORD.length];if(!TR.done[k])return k}return null}
 const doneToday=()=>ORD.find(k=>TR.done[k]==='hoje');
-function pickToday(){if(CFG.modo==='fixo')return __TK;return seqNext()}
+function pickToday(){if(CFG.modo==='fixo')return __TK;/* semana toda feita: sugere o de hoje (antes voltava vazio e o Começar travava) */return seqNext()||(PLANS[__TK]?__TK:ORD[0])}
 function afterOf(k){if(CFG.modo==='fixo')return ORD[(ORD.indexOf(k)+1)%ORD.length];return seqNext(k)}
 const MODETXT={livre:'Você escolhe a ordem. O app sugere o próximo para equilibrar a semana.',seq:'Seu personal definiu uma ordem: um treino depois do outro, no dia que você puder.',fixo:'Cada treino tem seu dia, definido pelo seu personal.'};
 function setHero(){if(TR.on){if(CFG.modo!=='fixo')$('#tr-sub').textContent=PLANS[curPlan].focus;return}$('#tr-title').textContent=CFG.semTreino?'Treino':'Seus treinos';$('#tr-sub').textContent=CFG.semTreino?'Em preparo pelo Sérgio':(window.__RD&&window.__RD.WKTXT||'Semana de 2/11 a 8/11')}
@@ -7313,6 +7329,46 @@ try{const R=((await PF.tra)||{}).data;
      const no=s.querySelector('#fg-no');let armed=0;no.onclick=async()=>{if(!armed){armed=1;no.textContent='Tem certeza? Toque de novo para descartar';return}await sb.from('treino_andamento').delete().eq('user_id',uid);window.__TRPEND=null;window.__trClear&&window.__trClear();s.remove();window.toast('Treino descartado')}})};
    window.__trForgot=forgot;
    if(age>=60*6e4)setTimeout(forgot,1500)}}}catch(e){console.error(e)}
+
+/* ===== Sua evolução: todos os exercícios do treino, últimas 6 vezes ===== */
+{const fmt=v=>String(Math.round(v*10)/10).replace('.',','),dS=d=>{const x=new Date(d+'T12:00:00');return String(x.getDate()).padStart(2,'0')+'/'+String(x.getMonth()+1).padStart(2,'0')};
+ const hist=n=>{const out=[];for(const l of LOGS){const S=(l.sets||[]).filter(z=>z.n===n&&z.done!==false&&!z.cardio);if(!S.length)continue;out.push({day:l.day,kg:Math.max(...S.map(z=>+z.kg||0)),reps:Math.max(...S.map(z=>+z.reps||0)),vol:S.reduce((a,z)=>a+(+z.kg||0)*(+z.reps||0),0),rl:S.sort((a,b)=>a.s-b.s).map(z=>+z.reps||0).join('/')});if(out.length>=6)break}return out.reverse()};
+ const spark=(pts,col)=>{if(pts.length<2)return `<svg width="84" height="28" viewBox="0 0 84 28"><circle cx="80" cy="14" r="3" fill="${col}"/></svg>`;const mn=Math.min(...pts),mx=Math.max(...pts),r=mx-mn||1;const P=pts.map((v,i)=>[2+i*(78/(pts.length-1)),mx===mn?14:24-((v-mn)/r)*20]);
+   return `<svg width="84" height="28" viewBox="0 0 84 28"><polyline points="${P.map(p=>p.map(x=>x.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${col}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${P[P.length-1][0]}" cy="${P[P.length-1][1]}" r="3" fill="${col}"/></svg>`};
+ const C={up:'var(--ok)',dn:'#e8a598',eq:'color-mix(in srgb,var(--fg) 40%,transparent)'};
+ const rows=k=>{const P=window.__RD&&window.__RD.PLANS&&window.__RD.PLANS[k];if(!P)return [];return P.ex.map((e,i)=>{const h=hist(e.name);if(!h.length)return {e,i,h,st:'none'};const a=h[0],b=h[h.length-1],kgMode=h.some(x=>x.kg>0);
+   const d=kgMode?b.kg-a.kg:b.reps-a.reps;return {e,i,h,kgMode,d,st:h.length<2||d===0?'eq':d>0?'up':'dn',a,b}})};
+ let last='';
+ const curK=()=>window.__curPlan||(window.__TRS&&window.__TRS.k)||window.__TK;
+ const render=()=>{try{const k=curK(),on=document.body.classList.contains('tr-on');const fin=document.getElementById('finish2')||document.getElementById('finish');if(!fin)return;
+   let card=document.getElementById('evo-card');if(!card){card=document.createElement('div');card.id='evo-card';fin.after(card);card.addEventListener('click',ev=>{const r=ev.target.closest('[data-evo]');if(r)detail(+r.dataset.evo)})}
+   const pp=document.getElementById('prog-pill'),key=k+'|'+LOGS.length+'|'+(LOGS[0]&&LOGS[0].finished_at)+'|'+(pp&&pp.textContent);if(key===last&&card.childElementCount)return;last=key;
+   const R=rows(k),withH=R.filter(r=>r.h.length);if(!on||!withH.length){card.hidden=true;return}card.hidden=false;
+   const kgR=R.filter(r=>r.kgMode&&r.h.length>1),tot=kgR.reduce((a,r)=>a+r.d,0),up=R.filter(r=>r.st==='up').length,eq=R.filter(r=>r.st==='eq').length,dn=R.filter(r=>r.st==='dn').length;
+   const best=R.filter(r=>r.st==='up').sort((a,b)=>(b.kgMode?b.d:b.d/10)-(a.kgMode?a.d:a.d/10))[0];
+   card.innerHTML=`<div class="evh"><span class="lbl">Sua evolução • ${window.__RD.PLANS[k].title}</span><span class="lbl">últimas 6 vezes</span></div>
+    <div class="evbig"><b>${tot>0?'+':''}${fmt(tot)} kg</b><span>somando os exercícios</span></div>
+    <div class="evch"><div><b>${up} de ${R.length}</b>subiram</div><div><b>${eq}</b>mantiveram</div><div><b>${dn}</b>${dn===1?'caiu':'caíram'}</div></div>
+    ${best?`<div class="evbest"><i><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16l6-6 4 4 6-7"/><path d="M15 7h5v5"/></svg></i><span><b>${best.e.name}: +${fmt(best.d)} ${best.kgMode?'kg':'reps'}</b><small>Sua maior evolução</small></span></div>`:''}
+    <div class="evl">${R.map(r=>{if(!r.h.length)return `<div class="evr"><span><b>${r.e.name}</b><small>ainda sem registro</small></span><span></span><span></span></div>`;
+      const pts=r.h.map(x=>r.kgMode?x.kg:x.reps),col=C[r.st],u=r.kgMode?'kg':'reps';
+      const sub=r.h.length<2?`${r.kgMode?fmt(r.b.kg)+' kg':r.b.reps+' reps'} • 1ª vez`:r.kgMode?(r.st==='eq'?`${fmt(r.b.kg)} kg • igual`:`${fmt(r.b.kg)} kg agora • era ${fmt(r.a.kg)}`):`sem carga • ${r.b.reps} reps (era ${r.a.reps})`;
+      return `<button type="button" class="evr" data-evo="${r.i}"><span><b>${r.e.name}</b><small>${sub}</small></span>${spark(pts,col)}<em class="ev-${r.st}">${r.st==='eq'?'=':(r.d>0?'+':'−')+fmt(Math.abs(r.d))+' '+u}</em></button>`}).join('')}</div>
+    ${pp?`<p class="evft">Progressões de carga no mês: <b>${pp.textContent}</b></p>`:''}`}catch(e){console.error(e)}};
+ const detail=i=>{const k=curK(),r=rows(k)[i];if(!r||!r.h.length)return;let mode=r.kgMode?'kg':'reps';
+   const draw=s=>{const vals=r.h.map(x=>mode==='kg'?x.kg:mode==='reps'?x.reps:x.vol),u=mode==='kg'?' kg':mode==='reps'?' reps':' kg';const mn=Math.min(...vals),mx=Math.max(...vals),rg=mx-mn||1,W=320,H=150;
+     const P=vals.map((v,j)=>[12+(vals.length>1?j*((W-24)/(vals.length-1)):(W-24)/2),mx===mn?H/2:H-14-((v-mn)/rg)*(H-34)]);
+     const d=vals[vals.length-1]-vals[0],tg=Math.max(0,...((r.e.tg||[]).map(t=>+t[0]||0)));
+     s.querySelector('#evd').innerHTML=`<div class="evbig" style="margin-top:4px"><b>${fmt(vals[vals.length-1])}${u}</b>${vals.length>1&&d!==0?`<em class="ev-${d>0?'up':'dn'}">${d>0?'+':'−'}${fmt(Math.abs(d))}${u} desde ${dS(r.h[0].day)}</em>`:''}</div>
+      <svg viewBox="0 0 ${W} ${H+18}" style="width:100%;margin-top:10px"><defs><linearGradient id="evg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--ok)" stop-opacity=".32"/><stop offset="1" stop-color="var(--ok)" stop-opacity="0"/></linearGradient></defs>
+       ${vals.length>1?`<path d="M${P.map(p=>p.join(',')).join(' L')} L${P[P.length-1][0]},${H} L${P[0][0]},${H} Z" fill="url(#evg)"/><polyline points="${P.map(p=>p.join(',')).join(' ')}" fill="none" stroke="var(--ok)" stroke-width="2.5" stroke-linejoin="round"/>`:''}
+       ${P.map((p,j)=>`<circle cx="${p[0]}" cy="${p[1]}" r="${j===P.length-1?5:4}" fill="${j===P.length-1?'var(--ok)':'var(--bg)'}" stroke="var(--ok)" stroke-width="2"/>`).join('')}
+       ${r.h.map((x,j)=>j===0||j===r.h.length-1||r.h.length<=4?`<text x="${P[j][0]}" y="${H+15}" text-anchor="${j===0?'start':j===r.h.length-1?'end':'middle'}" font-size="10" fill="currentColor" opacity=".5">${dS(x.day)}</text>`:'').join('')}</svg>
+      <div class="evch"><div><b>${fmt(Math.max(...r.h.map(x=>x.kg)))} kg</b>recorde</div><div><b>${r.h.length}</b>${r.h.length===1?'treino':'treinos'}</div><div><b>${r.b.rl||r.b.reps}</b>última vez</div></div>
+      ${tg?`<p class="evft">Meta do ${window.PERS_NOME_X?window.PERS_NOME_X():'personal'}: ${fmt(tg)} kg${r.b.kg<tg?` • faltam ${fmt(tg-r.b.kg)} kg`:' • meta batida ✓'}</p>`:''}`;
+     s.querySelectorAll('[data-evm]').forEach(b=>b.setAttribute('aria-selected',b.dataset.evm===mode))};
+   window.sheet(`<span class="lbl">${r.e.name}</span><div class="evtabs">${r.kgMode?'<button data-evm="kg">Carga</button>':''}<button data-evm="reps">Repetições</button>${r.kgMode?'<button data-evm="vol">Volume</button>':''}</div><div id="evd"></div>`,s=>{s.classList.add('evsheet');draw(s);s.querySelectorAll('[data-evm]').forEach(b=>b.onclick=()=>{mode=b.dataset.evm;draw(s)})})};
+ setInterval(render,1000);render()}
 document.addEventListener('click',e=>{if(e.target.closest('#finish,#finish2,#ctok,[data-finish]')){const k=()=>{const r=document.getElementById('rest');if(r&&!r.hidden){const sk=document.getElementById('rest-skip');sk&&sk.click();r.hidden=true}};setTimeout(k,30);setTimeout(k,400)}},true);
 setInterval(()=>{try{const r=document.getElementById('rest');if(r&&!r.hidden&&window.__finToday&&!document.querySelector('#v-treino:not([hidden]) .ck[aria-pressed="false"]')){const sk=document.getElementById('rest-skip');sk&&sk.click()}}catch(_){}},1500);
 {const st=document.createElement('style');st.textContent=`.toast{position:fixed!important;left:50%!important;top:auto!important;right:auto!important;bottom:calc(104px + env(safe-area-inset-bottom,0px))!important;transform:translateX(-50%)!important;background:rgba(32,33,37,.96)!important;color:#f1f0eb!important;border:1px solid rgba(255,255,255,.08)!important;border-radius:14px!important;padding:10px 14px!important;font:650 13.5px/1.35 inherit!important;max-width:min(340px,calc(100% - 40px))!important;width:max-content!important;text-align:center!important;box-shadow:0 10px 30px rgba(0,0,0,.35)!important;z-index:9999!important;animation:rlT .22s ease-out!important;pointer-events:none}@keyframes rlT{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}`;document.head.appendChild(st)}
