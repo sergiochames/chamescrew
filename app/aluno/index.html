@@ -4699,6 +4699,41 @@ document.addEventListener('click',e=>{if(e.target.closest('[data-rn-paid]')){con
 /* upgrade comparando já com o desconto do plano */
 window.paX=v=>{const P=PLANS3.find(x=>x.k===RN.p)||{off:0};return R2(v.p*(1-P.off)/v.a)};
 window.openRenewX=openRenew;window.WALX=WAL;window.calcPkgX=calcPkg;window.walAvailX=walAvail;window.monthValX=monthVal;
+/* ===== pagamento "já paguei / fechei por fora": sem comprovante; o personal confere, aplica o desconto combinado e confirma ===== */
+(()=>{const PN=()=>window.PERS_NOME_X?window.PERS_NOME_X():'personal';
+const _rd30=rnDraw;rnDraw=function(){
+  if(window.__FORAW){const w=$('#rnw');if(w)return foraWait(w,window.__FORAW)}
+  _rd30();const el=$('#rnw');if(!el)return;
+  const sg=el.querySelector('.seg2');
+  if(sg&&!sg.querySelector('[data-rnpay="fora"]')){sg.insertAdjacentHTML('beforeend',`<button data-rnpay="fora" aria-pressed="${RN.pay==='fora'}" style="grid-column:1/-1">Já paguei ou fechei por fora com o ${PN()}</button>`)}
+  if(RN.pay==='fora'){
+    const c=rnCalc(),go=el.querySelector('[data-rn-go]');if(go)go.textContent='Avisar o '+PN()+' • '+R2(c.total);
+    const nt=[...el.querySelectorAll('p.meta')].find(p=>/Pagamento pelo Asaas/.test(p.textContent));
+    if(nt)nt.textContent='O '+PN()+' confere o pagamento, aplica o desconto que vocês combinaram (se houver) e libera seu plano. Você recebe um aviso aqui no app.'}};
+function foraWait(el,p){const pl=PLANS3.find(x=>x.k===p.plan_key)||{n:'Plano'};
+  el.innerHTML=`<div class="fx-top"><button class="fx-back" data-rn-x>‹ Voltar</button><span style="flex:1"></span><span class="pill">Por fora</span></div>
+   <span class="lbl" style="display:block;margin-top:16px">${pl.n}${p.freq?' • '+p.freq+'x por semana':''} • ${R2(+p.amount)}</span>
+   <p class="d" style="font-size:44px;margin:4px 0 12px">Aguardando o ${PN()}</p>
+   <p class="meta">Ele confere o pagamento e libera o seu plano. Se vocês combinaram desconto, ele aplica na hora de confirmar. Você recebe um aviso aqui no app.</p>
+   <div class="rn-wait"><i></i>Esperando a confirmação</div>
+   <button class="btn wide" data-rn-x style="margin-top:14px">Voltar ao app</button>`;
+  clearInterval(window.__foraPT);let n=0;
+  window.__foraPT=setInterval(async()=>{if(!$('#rnw')||++n>360)return clearInterval(window.__foraPT);
+    try{const {data}=await window.__sbA.from('payments').select('id,status').eq('id',p.id).maybeSingle();if(!data||data.status==='informado')return;
+      clearInterval(window.__foraPT);window.__FORAW=null;
+      if(data.status==='pago'){RN.p=p.plan_key||RN.p;window.__FORARELOAD=1;rnDone()}
+      else{toast('O '+PN()+' não confirmou. Escolha como pagar.');rnDraw()}}catch(_){}},6000)}
+async function foraSend(btn){btn.disabled=true;btn.textContent='Enviando…';let r=null;
+  try{r=await window.__asaas({action:'fora',plan:RN.p,freq:RN.f===undefined?PLN.f:RN.f})}catch(e){r={error:'Sem conexão'}}
+  if(!r||!r.pay){btn.disabled=false;btn.textContent='Avisar o '+PN();return toast('Não deu: '+((r&&r.error)||'tente de novo'))}
+  window.__FORAW=r.pay;foraWait($('#rnw'),r.pay)}
+document.addEventListener('click',e=>{if(!$('#rnw'))return;
+  const g=e.target.closest('[data-rn-go]');if(g&&RN.pay==='fora'){e.stopImmediatePropagation();e.preventDefault();foraSend(g);return}
+  if(e.target.closest('[data-rn-x]')){clearInterval(window.__foraPT);if(window.__FORARELOAD){window.__FORARELOAD=0;setTimeout(()=>location.reload(),150)}}},true);
+async function foraLoad(){try{const {data}=await window.__sbA.from('payments').select('*').eq('status','informado').eq('method','por_fora').order('created_at',{ascending:false}).limit(1);
+  if(data&&data[0]&&$('#rnw')){window.__FORAW=data[0];foraWait($('#rnw'),data[0])}}catch(_){}}
+const _or30=openRenew;openRenew=function(){window.__FORAW=null;_or30();foraLoad()};window.openRenewX=openRenew;
+})();
 /* ===== laboratório: testes automáticos do modelo de desconto ===== */
 function runTests(){const T=[],ok=(n,c,d)=>T.push({n,ok:!!c,d});const near=(a,b)=>Math.abs(a-b)<0.02;
   const base=monthVal(2);

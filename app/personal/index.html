@@ -1425,7 +1425,12 @@ function newStudent(d,h,pre){pre=pre||{};if(d===undefined)d=S.day;let typ=pre.ty
     <div class="bstep cstep"><span class="bn">2</span><b>Tipo de aluno</b></div><div class="vseg" style="grid-template-columns:repeat(3,1fr)">${[['pres','Presencial'],['online','Online'],['avulsa','Avulsa']].map(([k,l])=>`<button data-ty="${k}" aria-pressed="${k===typ}">${l}</button>`).join('')}</div>
     <div class="bstep cstep"><span class="bn">3</span><b>Plano e horários</b></div>
     <div id="fxw" style="display:flex;flex-direction:column;gap:12px">${fxHTML()}</div>
-    <div class="bstep cstep"><span class="bn">4</span><b>Detalhes</b></div>
+    ${typ==='avulsa'?'':`<div class="bstep cstep"><span class="bn">4</span><b>Pagamento</b></div>
+    <label class="sw" for="pf"><span><b>Já pagou por fora</b><small>Entra no financeiro e ${'o aluno'} não passa pela tela de pagamento</small></span><input type="checkbox" id="pf"></label>
+    <div id="pfw" hidden style="flex-direction:column;gap:8px"><span class="lbl">Como pagou</span><div class="chips" id="pfm">${['Pix','Dinheiro','Cartão','Transferência'].map((k,i)=>`<button class="chip" data-pfm="${k}" aria-pressed="${i===0}">${k}</button>`).join('')}</div>
+      <span class="lbl">Desconto combinado (opcional)</span><div class="chips" id="pfd">${[0,5,10,15,20].map(k=>`<button class="chip" data-pfd="${k}" aria-pressed="${k===0}">${k?k+'%':'Nenhum'}</button>`).join('')}</div>
+      <div class="info ok" id="pft"></div></div>`}
+    <div class="bstep cstep"><span class="bn">${typ==='avulsa'?'4':'5'}</span><b>Detalhes</b></div>
     <details class="metd"><summary><span><b>Mais dados (opcional)</b><small>Se você não souber, o aluno completa no primeiro acesso</small></span><i>▾</i></summary><div style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
       <input class="inp" id="nnb" data-date placeholder="Nascimento (dd/mm/aaaa)" inputmode="numeric" maxlength="10" style="margin:0"><input class="inp" id="nne" placeholder="E-mail" inputmode="email" style="margin:0"><input class="inp" id="nnc" placeholder="CPF (para nota fiscal e Asaas)" inputmode="numeric" style="margin:0">
       <div class="vseg" style="grid-template-columns:repeat(3,1fr)"><button data-ng="Feminino">Feminino</button><button data-ng="Masculino">Masculino</button><button data-ng="">Não dizer</button></div>
@@ -1433,17 +1438,23 @@ function newStudent(d,h,pre){pre=pre||{};if(d===undefined)d=S.day;let typ=pre.ty
     <p class="note">Os preços vêm da sua tabela no Financeiro. O resto (treino, objetivo, peso) ele preenche no app ou você completa depois na ficha.</p>
     <div class="row2"><button class="btn" data-close>Voltar</button><button class="btn solid" id="go">Cadastrar e enviar</button></div>`,s=>{
     const W=s.querySelector('#fxw'),re=()=>{W.innerHTML=fxHTML()};
+    let pfM='Pix',pfD=0;const pfPlan=()=>{if(typ==='online'){const o=OPL(),P=PER[per];return Math.round(per2(o.p,P[0],disc(per))*100)/100}if(typ==='avulsa')return 0;const P=PER[per];return Math.round(per2(PRICE.aula[freq]*freq*PRICE.wk,P[0],disc(per))*100)/100};
+    const pfOn=()=>{const c=s.querySelector('#pf');return !!c&&c.checked&&typ!=='avulsa'};
+    const pfUp=()=>{const w=s.querySelector('#pfw'),c=s.querySelector('#pf');if(!w||!c)return;w.hidden=!c.checked;w.style.display=c.checked?'flex':'none';const v=pfPlan(),d=Math.round(v*pfD)/100;const t=s.querySelector('#pft');if(t)t.innerHTML=`${per} • ${brl(v)}${d?` − desconto ${brl(d)}`:''} = <b>${brl(Math.round((v-d)*100)/100)}</b> • ${esc(pfM)}`};
+    s.addEventListener('click',e=>{const m=e.target.closest('[data-pfm]'),d=e.target.closest('[data-pfd]');if(m){pfM=m.dataset.pfm;s.querySelectorAll('[data-pfm]').forEach(x=>x.setAttribute('aria-pressed',x===m))}if(d){pfD=+d.dataset.pfd;s.querySelectorAll('[data-pfd]').forEach(x=>x.setAttribute('aria-pressed',x===d))}setTimeout(pfUp,0)});
+    s.addEventListener('change',()=>setTimeout(pfUp,0));setTimeout(pfUp,0);
     s.addEventListener('change',e=>{const a=e.target.dataset;if(a.fd!==undefined)fx[+a.fd].d=+e.target.value;if(a.fh!==undefined)fx[+a.fh].h=+e.target.value;if(a.fd!==undefined||a.fh!==undefined)re()});
     let gen=null;s.addEventListener('input',e=>{if(e.target.id==='ncup'){const c=cupNorm(e.target.value),f=INF.find(z=>z.cup===c);s.querySelector('#ncupm').textContent=!c?'':f?`✓ Cupom de ${f.n}: ${f.cdesc}% de desconto`:'Cupom não encontrado'}});
     s.addEventListener('click',e=>{const g=e.target.closest('[data-ng]');if(g){gen=g.dataset.ng;s.querySelectorAll('[data-ng]').forEach(x=>x.setAttribute('aria-pressed',x===g));return}const b=e.target.closest('[data-fq],[data-per],[data-ty],[data-op]');if(!b)return;const a=b.dataset;if(a.fq)freq=+a.fq;if(a.per)per=a.per;if(a.op)oid=+a.op;if(a.ty){typ=a.ty;s.querySelectorAll('[data-ty]').forEach(x=>x.setAttribute('aria-pressed',x===b))}re()});
     s.querySelector('#go').onclick=()=>{const n=s.querySelector('#nn').value.trim(),ph=s.querySelector('#np').value.replace(/\D/g,'');
       if(n.split(' ').length<2){toast('Escreva nome e sobrenome');return}if(ph.length<(s.querySelector('#np').dataset.cc==='55'?10:6)){toast(s.querySelector('#np').dataset.cc==='55'?'WhatsApp com DDD':'Confira o número');return}
       const md=typ==='online'?'Online':'Presencial';STU.push({n,q:[0,typ==='pres'?freq*PRICE.wk:0],ph,mode:md,mod:md==='Online'?[...PREO.tudo]:[...PRE.tudo],due:30});const X=STU[STU.length-1];X.country=s.querySelector('#np').dataset.country;if(pre.desc)X.desc=pre.desc;if(pre.par)X.par=pre.par;X.nasc=s.querySelector('#nnb').value.trim();{const g=s.querySelector('[data-nsx][aria-pressed="true"]');if(g)X.sx=g.dataset.nsx}X.em=s.querySelector('#nne').value.trim();X.cpf=s.querySelector('#nnc').value.replace(/\D/g,'');if(gen!==null)X.gen=gen;{const c=cupNorm(s.querySelector('#ncup').value),f=INF.find(z=>z.cup===c);if(f){X.desc=Math.max(X.desc||0,f.cdesc);X.via='Cupom '+f.cup;f.alunos++;f.ativos++;f.used=(f.used||0)+1}else if(pre.promo)X.via='Promoção '+pre.promo}if(pre.done)pre.done();const par=false;if(par)setTimeout(()=>infSheet('new',n,X),350);
+      if(pfOn()){const v=pfPlan();if(!(v>0)){toast('Sem preço para esse plano: confira a tabela no Financeiro');STU.pop();return}X._fora={amount:v,discount:Math.round(v*pfD)/100,method:pfM}}
       book=typ==='avulsa'&&h!==undefined&&s.querySelector('#bk')&&s.querySelector('#bk').checked;
       const isFx=typ==='pres';let skip=[];plan=typ==='pres'?`Presencial ${freq}x por semana`:typ==='online'?OPL().n:'Aula avulsa';
       if(isFx){X.fixo=fx.map(z=>({...z}));X.per=per;X.until=PER[per][2];skip=bookFixed(n,X.fixo);book=false}
       else if(book){(S.ev[d]=S.ev[d]||[]).push({h,n,st:'conf',extra:true});if(spOf(d,h))delete S.sp[d][h]}
-      const link=PAY.mode==='asaas'?(typ!=='avulsa'?` Pagamento do plano ${per.toLowerCase()}: asaas.com/c/xyz`:` Pagamento da aula: asaas.com/c/xyz`):'';
+      const link=PAY.mode==='asaas'&&!X._fora?(typ!=='avulsa'?` Pagamento do plano ${per.toLowerCase()}: asaas.com/c/xyz`:` Pagamento da aula: asaas.com/c/xyz`):'';
       const code=window.__rlCode?window.__rlCode(X):'CC'+Math.random().toString(36).slice(2,6).toUpperCase(),first=n.split(' ')[0];
       const msg=(window.__rlMsg&&window.__rlMsg('boas',{nome:first,personal:PERS.name,link:window.__rlLink?window.__rlLink(code):'',codigo:code}))||`Oi, ${first}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu cadastro tá pronto${isFx?`. Seus horários: toda ${fxTxt(fx)}, até o ${PER[per][2]}`:book?` e sua aula ${dayLbl(d).toLowerCase()} às ${hh(h)} tá marcada`:''}. Toca no link, cria sua senha e instala o app no celular: ${window.__rlLink?window.__rlLink(code):PERS.slug+'.app/convite/'+code}\n\nSeu código: ${code}\n(se o link não abrir, entre no app e digite o código)${link?'\n\n'+link.trim():''}`;
       s.remove();draw();
@@ -2756,7 +2767,7 @@ const per=(p,m,d)=>p*m*(1-d/100),per2=per;
 const F2={f:'todos'};const PAY={mode:'asaas'};
 const LSUM=k=>LANC.filter(l=>l.k===k).reduce((a,l)=>a+l.v,0);
 const COST=()=>{const inf=INF.map(f=>({t:'Repasse • '+f.n,v:f.arep+(f.pago||0),pago:!f.arep,auto:f.auto&&PAY.mode==='asaas',id:f.id})).filter(c=>c.v);const tax=PAY.mode==='asaas'?Math.round(CHG.filter(c=>c.st==='pago').length*1.99*100)/100:0;return {inf,tax,tot:inf.reduce((a,c)=>a+c.v,0)+tax+LSUM('custo')}};
-const DESC=()=>ACT().filter(x=>x.desc).reduce((a,x)=>{const m=x.mode==='Online'?250:PRICE.aula[freqOf(x)]*freqOf(x)*4;return a+m*x.desc/100},0);
+const DESC=()=>((window.__PAYD||[]).filter(p=>p.status==='pago'&&+p.discount_amt>0&&String(p.paid_at||'').slice(0,7)===new Date().toISOString().slice(0,7)).reduce((a,p)=>a+(+p.discount_amt),0))+ACT().filter(x=>x.desc).reduce((a,x)=>{const m=x.mode==='Online'?250:PRICE.aula[freqOf(x)]*freqOf(x)*4;return a+m*x.desc/100},0);
 function drawFin(){drawFin0();const pr=app.querySelector('.proto');['fin-cob','fin-cus','fin-promo','fin-inf','fin-pres','fin-planos','fin-rec'].forEach(id=>{const c=document.getElementById(id);if(c)app.insertBefore(c,pr)})}
 function drawFin0(){
   const rec=CHG.filter(c=>c.st==='pago').reduce((a,c)=>a+c.v,0)+LSUM('receita'),ab=CHG.filter(c=>c.st==='aberto').reduce((a,c)=>a+c.v,0),at=CHG.filter(c=>c.st==='atrasado').reduce((a,c)=>a+c.v,0);
@@ -4245,11 +4256,14 @@ async function createStu(X){if(X._id||X._creating)return;X._creating=1;busyMsg('
     const pres=!!X.fixo&&X.fixo.length>0,freq=pres?X.fixo.length:null,months=X.per==='Trimestral'?3:X.per==='Semestral'?6:1;
     const au=new Date(today.getFullYear(),today.getMonth()+months,today.getDate());
     const firsts=pres?X.fixo.map(z=>nextOf(z.d,z.h)).filter(Boolean).sort((a,b)=>a-b):[];const cd=firsts[0]?Math.min(28,firsts[0].getDate()):null;
-    const r=await fn({action:'create',name:X.n,phone:X.ph?('+'+ccOf(X)+' '+X.ph):null,freq,plan:'treino',access_until:iso(au),cycle_day:cd,presencial:X.mode!=='Online',code:X._code});
+    const r=await fn({action:'create',name:X.n,phone:X.ph?('+'+ccOf(X)+' '+X.ph):null,freq,plan:'treino',access_until:X._fora?null:iso(au),cycle_day:cd,presencial:X.mode!=='Online',code:X._code});
     X._id=r.id;X._code=r.code;
+    /* já pagou por fora: entra no financeiro, libera o plano e gera as aulas (sem a tela de pagamento no app do aluno) */
+    const fora=async()=>{const F=X._fora;if(!F)return;const {error}=await sb.rpc('register_fora',{p_student:r.id,p_months:months,p_freq:pres?freq:0,p_amount:F.amount,p_discount:F.discount||0,p_method:F.method||'',p_date:iso(today)});
+      if(error){toast('A conta foi criada, mas o pagamento por fora não registrou: '+error.message);return}X._foraOk=1;try{payAppSync()}catch(_){}};
     if(pres){const rows=X.fixo.map(z=>({student_id:r.id,dow:(z.d+1)%7,at_time:pad(Math.floor(z.h))+':'+pad(Math.round((z.h%1)*60))+':00',location:locName(z.l||X.loc)||locName((LOCS[0]||{}).id),active:true,start_date:iso(today)}));
-      const a=await sb.from('fixed_slots').insert(rows);if(a.error)throw a.error;const g=await sb.rpc('gen_classes',{p_student:r.id,p_weeks:9});if(g.error)throw g.error}
-    await saveNow();await fetchAll();apply();draw();toast('Conta de '+X.n.split(' ')[0]+' criada'+(pres?' e aulas na agenda':''))}
+      const a=await sb.from('fixed_slots').insert(rows);if(a.error)throw a.error;await fora();const g=await sb.rpc('gen_classes',{p_student:r.id,p_weeks:9});if(g.error)throw g.error}else await fora();
+    await saveNow();await fetchAll();apply();draw();toast('Conta de '+X.n.split(' ')[0]+' criada'+(pres?' e aulas na agenda':'')+(X._foraOk?' • pagamento por fora no financeiro':''))}
   catch(e){console.error(e);toast('Não criou a conta: '+e.message)}finally{delete X._creating;busyMsg('')}}
 let KNOWN=new Set();
 function linkCheck(){STU.forEach(X=>{if(!X._id&&!X._creating&&X.n)createStu(X)});
@@ -5391,10 +5405,10 @@ window.addEventListener('click',e=>{const b=e.target.closest('[data-grecv],[data
 
 /* pagamentos feitos pelo app (Asaas ou Pix manual com comprovante) entram na lista de cobranças */
 let PAYS=[];
-async function payAppSync(){try{const {data}=await sb.from('payments').select('*').in('status',['pago','informado']).gte('created_at',new Date(Date.now()-75*864e5).toISOString()).order('created_at',{ascending:false});PAYS=data||[];let ch=false;
-  const PLN={mes:'mensal',tri:'trimestral',sem:'semestral'},MT=p=>p.method==='pix_manual'?'Pix manual':p.method==='pix'?'Pix • Asaas':'Cartão'+(p.installments>1?' '+p.installments+'x':'')+' • Asaas';
+async function payAppSync(){try{const {data}=await sb.from('payments').select('*').in('status',['pago','informado']).gte('created_at',new Date(Date.now()-75*864e5).toISOString()).order('created_at',{ascending:false});PAYS=data||[];window.__PAYD=PAYS;let ch=false;{const live=new Set(PAYS.map(p=>p.id));for(let i=CHG.length-1;i>=0;i--){const z=CHG[i];if(z._ap&&z.st!=='pago'&&!live.has(z._ap)){CHG.splice(i,1);ch=true}}}
+  const PLN={mes:'mensal',tri:'trimestral',sem:'semestral'},MT=p=>p.method==='por_fora'?'Por fora':p.method==='pix_manual'?'Pix manual':p.method==='pix'?'Pix • Asaas':'Cartão'+(p.installments>1?' '+p.installments+'x':'')+' • Asaas';
   PAYS.forEach(p=>{if(p.kind!=='renova')return;const X=stuById(p.student_id);if(!X)return;const ref='ap:'+p.id;let c=CHG.find(z=>z.ref===ref);const paid=p.status==='pago',dd=new Date(p.paid_at||p.created_at);
-    if(!c){c={n:X.n,pl:'Renovação '+(PLN[p.plan_key]||'')+' • '+MT(p),v:+p.amount,st:paid?'pago':'aberto',d:paid?'pago em '+ddmm(dd):'avisou que pagou • confira no banco',ref,_ok:1,_ap:p.id};CHG.unshift(c);ch=true}
+    if(!c){c={n:X.n,pl:'Renovação '+(PLN[p.plan_key]||'')+' • '+MT(p),v:+p.amount,st:paid?'pago':'aberto',d:paid?'pago em '+ddmm(dd):(p.method==='por_fora'?'fechou por fora • confirme':'avisou que pagou • confira no banco'),ref,_ok:1,_ap:p.id};CHG.unshift(c);ch=true}
     else if(paid&&c.st!=='pago'){c.st='pago';c.d='pago em '+ddmm(dd);c._ok=1;ch=true}
     if(paid)CHG.forEach(z=>{if(z.ref&&z.ref.startsWith('ren:'+p.student_id+':')&&z.st!=='pago'){z.st='pago';z.d='pago pelo app';z._ok=1;ch=true}})});
   if(ch){saveSoon();if(S.tab==='fin'&&!document.querySelector('.scrim'))draw()}}catch(_){}}
@@ -5402,6 +5416,23 @@ if(PERM.fin){setTimeout(payAppSync,1500);setInterval(payAppSync,60000)}
 /* confirmar Pix manual: confere no banco, vê o comprovante e confirma (o plano renova sozinho) */
 window.addEventListener('click',e=>{const b=e.target.closest('[data-cash]');if(!b)return;const c=(x=>x&&x.n===b.dataset.cash&&x.st!=='pago'?x:CHG.find(x=>x.n===b.dataset.cash&&x.st!=='pago'))(CHG[+b.dataset.ci]);if(!c||!c._ap)return;e.stopPropagation();e.preventDefault();
   const p=PAYS.find(z=>z.id===c._ap)||{};
+  if(p.method==='por_fora'){const base=+p.amount||c.v,first=c.n.split(' ')[0];
+    sheet(`<span class="lbl">Fechou por fora</span><h3 class="d">${esc(first)} • ${brl(base)}</h3><p class="note">${esc(c.pl)}</p>
+      <div class="info warn" style="margin:10px 0"><b>Confira se o dinheiro caiu ou se vocês realmente fecharam.</b> O aluno só avisa: quem libera o plano é você.</div>
+      <span class="lbl">Desconto combinado (opcional)</span>
+      <div class="chips" id="pfc">${[0,5,10,15,20].map(k=>`<button class="chip" data-pfd="${k}" aria-pressed="${k===0}">${k?k+'%':'Nenhum'}</button>`).join('')}</div>
+      <input class="inp" id="pfr" inputmode="decimal" placeholder="ou o valor do desconto em R$" style="margin-top:8px">
+      <p class="note" id="pft" style="margin:8px 0 0">Total: <b>${brl(base)}</b></p>
+      <div class="row2" style="margin-top:12px"><button class="btn" id="pfno">Não fechamos</button><button class="btn solid" id="pfok">Confirmar</button></div>
+      <button class="btn" data-close style="margin-top:8px">Agora não</button>`,s=>{let pct=0;
+      const dsc=()=>{const r=parseFloat(String(s.querySelector('#pfr').value).replace(',','.'));const d=r>0?r:Math.round(base*pct)/100;return Math.max(0,Math.min(base,Math.round(d*100)/100))};
+      const up=()=>{s.querySelector('#pft').innerHTML='Total: <b>'+brl(Math.round((base-dsc())*100)/100)+'</b>'+(dsc()?' • desconto de '+brl(dsc()):'')};
+      s.querySelector('#pfc').onclick=ev=>{const b=ev.target.closest('[data-pfd]');if(!b)return;pct=+b.dataset.pfd;s.querySelector('#pfr').value='';s.querySelectorAll('[data-pfd]').forEach(x=>x.setAttribute('aria-pressed',x===b));up()};
+      s.querySelector('#pfr').oninput=()=>{pct=0;s.querySelectorAll('[data-pfd]').forEach(x=>x.setAttribute('aria-pressed','false'));up()};
+      s.querySelector('#pfok').onclick=async ev=>{ev.currentTarget.disabled=true;const d=dsc();const {error}=await sb.rpc('confirm_fora',{p_id:c._ap,p_discount:d});if(error){ev.currentTarget.disabled=false;return toast('Não confirmou: '+error.message)}
+        c.st='pago';c.v=Math.round((base-d)*100)/100;c.d='pago em '+ddmm(new Date())+' • por fora'+(d?' • desconto '+brl(d):'');c._ok=1;s.remove();saveSoon();toast(first+' liberado');try{await payAppSync();await sync()}catch(_){draw()}};
+      s.querySelector('#pfno').onclick=()=>confirmBox('Não fechou com '+first+'?','O pedido some e '+first+' volta para a tela de pagamento do app, como se não tivesse plano.','Não fechamos',async()=>{const {error}=await sb.rpc('refuse_fora',{p_id:c._ap});if(error)return toast('Não deu: '+error.message);
+        const i=CHG.indexOf(c);if(i>=0)CHG.splice(i,1);s.remove();saveSoon();toast('Pedido recusado');try{await payAppSync()}catch(_){}draw()})});return}
   sheet(`<span class="lbl">Confirmar pagamento</span><h3 class="d">${esc(c.n.split(' ')[0])} • ${brl(c.v)}</h3><p class="note">${esc(c.pl)}</p>
     <div class="info warn" style="margin:10px 0"><b>Confira no seu banco antes de confirmar.</b> Comprovante pode ser falso. Só confirme se o dinheiro caiu.</div>
     ${p.proof?'<button class="btn wide" id="pcpv">Ver comprovante</button>':''}
