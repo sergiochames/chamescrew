@@ -4263,7 +4263,8 @@ function confirmTr(k,done){const ex=PLANS[k].ex;let tot=0,dn=0;ex.forEach((e,i)=
    <label class="agree" style="align-items:flex-start;margin:6px 0 12px"><input type="checkbox" id="ctk"> <span>Confirmo que fiz este treino de verdade</span></label>
    <button class="btn solid wide" id="ctok" disabled style="opacity:.4">Confirmar e finalizar</button>`,s=>{const c=s.querySelector('#ctk'),b=s.querySelector('#ctok');c.onchange=()=>{b.disabled=!c.checked;b.style.opacity=c.checked?1:.4};b.onclick=()=>{s.remove();done()}})}
 {const f=$('#finish'),_f1=f.onclick;f.onclick=function(ev){if(finishedToday){_f1.call(this,ev);return}confirmTr(curPlan,()=>_f1.call(this,ev))};
- const g=$('#finish2'),_f2=g.onclick;g.onclick=function(ev){confirmTr(curPlan,()=>_f2.call(this,ev))}}
+ const g=$('#finish2'),_f2=g.onclick;g.onclick=function(ev){const k=curPlan;confirmTr(k,()=>{let t=0,d=0;PLANS[k].ex.forEach((e,i)=>e.prev.forEach((_,s)=>{t++;const b=$(`[data-ck="${k}-${i}-${s}"]`);if(b&&b.getAttribute('aria-pressed')==='true')d++}));const full=t>0&&d>=t;_f2.call(this,ev);
+  setTimeout(()=>{try{window.RUN={kick:'Treino concluído',ttl:PLANS[k].title+' • suas medalhas',done:null};window.medalRun(null,[['limite',full?'Treino completo: conta para a semana.':'Treino parcial: conta só para a sequência.',0,false,full],['tempo','Treino feito. Sua semana na matilha está garantida.',0,false,true]])}catch(e){}},350)})}}
 const _rau12=renderAula;renderAula=function(){_rau12();const x=AG.slots.find(y=>agLeft(y)>-1.5);const el=$('#aula');if(!x||x.pend||x._req||agLeft(x)>12)return;
   const left=(new Date(2026,9,28).getTime()+(DOFF[x.d]+x.h)*36e5-Date.now())/36e5,open=left<=.25&&left>-1,fill=el.querySelector('.tl .f');
   if(x.here||(x.conf&&left<=0)){if(fill)fill.style.background='var(--ok)';el.classList.add('cf')}
@@ -4487,7 +4488,7 @@ renderTrHome();
 const HEART='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.3C.9 8.1 3.1 4 7 4c2.1 0 3.6 1.1 5 2.8C13.4 5.1 14.9 4 17 4c3.9 0 6.1 4.1 4.6 7.7C19.5 16.4 12 21 12 21z"/></svg>';
 const MOON='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15 3a9 9 0 1 0 6 15.7A7.5 7.5 0 0 1 15 3z"/></svg>';
 const XIC='<svg class="hic2" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/></svg>';
-TR.man={};if(!window.__RD)TR.log={};
+TR.man=(window.__RD&&window.__RD.CARDM)||{};if(!window.__RD)TR.log={};
 const CTIPOS=['Corrida','Bike','Esteira','Caminhada','Natação','Elíptico','Outro'],CINT=['Leve','Moderada','Forte'],SKIPW=['Cansaço','Dor','Trabalho','Viagem','Outro'];
 function items(i){if(TR.man[i]&&(TR.man[i].some(x=>x.k||x.c)||(i===TODAYI&&ORD.some(k=>TR.done[k]==='hoje'))))TR.man[i]=TR.man[i].filter(x=>!x.skip&&!x.rest);return [...(TR.man[i]||[]),...(i===TODAYI?[...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])].map(k=>({k,app:1})):((TR.log&&TR.log[i])||[]).filter(k=>k!=='cardio'&&!(TR.man[i]||[]).some(m=>m.k===k)).map(k=>({k,app:1})))]}
 const did=i=>items(i).some(x=>x.k||x.c);
@@ -4531,11 +4532,11 @@ function regSheet(i,tab){const dn=i===TODAYI?'hoje':i===TODAYI-1?'ontem':WKD[i].
       if(d.rtab)T=d.rtab;if(d.rk)st.k=d.rk;if(d.rt)st.tipo=d.rt;if(d.ri)st.int=d.ri;if(d.rw)st.why=st.why===d.rw?'':d.rw;if(d.rmn)st.min=Math.max(5,Math.min(240,st.min+ +d.rmn));draw()});
     s.querySelector('#rg-ok').onclick=()=>{const L=(TR.man[i]=TR.man[i]||[]);
       if(T==='treino'){if(!st.k){toast('Escolha qual treino');return}L.push({k:st.k});if(i===TODAYI)TR.done[st.k]=TR.done[st.k]||'hoje';else TR.done[st.k]=TR.done[st.k]||WKD[i]}
-      else if(T==='cardio')L.push({c:1,tipo:st.tipo,min:st.min,int:st.int});
+      else if(T==='cardio'){const it={c:1,tipo:st.tipo,min:st.min,int:st.int};L.push(it);window.__saveCardio&&window.__saveCardio(i,it)}
       else{for(let n=L.length-1;n>=0;n--)if(L[n].rest||L[n].skip)L.splice(n,1);L.push(T==='rest'?{rest:1}:{skip:1,why:st.why})}
       s.remove();renderTrHome();toast(T==='skip'?'Anotado. Amanhã tem mais.':'Registrado ✓')}})}
 document.addEventListener('click',e=>{const r=e.target.closest('[data-rg]');if(r){const [i,t]=r.dataset.rg.split(':');regSheet(+i,t);return}
-  const m=e.target.closest('[data-rm]');if(m){const [i,n]=m.dataset.rm.split(':').map(Number);const x=(TR.man[i]||[]).splice(n,1)[0];if(x&&x.k&&TR.done[x.k]&&!items(i).some(y=>y.k===x.k))delete TR.done[x.k];renderTrHome();toast('Removido');return}
+  const m=e.target.closest('[data-rm]');if(m){const [i,n]=m.dataset.rm.split(':').map(Number);const x=(TR.man[i]||[]).splice(n,1)[0];if(x&&x.c&&window.__delCardio)window.__delCardio(x);if(x&&x.k&&TR.done[x.k]&&!items(i).some(y=>y.k===x.k))delete TR.done[x.k];renderTrHome();toast('Removido');return}
   const w=e.target.closest('[data-twm]');if(w){CFG.modo=w.dataset.twm;renderTrHome();return}});
 /* resumo do mês */
 function monthHTML(){const RM=window.__RD&&window.__RD.MONTH;const base=RM?RM.cnt:{A:5,B:4,C:2,D:4},pl=RM?RM.pl:7;const cnt={...base};if(!RM)[0,1,2,3,4,5,6].forEach(j=>items(j).filter(x=>x.k).forEach(x=>cnt[x.k]++));
@@ -5290,7 +5291,7 @@ function medalRun(A,custom){const M=id=>RMEDS().find(x=>x.id===id);const items=[
   P('sono',A[7]===2?(sl.closed?'7h ou mais: 6 de 7 noites. Semana fechada.':`7h ou mais: ${sl.d} de 6 noites.`):sl.dead?'Menos de 7h, e a folga já tinha sido usada. Essa semana não conta.':`Menos de 7h hoje: usou a folga. Falta${sl.need>1?'m':''} ${sl.need}.`,'sono',sl.closed,A[7]===2||!sl.dead);}
   const ups=items.filter(x=>x.t1>x.t0);
   const row=(x,i)=>{const target=x.m.th[x.t0+1];const up=x.t1>x.t0;const from=Math.min(100,x.before/target*100),to=Math.min(100,x.after/target*100);
-    return `<div class="mi${up?' up':''}" style="animation-delay:${.25+i*.45}s">${RA.disc(x.m,Math.max(0,x.t1)).replace('class="rdisc','style="--s:60px'+(x.t1<0?';filter:grayscale(.7) brightness(.75)':'')+'" class="rdisc')}
+    return `<div class="mi${up?' up':''}" style="animation-delay:${.25+i*.45}s">${RA.disc(x.m,x.t1).replace('class="rdisc','style="--s:60px" class="rdisc')}
       <div style="min-width:0"><b>${x.m.name}</b><span class="why${x.ok?'':' no'}">${x.why}</span>${typeof x.wk==='string'&&window.WEEK[x.wk]?wkDots(window.WEEK[x.wk]):''}
       <div class="tr"><i data-to="${to}" class="${x.gain?'gain':''}" style="width:${from}%"></i></div>
       <div class="ct"><span>${up?TIERS[x.t1]+' desbloqueado ✓':x.t0>=0?TIERS[x.t0]:'Bloqueada'}</span><span>${x.gain?'<em>+1 semana</em> • ':''}${x.after} de ${target} pro ${TIERS[x.t0+1]}</span></div></div></div>`};
@@ -7291,7 +7292,7 @@ function buildRD2(R){const created0=P.created_at?ymd(new Date(P.created_at)):nul
 /* ===== app fiel: o protótipo desenha tudo com os dados reais (window.__RD, montado aqui e guardado no aparelho) ===== */
 const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`,TODAY=ymd(now);
 const [{data:WK},{data:LG},{data:DC},{data:WC},{data:AW}]=await PF.tr;
-const LOGS=LG||[],DCS=DC||[],WCS=WC||[];
+const CARDL=(LG||[]).filter(l=>l.letter==='cardio'),LOGS=(LG||[]).filter(l=>l.letter!=='cardio'),DCS=DC||[],WCS=WC||[];
 try{const ti=(now.getDay()+6)%7,a=ymd(new Date(now.getFullYear(),now.getMonth(),now.getDate()-ti)),b=ymd(new Date(now.getFullYear(),now.getMonth(),now.getDate()-ti+6));const L=LOGS.filter(l=>l.day>=a&&l.day<=b&&l.letter&&l.letter!=='_cfg');window.__WKST={days:L.map(l=>[(new Date(l.day+'T12:00:00').getDay()+6)%7,l.letter]),n:new Set(L.map(l=>l.day)).size,min:L.reduce((s,l)=>s+(+l.duration_min||0),0),vol:Math.round(L.reduce((s,l)=>s+(+l.volume_kg||0),0))}}catch(_){window.__WKST={n:0,min:0,vol:0}}
 function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercises||{};
   const P=W.filter(w=>w.letter!=='_cfg'&&w.exercises&&Array.isArray(w.exercises.ex)&&w.exercises.ex.some(e=>!e.cd)).slice(0,4);
@@ -7317,8 +7318,9 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   const m0=ymd(new Date(now.getFullYear(),now.getMonth(),1)),LM=LOGS.filter(l=>l.day>=m0&&ORD.includes(l.letter)),cnt={};ORD.forEach(k=>cnt[k]=LM.filter(l=>l.letter===k).length);
   const CM=DCS.filter(c=>c.day>=m0&&c.answers&&c.answers.cardio>0),pd=WKP.filter(x=>x.k).length||ORD.length,wks=Math.max(1,Math.ceil(now.getDate()/7));
   const ST0=((FX||[]).map(f=>f.start_date).filter(Boolean).sort()[0])||String(P.created_at||'').slice(0,10)||TODAY;const trD=new Set(LM.map(l=>l.day)),skips=[...Array(now.getDate()).keys()].map(k=>ymd(new Date(now.getFullYear(),now.getMonth(),k+1))).filter(d=>d<TODAY&&d>=ST0&&!trD.has(d)).length;
-  const MONTH={cnt,pl:Math.max(1,Math.round(wks*pd/ORD.length)),cmin:CM.reduce((a,c)=>a+(c.answers.cardio===2?30:20),0),cses:CM.length,skips,mname:['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][now.getMonth()]};
-  return {uid,v:3,PLANS,ORD,MUS,FIXN,TR:{done,last,on:false},TRLOG,WKP,TK,CFG:{modo,semTreino:false},WKTXT:`Semana de ${f2(ws)} a ${f2(we)}`,MONTH}}
+  const MONTH={cnt,pl:Math.max(1,Math.round(wks*pd/ORD.length)),cmin:CM.reduce((a,c)=>a+(c.answers.cardio===2?30:20),0)+CARDL.filter(l=>l.day>=m0).reduce((a,l)=>a+(+l.duration_min||0),0),cses:CM.length+CARDL.filter(l=>l.day>=m0).length,skips,mname:['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][now.getMonth()]};
+  const CARDM={};CARDL.filter(l=>inW(l.day)).forEach(l=>{const i=(new Date(l.day+'T12:00:00').getDay()+6)%7,z=(l.sets||[])[0]||{};(CARDM[i]=CARDM[i]||[]).push({c:1,tipo:z.tipo||'Cardio',min:+l.duration_min||z.min||0,int:z.int||'Moderada',id:l.id})});
+  return {uid,v:3,CARDM,PLANS,ORD,MUS,FIXN,TR:{done,last,on:false},TRLOG,WKP,TK,CFG:{modo,semTreino:false},WKTXT:`Semana de ${f2(ws)} a ${f2(we)}`,MONTH}}
 try{window.__RKD=((await PF.rk)||{}).data||[]}catch(_){window.__RKD=[]}
 const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
 /* o protótipo já desenhou com __RD; se mudou, guarda e abre de novo (uma vez) */
@@ -7327,6 +7329,9 @@ const RDN=buildRD2(buildRD()),RDJ=JSON.stringify(RDN);
  if(!same){if(!window.__RD||window.__RD.uid!==uid)try{sessionStorage.setItem('rl-clean','1')}catch(_){}let n=0;try{n=+sessionStorage.getItem('rl-rl')||0}catch(_){}if(n<2){try{sessionStorage.setItem('rl-rl',String(n+1))}catch(_){}location.reload();return}}
  else{try{sessionStorage.removeItem('rl-rl')}catch(_){}}}
 
+/* cardio registrado pelo aluno -> workout_logs (letter 'cardio'; fica fora das contas de treino) */
+window.__saveCardio=async(i,it)=>{try{const ti=(now.getDay()+6)%7,d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-ti+i),day=ymd(d);const row={user_id:uid,letter:'cardio',day,sets:[{tipo:it.tipo,min:it.min,int:it.int,cardio:true}],volume_kg:0,duration_min:it.min,finished_at:new Date().toISOString()};const r=await sb.from('workout_logs').insert(row).select('id');if(r.error){toast('Cardio não foi salvo: '+(r.error.message||'tente de novo'));return}if(r.data&&r.data[0])it.id=r.data[0].id;CARDL.unshift(Object.assign({},row,{id:it.id}))}catch(e){toast('Cardio não foi salvo')}};
+window.__delCardio=async it=>{try{if(it&&it.id)await sb.from('workout_logs').delete().eq('id',it.id).eq('user_id',uid)}catch(_){}};
 /* treino finalizado -> workout_logs */
 {let t0={};document.addEventListener('click',e=>{const c=e.target.closest('.ck[data-ck]');if(c){const k=c.dataset.ck.split('-')[0];if(!t0[k])t0[k]=Date.now()}},true);
  const grab=k=>{const P=window.__RD.PLANS[k];if(!P)return null;const sets=[];let vol=0;P.ex.forEach((e,i)=>{for(let s=0;s<e.sets;s++){const b=document.querySelector(`[data-ck="${k}-${i}-${s}"]`);if(!b||b.getAttribute('aria-pressed')!=='true')continue;

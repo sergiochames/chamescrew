@@ -4177,7 +4177,7 @@ async function fetchAll(){const G=q=>Promise.resolve(q).then(r=>r,e=>({data:null
     sb.from('requests').select('*,proposals(*)').in('status',['aguardando','conversar','proposta']).eq('archived',false).order('created_at',{ascending:false}),
     sb.from('fixed_slots').select('*').eq('active',true),sb.from('workouts').select('*').order('position'),
     sb.from('pstate').select('*').eq('owner',OWN).maybeSingle(),sb.from('invites').select('code,profile_id,used_by,created_at').not('profile_id','is',null),
-    sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
+    sb.from('workout_logs').select('user_id,letter,day,sets,volume_kg,duration_min').or('letter.is.null,letter.neq.cardio').gte('day',iso(new Date(Date.now()-120*864e5))).order('day',{ascending:false}),
     sb.from('daily_checkins').select('user_id,day,answers').gte('day',iso(new Date(Date.now()-42*864e5))),
     sb.from('week_closes').select('*').gte('week_start',iso(new Date(Date.now()-70*864e5))).order('week_start',{ascending:false})]);
   const e=st.error||cl.error||rq.error||ps.error;if(e)throw e;STUD=st.data||[];CLS=cl.data||[];RQ=rq.data||[];FXS=fx.data||[];WKS=wo.data||[];PS=ps.data||null;INV=(iv&&iv.data)||[];LGA=(lg&&lg.data)||[];DCA=(dc&&dc.data)||[];WCA=(wc&&wc.data)||[];await pAR;
