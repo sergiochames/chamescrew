@@ -4491,11 +4491,71 @@ function rsvList(){const f=t=>{const d=new Date(t);return `${DOW[d.getDay()].toL
    try{const X=STU.find(x=>x._id===b.dataset.pay);if(X&&X._rq)X._rq.pay_status='pago';finCheck()}catch(_){}
    s.remove();toast('Pagamento confirmado. Aulas na agenda!');try{await sync()}catch(_){location.reload()}}))}
 /* ---------- acesso do aluno (link) dentro da ficha ---------- */
+
+/* ---------- dieta do aluno dentro da ficha (só leitura + trocar PDF) ---------- */
+{const dnn=x=>String(x||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const alBase=n=>dnn(n).replace(/\b(opcao|op)\s*[0-9a-z]\b/g,'').replace(/\b(com|sem)\b.*$/,'').replace(/[-–:()]/g,' ').replace(/\s+/g,' ').trim();
+const alMk=n=>/\b(opcao|op)\s*[0-9a-z]\b/.test(dnn(n))||/\b(com|sem)\b/.test(dnn(n));
+const dGroups=R=>{const G={},out=[];R.forEach((r,i)=>{let k;if(typeof r.alt==='string'&&r.alt!=='')k='m:'+r.alt;else if(r.alt===''||!alMk(r.nome)||!alBase(r.nome))k='s:'+i;else k='a:'+alBase(r.nome);if(!G[k]){G[k]=[];out.push(G[k])}G[k].push(i)});return out};
+const dItems=r=>(r.opcoes||[]).length?r.opcoes[0].itens||[]:(r.itens||[]);
+const dstr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const DL1=['D','S','T','Q','Q','S','S'];const CACHE={};
+const dPlanOf=X=>X.diet&&X.diet.plan&&Array.isArray(X.diet.plan.refeicoes)&&X.diet.plan.refeicoes.length?X.diet.plan:null;
+function dietHTML(X,rows){const PL=dPlanOf(X),D=X.diet;const days=[];for(let k=6;k>=0;k--){const d=new Date();d.setDate(d.getDate()-k);days.push({d,s:dstr(d)})}
+  const R=PL?PL.refeicoes:[],G=PL?dGroups(R):[];const by={};(rows||[]).forEach(r=>{if(r.done_at)(by[r.day]=by[r.day]||new Set()).add(r.meal_idx)});
+  const rat=days.map(x=>{const dn=by[x.s]||new Set();return G.length?G.filter(g=>g.some(j=>dn.has(j))).length/G.length:0});
+  const td=by[days[6].s]||new Set(),tdN=G.filter(g=>g.some(j=>td.has(j))).length;
+  const past=rat.slice(0,6).concat(rat[6]>0?[rat[6]]:[]),pc=past.length?Math.round(past.reduce((a,b)=>a+b,0)/past.length*100):null;
+  const dots=days.map((x,i)=>{const r=rat[i],t=i===6;return `<i class="${r>=1?'ok':r>0?'mid':t?'':'no'}" title="${x.s}">${DL1[x.d.getDay()]}</i>`}).join('');
+  const meals=R.map((r,i)=>{const its=dItems(r),n=(r.opcoes||[]).length>1,tx=n?r.opcoes.length+' opções':its.slice(0,4).map(z=>esc(z.alimento||'')+(z.quantidade?' ('+esc(z.quantidade)+')':'')).join(', ')+(its.length>4?'…':'');
+    return `<div class="dmr"><div><b>${esc(r.nome)}${r.horario?' • '+esc(r.horario):''}</b><small>${tx}</small></div><i class="dck${td.has(i)?' on':''}"></i></div>`}).join('');
+  const meta=D?`${esc(D.nutri||'')}${D.reg?' • CRN-'+esc(D.reg)+(D.num?' '+esc(D.num):''):''}${D.at?' • enviado '+esc(D.at):''}`:'';
+  return `<div class="row"><span class="lbl">Dieta</span>${D?`<span class="note">${PL?R.length+' refeições':'só o PDF'}</span>`:''}</div>
+  ${D?`<div class="dpdf"><span class="dic">PDF</span><div style="min-width:0;flex:1"><b>Plano alimentar</b><div class="note">${meta}</div></div></div>`:'<p class="note" style="margin:0">Ainda sem dieta. Envie o PDF e o aluno já vê no app.</p>'}
+  <div class="row2">${D&&D.path?'<button class="btn" data-rldiet>Abrir PDF</button>':''}<button class="btn ${D?'solid':'solid'}" data-rldup>${D?'Trocar PDF':'Enviar PDF da dieta'}</button></div>
+  ${PL?`<div class="dad"><div class="row"><span class="lbl">Adesão • 7 dias</span>${pc!=null?`<span class="dtag">${pc}%</span>`:''}</div><div class="ddots">${dots}</div><small class="note">Hoje: ${tdN} de ${G.length} refeições • verde completa, amarelo parcial, vermelho não fez</small></div>
+  <span class="lbl" style="margin-top:4px">Refeições como o aluno vê</span><div class="dml">${meals}</div><small class="note">Só leitura. Para mudar, troque o PDF.</small>`:(D?'<p class="note" style="margin:0">A IA ainda não leu esse PDF. O aluno pode abrir o PDF no app.</p>':'')}`}
+function upSheet(X,done){let file=null;const D=X.diet||{};
+  const s=sheet(`<span class="lbl">${esc(X.n.split(' ')[0])}</span><h3 class="d">${D.path?'Trocar a dieta':'Enviar dieta'}</h3>
+  <label class="btn" style="display:flex;align-items:center;justify-content:center;gap:8px"><input type="file" id="duf" accept="application/pdf" hidden><span id="dufl">Escolher o PDF</span></label>
+  <div class="field"><label>Nome do nutricionista</label><input class="inp" id="dun" value="${esc(D.nutri||PERS.name||'')}"></div>
+  <div style="display:grid;grid-template-columns:90px 1fr;gap:8px"><div class="field"><label>CRN</label><select class="inp" id="dur">${[1,2,3,4,5,6,7,8,9,10,11].map(n=>`<option ${String(n)===String(D.reg||4)?'selected':''}>${n}</option>`).join('')}</select></div><div class="field"><label>Número</label><input class="inp" id="dunum" inputmode="numeric" value="${esc(D.num||'')}"></div></div>
+  <p class="note">A IA lê o PDF e monta as refeições no app do aluno. Ela só copia o que está escrito. O aluno vê assim que terminar.</p>
+  <div class="row2"><button class="btn" data-close>Cancelar</button><button class="btn solid" id="dusv">Salvar e ler</button></div>`,s=>{
+    s.querySelector('#duf').onchange=e=>{file=e.target.files[0]||null;if(file&&file.size>10485760){file=null;toast('PDF muito grande (máx. 10 MB)')}s.querySelector('#dufl').textContent=file?'✓ '+file.name:'Escolher o PDF'};
+    s.querySelector('#dusv').onclick=async()=>{const nm=s.querySelector('#dun').value.trim(),num=s.querySelector('#dunum').value.trim();
+      if(!file)return toast('Escolha o PDF');if(!nm||!num)return toast('Preencha o nome e o número do CRN');
+      const b=s.querySelector('#dusv');b.disabled=true;b.textContent='Enviando…';const path=X._id+'/'+Date.now()+'.pdf';
+      const up=await sb.storage.from('diets').upload(path,file,{contentType:'application/pdf'});if(up.error){b.disabled=false;b.textContent='Salvar e ler';return toast('Não enviou: '+up.error.message)}
+      const d=new Date(),diet={path,name:file.name.replace(/\.pdf$/i,''),nutri:nm,reg:s.querySelector('#dur').value,num,at:String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')};
+      let r=await sb.from('profiles').update({diet}).eq('id',X._id);if(r.error){b.disabled=false;b.textContent='Salvar e ler';return toast('Não salvou: '+r.error.message)}
+      X.diet=diet;b.textContent='Lendo a dieta… (uns 30 s)';
+      let res=null,err='';try{const {data:{session:se}}=await sb.auth.getSession();const f=await fetch(CF.supabaseUrl+'/functions/v1/diet-parse',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+(se&&se.access_token),apikey:CF.supabaseKey},body:JSON.stringify({path})});res=await f.json().catch(()=>null);if(!f.ok)err=(res&&res.error)||('erro '+f.status)}catch(e){err='sem conexão'}
+      s.remove();
+      if(err||!res||!res.diet||res.diet.ok===false){X.diet=diet;done&&done();return toast('PDF salvo. A IA não leu: '+(err||(res&&res.diet&&res.diet.motivo)||'tente de novo'))}
+      const R=(res.diet.refeicoes||[]).filter(z=>z&&z.nome),d2=Object.assign({},diet,{plan:Object.assign({},res.diet,{refeicoes:R,conferido:new Date().toISOString(),por:'personal'})});
+      r=await sb.from('profiles').update({diet:d2}).eq('id',X._id);if(r.error){done&&done();return toast('PDF salvo, mas as refeições não gravaram: '+r.error.message)}
+      X.diet=d2;done&&done();toast(R.length+' refeições lidas. Confere abaixo se está igual ao PDF.')}});return s}
+window.dietCard=function(){if(S.tab!=='alunos')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-diet'))return;
+  const X=A2.open&&STU.find(x=>x._id&&x.n===A2.open);if(!X)return;
+  const c=document.createElement('section');c.className='card';c.id='rl-diet';
+  const paint=rows=>{c.innerHTML=dietHTML(X,rows)};
+  const load=async()=>{const from=new Date();from.setDate(from.getDate()-6);let rows=[];try{if(dPlanOf(X)){const {data}=await sb.from('meal_logs').select('day,meal_idx,done_at').eq('user_id',X._id).gte('day',dstr(from));rows=data||[]}}catch(_){}CACHE[X._id]=rows;paint(rows)};
+  paint(CACHE[X._id]||[]);load();
+  c.addEventListener('click',e=>{if(e.target.closest('[data-rldiet]')){window.__openSigned('diets',X.diet.path,'Não abriu a dieta');return}
+    if(e.target.closest('[data-rldup]')){upSheet(X,()=>{c.innerHTML=dietHTML(X,CACHE[X._id]||[]);load()})}});
+  const a=ap.querySelector('#rl-acc');if(a&&a.nextSibling)ap.insertBefore(c,a.nextSibling);else if(a)ap.appendChild(c);else ap.appendChild(c)};
+{const st=document.createElement('style');st.textContent=`#rl-diet .dpdf{display:flex;gap:12px;align-items:center}#rl-diet .dic{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;flex:none}
+#rl-diet .dad{border:1px solid var(--line);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}#rl-diet .dtag{font-size:11px;font-weight:800;padding:3px 8px;border-radius:99px;background:rgba(34,197,94,.16);color:#4ade80}
+#rl-diet .ddots{display:flex;gap:6px}#rl-diet .ddots i{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:10px;font-weight:700;color:var(--muted)}
+#rl-diet .ddots i.ok{background:#22c55e;border-color:#22c55e;color:#04210f}#rl-diet .ddots i.mid{background:#e0b341;border-color:#e0b341;color:#2a1d00}#rl-diet .ddots i.no{border-color:#8a4545;color:#d27070}
+#rl-diet .dml{display:flex;flex-direction:column}#rl-diet .dmr{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}#rl-diet .dmr:first-child{border-top:0}#rl-diet .dmr b{font-size:14.5px}#rl-diet .dmr small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.4}
+#rl-diet .dck{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);flex:none}#rl-diet .dck.on{background:#22c55e;border-color:#22c55e}`;document.head.appendChild(st)}}
 function accessCard(){if(S.tab!=='alunos')return;const ap=document.getElementById('app');if(!ap||ap.querySelector('#rl-acc'))return;
   const X=A2.open&&STU.find(x=>x._id&&x.n===A2.open);if(!X)return;
   const st=X._email?(X._on?'Já usa o app':'Criou a senha, falta terminar o cadastro'):'Ainda não entrou no app';
   const c=document.createElement('section');c.className='card';c.id='rl-acc';
-  c.innerHTML=`<div class="row"><span class="lbl">Acesso ao app</span><span class="note">${st}</span></div>${X.diet?`<div class="row" style="margin:8px 0 4px"><span class="note">Dieta: ${esc(X.diet.nutri||'')} • CRN-${esc(X.diet.reg||'')} ${esc(X.diet.num||'')}</span><button class="mini" data-rldiet>Abrir PDF</button></div>`:''}${X._email?`<p class="note" style="margin:6px 0 8px">Esqueceu a senha? Mande um link novo: ${esc(X.n.split(" ")[0])} coloca o e-mail e cria outra senha.</p><div class="row2"><button class="btn" data-rlcp data-pw="1">Copiar link</button><button class="btn solid" data-rlwa data-pw="1">Enviar no WhatsApp</button></div>`:`<p class="note" style="margin:6px 0 10px">O link é de uso único. Ele coloca o e-mail, cria e confirma a senha e faz o cadastro.</p><div class="row2"><button class="btn" data-rlcp>Copiar link</button><button class="btn solid" data-rlwa>Enviar no WhatsApp</button></div><button class="lnk" data-rlnew style="margin-top:6px">Gerar link novo</button>`}`;
+  c.innerHTML=`<div class="row"><span class="lbl">Acesso ao app</span><span class="note">${st}</span></div>${X._email?`<p class="note" style="margin:6px 0 8px">Esqueceu a senha? Mande um link novo: ${esc(X.n.split(" ")[0])} coloca o e-mail e cria outra senha.</p><div class="row2"><button class="btn" data-rlcp data-pw="1">Copiar link</button><button class="btn solid" data-rlwa data-pw="1">Enviar no WhatsApp</button></div>`:`<p class="note" style="margin:6px 0 10px">O link é de uso único. Ele coloca o e-mail, cria e confirma a senha e faz o cadastro.</p><div class="row2"><button class="btn" data-rlcp>Copiar link</button><button class="btn solid" data-rlwa>Enviar no WhatsApp</button></div><button class="lnk" data-rlnew style="margin-top:6px">Gerar link novo</button>`}`;
   c.insertAdjacentHTML('beforeend',`<button class="lnk" data-rlreset style="display:block;margin:12px 0 0;background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;padding:0">Reiniciar aulas e créditos (teste)</button>`);
   const h=ap.querySelector(':scope>section.card');h?ap.insertBefore(c,h):ap.appendChild(c);
   const txt=code=>X._email?`Oi, ${X.n.split(' ')[0]}! Link para criar uma senha nova no app: ${APP}?c=${code}\nToca no link, coloca seu e-mail e a senha nova.`:`Oi, ${X.n.split(' ')[0]}! Aqui é ${PERS.name}${PERS.brand?', da '+PERS.brand:''}. Seu acesso ao app: ${APP}?c=${code} — toca no link, coloca seu e-mail e cria sua senha.`;
@@ -5393,7 +5453,7 @@ body.ag3 .sheet h3.d,body.ag3 .sheet h3{font-size:21px!important}`;document.head
 window.__openSigned=async function(bucket,path,msg){let w=null;try{w=window.open('about:blank','_blank')}catch(_){}const {data,error}=await sb.storage.from(bucket).createSignedUrl(path,600);if(error||!data){try{w&&w.close()}catch(_){}return toast(msg||'Não abriu')}if(w&&!w.closed){try{w.location.href=data.signedUrl;return}catch(_){}}location.href=data.signedUrl};
 /* ---------- desenho ---------- */
 const _draw=draw;
-draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{ag2()}catch(e){console.error(e)}try{ag2wm()}catch(e){console.error(e)}try{pkApply()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(e){console.error(e)}
+draw=function(){try{if(!NEWP.closed&&STEPS.every(([k])=>NEWP.done[k]))NEWP.closed=1}catch(_){}NEWP.on=!STU.length&&!NEWP.closed&&!(S.tab==='treinos'&&(T2.tpl||T2.view));try{realWC()}catch(_){}try{NEWP.done.horarios=Object.values(WH).some(a=>a&&a.length)?1:0;NEWP.done.locais=LOCS.length?1:0;NEWP.done.precos=(Object.values(PRICE.aula||{}).some(v=>+v>0)||PLANS.length)?1:0;if(STU.length)NEWP.done.aluno=1}catch(_){}_draw.apply(this,arguments);if(NEWP.on){const bd=document.getElementById('bd');if(bd){bd.hidden=true;bd.textContent=''}}try{if(NEWP.on&&S.tab==='agenda'){const fs=document.querySelector('#app .fsteps');if(fs&&!fs.querySelector('[data-rlskip]'))fs.insertAdjacentHTML('beforeend','<button class="lnk" data-rlskip style="margin-top:8px">Pular e ver minha agenda</button>')}emptyDay();anamExtra();trGear();fichaCiMeta()}catch(e){console.error(e)}try{reqCard()}catch(e){console.error(e)}try{avFill()}catch(e){console.error(e)}try{rsvCard()}catch(e){console.error(e)}try{pedCard()}catch(e){console.error(e)}try{ag2()}catch(e){console.error(e)}try{ag2wm()}catch(e){console.error(e)}try{pkApply()}catch(e){console.error(e)}try{pixCard()}catch(e){console.error(e)}try{accessCard()}catch(_){}try{dietCard()}catch(e){console.error(e)}
   try{const t=document.querySelector('.subtrial');if(t&&ME.is_dev)t.firstChild.textContent='Conta dev • tudo liberado '}catch(_){}setTimeout(sync,0);setTimeout(linkCheck,0);setTimeout(()=>{try{finCheck()}catch(e){console.error(e)}},0)};
 const redraw=async()=>{try{await fetchAll();await loadBLK();apply()}catch(e){toast('Erro ao atualizar')}draw()};
 
