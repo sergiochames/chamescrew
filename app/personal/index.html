@@ -1891,6 +1891,7 @@ function exSheet(i){const P=CUR().plans[T2.sel],e=P.ex[i],last=i===P.ex.length-1
     if(t.closest('[data-edel]')){askDelete(i,()=>s.remove());return}
     if(t.closest('[data-eswap]')){s.remove();picker(n=>{e.n=n;if(isCardioN(n)){e.cd=e.cd||mkCd();e.rest=0}else if(e.cd){delete e.cd;e.rest=60}toast('Trocado por '+n)})}
     if(t===s||t.closest('[data-close]'))drawBuilder()})}
+const nA=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 function picker(single){const P=CUR().plans[T2.sel];let n=0;
   const s=sheet(`<span class="lbl">Treino ${LT(CUR(),T2.sel)} • ${esc(P.name)}</span><h3 class="d">${single?'Trocar exercício':'Adicionar exercício'}</h3>
     <input class="inp" id="pq" placeholder="Buscar em todos (${Object.values(LIB).reduce((a,r)=>a+Object.values(r).reduce((b,m)=>b+m.length,0),0)} exercícios)" autocomplete="off" aria-label="Buscar exercício">
@@ -1900,10 +1901,10 @@ function picker(single){const P=CUR().plans[T2.sel];let n=0;
   const rg=s.querySelector('#rg'),ms=s.querySelector('#ms'),pl=s.querySelector('#pl'),pq=s.querySelector('#pq');
   const inT=nm=>P.ex.some(e=>e.n===nm);
   const row=nm=>`<div class="lx"><button class="fv${T2.fav.has(nm)?' on':''}" data-pf="${esc(nm)}" aria-pressed="${T2.fav.has(nm)}" aria-label="Favoritar ${esc(nm)}">${STAR}</button><span style="min-width:0;display:flex;align-items:center;gap:10px">${exThumb(nm)||`<span class="mslot"><span class="mico sm">${musIcon(nm)}</span></span>`}<span style="min-width:0"><b>${esc(nm)}</b>${isMine(nm)?'<small>criado por você</small>':''}</span></span><button class="addb${!single&&inT(nm)?' in':''}" data-padd="${esc(nm)}" aria-label="${single?'Usar':'Adicionar'} ${esc(nm)}">${single?ICK.go:inT(nm)?ICK.ok:ICK.add}</button></div>`;
-  const fill=()=>{const q=T2.q.toLowerCase();rg.hidden=ms.hidden=!!q;
+  const fill=()=>{const q=nA(T2.q).trim();rg.hidden=ms.hidden=!!q;
     rg.innerHTML=Object.keys(LIB).map(r=>`<button data-rg="${r}" aria-pressed="${r===T2.reg}">${r}</button>`).join('');
     ms.innerHTML=Object.keys(LIB[T2.reg]).length>1?Object.keys(LIB[T2.reg]).map(m=>`<button data-ms="${m}" aria-pressed="${m===T2.mus}">${m}${listOf(m).some(k=>T2.fav.has(k))?' <i class="sf">★</i>':''}</button>`).join(''):'';
-    if(q){const all=[];for(const r in LIB)for(const m in LIB[r])listOf(m).forEach(k=>{if(k.toLowerCase().includes(q)&&!all.includes(k))all.push(k)});
+    if(q){const all=[];for(const r in LIB)for(const m in LIB[r])listOf(m).forEach(k=>{if(nA(k).includes(q)&&!all.includes(k))all.push(k)});
       pl.innerHTML=all.length?all.sort((a,b)=>(T2.fav.has(b)-T2.fav.has(a))||a.localeCompare(b,'pt')).map(row).join(''):`<p class="note" style="padding:8px 0">Nada com "${esc(T2.q)}". Crie embaixo.</p>`;return}
     const L=listOf(T2.mus),nf=L.filter(k=>T2.fav.has(k)).length;
     pl.innerHTML=(nf?`<p class="lbl" style="margin:10px 0 0">★ Seus favoritos</p>`:'')+L.slice(0,nf).map(row).join('')+`<p class="lbl" style="margin:12px 0 0">${T2.mus} (A–Z)</p>`+L.slice(nf).map(row).join('')};
@@ -2119,7 +2120,7 @@ function drawAlunos(){if(A2.open){drawFicha();foldFicha();return}const nm=ACT().
     <section id="alist" class="glist">${aluList(L)}</section>
     <p class="note" style="text-align:center">Segure um aluno para fixar, favoritar ou pôr etiqueta.</p>
     <p class="proto">Protótipo com dados de exemplo.</p>`}
-function aluList(L){const q=(A2.q||'').trim().toLowerCase();L=L.filter(x=>!q||(x.n+' '+(x.ap||'')+' '+(x.ig||'')).toLowerCase().includes(q));
+function aluList(L){const q=nA(A2.q||'').trim();L=L.filter(x=>!q||nA(x.n+' '+(x.ap||'')+' '+(x.ig||'')).includes(q));
   return L.map(x=>{const m=x.arq?[]:newMsgs(x);if(x.arq)return `<button class="who arqd" data-stu="${esc(x.n)}"><span class="av0">${ini(x.n)}</span><span style="min-width:0"><b>${esc(x.n)}</b><small>Arquivado em ${fmtD(x.arq.since)}${x.arq.back?' • volta em '+MESL[x.arq.back.getMonth()]:''}</small></span><span class="quota">reativar ›</span></button>`;return `<button class="who${m.length?' hasmsg':''}" data-stu="${esc(x.n)}"><span class="av0">${ini(x.n)}${m.length?`<i class="badge">${m.length}</i>`:''}</span><span style="min-width:0"><b>${x.pin?'<i class="pi">📌</i>':''}${x.fav?'<i class="pi pfv">★</i>':''}${esc(x.n)}${x.par?' <i class="pi">🤝</i>':''}</b>${(x.tags||[]).length?`<span class="tg">${x.tags.map(t=>`<em class="${t==='Atenção'||t==='Lesão'?'tw':''}">${esc(t)}</em>`).join('')}</span>`:''}${m.length?`<small class="mtx ${MK[m[0].t][1]}">${MK[m[0].t][0]}: ${esc(m[0].txt)}</small>`:`<small>${x.mode} • ${modTxt(x)}</small>`}</span><span class="quota ${pNow(x)?'':x.due<=7?'full':''}">${pNow(x)&&pNow(x).from<=TD?PZ[pNow(x).t].toLowerCase():x.due<0?'venceu':x.due<=15?'vence em '+x.due+'d':isOn(x)?'online':x.q[0]+'/'+x.q[1]+' aulas'}</span></button>`}).join('')||'<p class="note">Ninguém encontrado.</p>'}
 var prog=x=>{const w=weekOf(x),E=w.plans.flatMap(p=>p.ex).filter(e=>!e.cd&&+e.s[0][0]>0).slice(0,3),k=(STU.indexOf(x)%4)+1;return E.map((e,j)=>{const now=+e.s[0][0],st=Math.round(now/(1+(k*4+j*3)/100)*2)/2;return {n:e.n,st,now,p:Math.round((now/st-1)*100)}})};
 var freq4=x=>{const g=weekOf(x).plans.filter(p=>(p.ex||[]).length).reduce((a,p)=>a+p.days.length,0)||3,i=STU.indexOf(x),d=[g*4-1,g*4-3,g*4,g*4-2,g*4-5,g*4-1,g*4-4,g*4-6][i]??g*4-2;return [Math.max(0,d),g*4]};
