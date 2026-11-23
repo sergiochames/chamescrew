@@ -4196,14 +4196,14 @@ function canHide(c){if(c.status!=='cancelada')return false;const t=new Date(c.st
 /* ---------- 1) estado do protótipo salvo no banco ---------- */
 const REF={};[['STU',()=>STU],['LOG',()=>LOG],['LOCS',()=>LOCS],['WH',()=>WH],['BOOK',()=>BOOK],['RULES',()=>RULES],['IND',()=>IND],['INF',()=>INF],['ANM',()=>ANM],['ANSW',()=>ANSW],
  ['GAME',()=>GAME],['PROMO',()=>PROMO],['ENTR',()=>ENTR],['PRZ',()=>PRZ],['BDAY',()=>BDAY],['LANC',()=>LANC],['PLANS',()=>PLANS],['PRICE',()=>PRICE],['CHG',()=>CHG],['PAY',()=>PAY],
- ['PERS',()=>PERS],['SUB',()=>SUB],['RCV',()=>RCV],['ICAL',()=>ICAL],['TEAM',()=>TEAM],['EXP',()=>EXP],['NOVOS',()=>NOVOS],['DSL',()=>DSL],['SUMD',()=>SUMD],['BLK',()=>BLK],
+ ['OBSF',()=>OBSF],['PERS',()=>PERS],['SUB',()=>SUB],['RCV',()=>RCV],['ICAL',()=>ICAL],['TEAM',()=>TEAM],['EXP',()=>EXP],['NOVOS',()=>NOVOS],['DSL',()=>DSL],['SUMD',()=>SUMD],['BLK',()=>BLK],
  ['FAVW',()=>FAVW],['PFOLD',()=>PFOLD],['PROG',()=>PROG],['NEWP',()=>NEWP],['TRV3',()=>TRV3],['PNOT',()=>PNOT]].forEach(([k,f])=>{try{const v=f();if(v&&typeof v==='object')REF[k]=v}catch(_){}});
 const enc=v=>{if(v instanceof Date)return {__d:v.getTime()};if(v instanceof Set)return {__s:[...v].map(enc)};if(Array.isArray(v))return v.map(enc);
   if(v&&typeof v==='object'){const o={};for(const k in v){if(typeof v[k]==='function'||k==='_creating')continue;o[k]=enc(v[k])}return o}return typeof v==='function'?undefined:v};
 const dec=v=>{if(Array.isArray(v))return v.map(dec);if(v&&typeof v==='object'){if('__d' in v)return new Date(v.__d);if('__s' in v)return new Set(v.__s.map(dec));const o={};for(const k in v)o[k]=dec(v[k]);return o}return v};
 const fill=(t,v)=>{if(Array.isArray(t)){t.length=0;(v||[]).forEach(x=>t.push(x));return}if(t instanceof Set){t.clear();(v instanceof Set?[...v]:v||[]).forEach(x=>t.add(x));return}
   for(const k of Object.keys(t))if(typeof t[k]!=='function')delete t[k];Object.assign(t,v||{})};
-function zeroState(){const Z={STU:[],LOG:[],LOCS:[],INF:[],ANSW:[],PROMO:[],ENTR:[],LANC:[],PLANS:[],CHG:[],TEAM:[],EXP:[],NOVOS:[],BLK:[],FAVW:[],PNOT:[],DSL:{},SUMD:{},TRV3:{}};
+function zeroState(){const Z={STU:[],LOG:[],LOCS:[],INF:[],ANSW:[],PROMO:[],ENTR:[],LANC:[],PLANS:[],CHG:[],TEAM:[],EXP:[],NOVOS:[],BLK:[],FAVW:[],PNOT:[],DSL:{},SUMD:{},TRV3:{},OBSF:[]};
   for(const k in Z)if(REF[k])fill(REF[k],Z[k]);
   if(REF.ANM)fill(ANM,ANM.filter(a=>a.pronta));
   if(REF.WH)fill(WH,{0:[],1:[],2:[],3:[],4:[],5:[],6:[]});
