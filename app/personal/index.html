@@ -5780,7 +5780,7 @@ try{
    /* linhas: steppers no lugar */
    mid.querySelectorAll('.ex2w[data-idx]').forEach(r=>{const i=+r.dataset.idx,e=P.ex[i];if(!e||e.cd)return;const sw=r.querySelector('.swc');if(!sw||sw.querySelector('.dkst'))return;
      const g=document.createElement('span');g.className='dkst';
-     g.innerHTML=`<span class="st2"><i data-dks="${i}:s:-1">−</i><b>${e.s.length}</b><i data-dks="${i}:s:1">+</i></span><span class="st2"><i data-dks="${i}:r:-1">−</i><b>${repTxt(e)}</b><i data-dks="${i}:r:1">+</i></span><span class="st2"><i data-dks="${i}:d:-15">−</i><b>${e.rest||0}s</b><i data-dks="${i}:d:15">+</i></span><span class="dkmt${e.mets&&e.mets.length?' on':''}">${e.mets&&e.mets.length?esc(e.mets.map(k=>METS[k]?METS[k][0]:k).join(' + ')):'Método'}</span>`;
+     g.innerHTML=`<span class="st2"><i data-dks="${i}:s:-1">−</i><b>${e.s.length}</b><i data-dks="${i}:s:1">+</i></span><span class="st2"><i data-dks="${i}:r:-2">−</i><b data-dkrp="${i}" title="Clique para digitar (ex.: 8 a 12)" style="cursor:pointer">${repTxt(e)}</b><i data-dks="${i}:r:2">+</i></span><span class="st2"><i data-dks="${i}:d:-15">−</i><b>${e.rest||0}s</b><i data-dks="${i}:d:15">+</i></span><span class="dkmt${e.mets&&e.mets.length?' on':''}" data-dkmt="${i}" title="Escolher método" style="cursor:pointer">${e.mets&&e.mets.length?esc(e.mets.map(k=>METS[k]?METS[k][0]:k).join(' + ')):'Método'}</span>`;
      const xb=sw.querySelector('[data-mbx]');xb?xb.before(g):sw.appendChild(g);
      const num=document.createElement('button');num.type='button';num.className='dknum'+(SEL.has(i)?' on':'');num.dataset.dksel=i;num.textContent=i+1;num.title='Clique para selecionar (Shift seleciona vários)';sw.prepend(num);
      r.classList.toggle('dksel',SEL.has(i));r.draggable=false});
@@ -5805,6 +5805,8 @@ try{
    if((b=t.closest('[data-dkp]'))){e.stopImmediatePropagation();T2.open=T2.sel=+b.dataset.dkp;SEL.clear();drawBuilder();return}
    if((b=t.closest('[data-dkq]'))){e.stopImmediatePropagation();const h=app.querySelector(b.dataset.dkq)||document.querySelector(b.dataset.dkq);if(h){h.hidden=false;h.click();h.hidden=true}return}
    if(!P)return;
+   if((b=t.closest('[data-dkmt]'))){e.stopImmediatePropagation();e.preventDefault();exSheet(+b.dataset.dkmt);setTimeout(()=>{const d=[...document.querySelectorAll('.scrim .metd.exm')].reverse().find(x=>/^\s*Método/.test(x.textContent));if(d){d.open=true;d.scrollIntoView({block:'center'})}},60);return}
+   if((b=t.closest('[data-dkrp]'))){e.stopImmediatePropagation();e.preventDefault();const ex=P.ex[+b.dataset.dkrp];if(ex)repSheet(ex,'all',redo);return}
    if((b=t.closest('[data-dks]'))){e.stopImmediatePropagation();e.preventDefault();const [i,f,d]=b.dataset.dks.split(':');const ex=P.ex[+i];if(!ex)return;
      if(f==='s'){if(+d>0)ex.s.push([...ex.s[ex.s.length-1]]);else if(ex.s.length>1)ex.s.pop()}else if(f==='r')reps(ex,+d);else ex.rest=Math.max(0,(+ex.rest||0)+(+d));redo();return}
    if((b=t.closest('[data-dksel]'))){e.stopImmediatePropagation();e.preventDefault();const i=+b.dataset.dksel;
