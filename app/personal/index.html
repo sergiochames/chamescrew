@@ -1895,6 +1895,18 @@ function exSheet(i){const P=CUR().plans[T2.sel],e=P.ex[i],last=i===P.ex.length-1
     if(t.closest('[data-eswap]')){s.remove();picker(n=>{e.n=n;if(isCardioN(n)){e.cd=e.cd||mkCd();e.rest=0}else if(e.cd){delete e.cd;e.rest=60}toast('Trocado por '+n)})}
     if(t===s||t.closest('[data-close]'))drawBuilder()})}
 const nA=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+/* busca inteligente de exercício: palavras em qualquer ordem, parte da palavra, singular/plural, sinônimos e erro de digitação */
+const SYN=[['cabo','polia','pulley','cross','crossover'],['halter','halteres','haltere','dumbbell','alteres'],['barra','bar'],['maquina','aparelho','articulada'],['agachamento','agacho','squat'],['supino','bench'],['rosca','curl'],['triceps','tricep'],['biceps','bicep'],['gluteo','gluteos','bumbum','bunda'],['panturrilha','gemeos','batata'],['abducao','abdutora','abdutor'],['aducao','adutora','adutor'],['elevacao','levantamento','raise'],['puxada','pulldown','pull'],['remada','row'],['desenvolvimento','militar','press'],['costas','dorsal','dorsais'],['ombro','deltoide','ombros'],['peito','peitoral'],['posterior','isquio','isquiotibiais'],['quadriceps','quadri','coxa'],['abdominal','abdomen','abs','barriga'],['inclinado','inclinada','incline'],['unilateral','um braco','um lado'],['lateral','laterais'],['bulgaro','bulgara'],['perna','pernas','inferiores','inferior'],['superiores','superior','braco','bracos'],['core','tronco'],['terra','deadlift'],['esteira','corrida'],['bicicleta','bike','spinning']];
+const stemW=w=>w.length>4?w.replace(/(es|s)$/,''):w;
+const edit1=(a,b)=>{if(Math.abs(a.length-b.length)>1)return false;let i=0,j=0,d=0;while(i<a.length&&j<b.length){if(a[i]===b[j]){i++;j++;continue}if(++d>1)return false;if(a.length>b.length)i++;else if(a.length<b.length)j++;else{i++;j++}}return d+(a.length-i)+(b.length-j)<=1};
+const synOf=t=>{const g=SYN.find(g=>g.includes(t)||g.includes(stemW(t)));return g?g:[t]};
+function exScore(q,name){const T=nA(q).split(/[^a-z0-9]+/).filter(Boolean);if(!T.length)return 1;const words=nA(name).split(/[^a-z0-9]+/).filter(Boolean);if(!words.length)return 0;let sc=0;
+  for(const t of T){let best=0;const alts=[t,...synOf(t)];
+    for(const a of alts){const as=stemW(a),ex=a===t?1:.8;for(let k=0;k<words.length;k++){const w=words[k],ws=stemW(w);let v=0;
+      if(w===a||ws===as)v=10;else if(a.length>=3&&(w.startsWith(a)||ws.startsWith(as)))v=8;else if(a.length>=4&&w.includes(a))v=4;else if(as.length>=5&&ws.length>=5&&edit1(as,ws))v=5;
+      v*=ex;if(v>0&&k===0)v+=1;if(v>best)best=v}}
+    if(!best)return 0;sc+=best}
+  if(nA(name).startsWith(nA(q).trim()))sc+=6;return sc}
 function picker(single){const P=CUR().plans[T2.sel];let n=0;
   const s=sheet(`<span class="lbl">Treino ${LT(CUR(),T2.sel)} • ${esc(P.name)}</span><h3 class="d">${single?'Trocar exercício':'Adicionar exercício'}</h3>
     <input class="inp" id="pq" placeholder="Buscar em todos (${Object.values(LIB).reduce((a,r)=>a+Object.values(r).reduce((b,m)=>b+m.length,0),0)} exercícios)" autocomplete="off" aria-label="Buscar exercício">
@@ -1907,8 +1919,8 @@ function picker(single){const P=CUR().plans[T2.sel];let n=0;
   const fill=()=>{const q=nA(T2.q).trim();rg.hidden=ms.hidden=!!q;
     rg.innerHTML=Object.keys(LIB).map(r=>`<button data-rg="${r}" aria-pressed="${r===T2.reg}">${r}</button>`).join('');
     ms.innerHTML=Object.keys(LIB[T2.reg]).length>1?Object.keys(LIB[T2.reg]).map(m=>`<button data-ms="${m}" aria-pressed="${m===T2.mus}">${m}${listOf(m).some(k=>T2.fav.has(k))?' <i class="sf">★</i>':''}</button>`).join(''):'';
-    if(q){const all=[];for(const r in LIB)for(const m in LIB[r])listOf(m).forEach(k=>{if(nA(k+' '+dnOf(k)).includes(q)&&!all.includes(k))all.push(k)});
-      pl.innerHTML=all.length?all.sort((a,b)=>(T2.fav.has(b)-T2.fav.has(a))||a.localeCompare(b,'pt')).map(row).join(''):`<p class="note" style="padding:8px 0">Nada com "${esc(T2.q)}". Crie embaixo.</p>`;return}
+    if(q){const all=[],SCR={};for(const r in LIB)for(const m in LIB[r])listOf(m).forEach(k=>{if(!all.includes(k)){const sc=exScore(q,k+' '+dnOf(k)+' '+m+' '+r);if(sc>0){all.push(k);SCR[k]=sc}}});
+      pl.innerHTML=all.length?all.sort((a,b)=>(SCR[b]-SCR[a])||(T2.fav.has(b)-T2.fav.has(a))||a.localeCompare(b,'pt')).map(row).join(''):`<p class="note" style="padding:8px 0">Nada com "${esc(T2.q)}". Crie embaixo.</p>`;return}
     const L=listOf(T2.mus),nf=L.filter(k=>T2.fav.has(k)).length;
     pl.innerHTML=(nf?`<p class="lbl" style="margin:10px 0 0">★ Seus favoritos</p>`:'')+L.slice(0,nf).map(row).join('')+`<p class="lbl" style="margin:12px 0 0">${T2.mus} (A–Z)</p>`+L.slice(nf).map(row).join('')};
   fill();pq.oninput=()=>{T2.q=pq.value;fill()};
