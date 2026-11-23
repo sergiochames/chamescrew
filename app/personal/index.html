@@ -1319,7 +1319,7 @@ function drawAgenda(){
 `}
   <p class="proto">Protótipo com dados de exemplo. Hoje fixo em quarta, 28/out, 14:45.</p>`;
 }
-function sheet(html,onMount){const s=document.createElement('div');s.className='scrim';s.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-close]'))s.remove()});document.body.appendChild(s);const sh0=s.querySelector('.sheet'),last=sh0.lastElementChild;if(last&&last.matches('.btn,.row2')){const st=document.createElement('div');st.className='stick';sh0.appendChild(st);st.appendChild(last)}onMount&&onMount(s);return s}
+function sheet(html,onMount){const s=document.createElement('div');s.className='scrim';s.innerHTML=`<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;s.addEventListener('click',e=>{if(e.target===s||e.target.closest('[data-close]'))s.remove()});document.querySelectorAll('body>.scrim').forEach(p=>{p.style.visibility='hidden'});const _rm=s.remove.bind(s);s.remove=()=>{_rm();const l=[...document.querySelectorAll('body>.scrim')].pop();if(l)l.style.visibility=''};document.body.appendChild(s);const sh0=s.querySelector('.sheet'),last=sh0.lastElementChild;if(last&&last.matches('.btn,.row2')){const st=document.createElement('div');st.className='stick';sh0.appendChild(st);st.appendChild(last)}onMount&&onMount(s);return s}
 function toast(m){if(window.__tq&&window.__tq(m))return;document.querySelectorAll('.toast').forEach(x=>x.remove());const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
 const evAt=i=>(S.ev[S.day]||[]).slice().sort((a,b)=>a.h-b.h)[i];
 function evSheet(i){const e=evAt(i),s0=stu(e.n);
@@ -5810,7 +5810,7 @@ try{
    const kb=document.createElement('div');kb.className='dkkb';kb.innerHTML='<span><kbd>⌘Z</kbd>desfazer</span><span><kbd>⌘D</kbd>duplicar</span><span><kbd>↑↓</kbd>mover selecionado</span><span><kbd>Shift</kbd>+clique seleciona vários</span><span><kbd>/</kbd>buscar exercício</span>';mid.appendChild(kb);
    brand();
    /* biblioteca: reaproveita o seletor do app dentro da coluna */
-   try{picker();const sc=[...document.querySelectorAll('body>.scrim')].pop();if(sc){sc.classList.add('dkpick');right.appendChild(sc);const pd=sc.querySelector('#pdone');if(pd)pd.closest('.stick').hidden=true;
+   try{picker();const sc=[...document.querySelectorAll('body>.scrim')].pop();if(sc){sc.classList.add('dkpick');right.appendChild(sc);{const l=[...document.querySelectorAll('body>.scrim')].pop();if(l)l.style.visibility=''}const pd=sc.querySelector('#pdone');if(pd)pd.closest('.stick').hidden=true;
      sc.querySelectorAll('.lx').forEach(l=>{const a=l.querySelector('[data-padd]');if(a){l.draggable=true;l.addEventListener('dragstart',ev=>{ev.dataTransfer.setData('text/plain',a.dataset.padd);document.body.classList.add('dkdrag')});l.addEventListener('dragend',()=>document.body.classList.remove('dkdrag'))}})}}catch(err){console.warn('dkpick',err)}
  }
  window.__dkBuild=dkBuild;
