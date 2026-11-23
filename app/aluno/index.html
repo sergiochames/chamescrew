@@ -2668,8 +2668,8 @@ function planHTML(P){return PLANS[P].ex.map((e,i)=>{
     <input id="kg-${P}-${i}-${s}" class="${sg?'sug':''}" inputmode="decimal" aria-label="Carga série ${s+1}" placeholder="${ph}">
     <input id="rp-${P}-${i}-${s}" inputmode="numeric" aria-label="Repetições série ${s+1}" placeholder="${e.tg&&e.tg[s]?e.tg[s][1]:e.reps}">
     <button class="ck" data-ck="${P}-${i}-${s}" aria-label="Concluir série ${s+1}" aria-pressed="false">${CHECK}</button>`});
-  return `<article class="ex" id="ex-${P}-${i}"><button class="exsum" data-open="${P}-${i}"><span class="okc">${CHECK}</span><span style="min-width:0;flex:1"><b>${e.name}</b><small id="sum-${P}-${i}"></small></span><small>Reabrir</small></button>
-    <div class="exbody"><h3 id="nm-${P}-${i}">${e.name}</h3><div id="st-${P}-${i}"></div><p class="meta">${e.sets} séries × ${e.reps} reps • ${e.rest?'descanso '+e.rest+'s':'sem descanso, vai direto pro próximo'}</p>
+  return `<article class="ex" id="ex-${P}-${i}"><button class="exsum" data-open="${P}-${i}"><span class="okc">${CHECK}</span><span style="min-width:0;flex:1"><b>${e.dn||e.name}</b><small id="sum-${P}-${i}"></small></span><small>Reabrir</small></button>
+    <div class="exbody"><h3 id="nm-${P}-${i}">${e.dn||e.name}</h3><div id="st-${P}-${i}"></div><p class="meta">${e.sets} séries × ${e.reps} reps • ${e.rest?'descanso '+e.rest+'s':'sem descanso, vai direto pro próximo'}</p>
     ${e.tg?`<span class="tag up">🎯 Meta do Sérgio: ${e.tg.map(t=>String(t[0]).replace('.',',')).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')} kg</span>`:''}${window.metTags?metTags(e)+conjTag(metGroups(PLANS[P].ex)[i]):''}${e.obs?`<span class="tag">📌 ${e.obs}</span>`:''}${sg?`<span class="tag up">↑ Passou da meta (+${sg.excess} reps): ${sg.kg} kg (+${sg.pct}%)</span>`:''}
     <div class="sets">${rows}</div>
     <div class="tools"><button class="btn small" data-demo="${P}-${i}">▶ Execução</button><button class="btn small" data-rep="${P}-${i}">↻ Repetir</button><button class="btn small" data-skip="${P}-${i}">⤼ Pular</button></div></div></article>`}).join('')}
@@ -2715,7 +2715,7 @@ function skipExercise(P,i,reason,extra){const k=P+'-'+i,ex=PLANS[P].ex[i],art=$(
 function unskip(P,i){const k=P+'-'+i,art=$('#ex-'+k);delete SKIP[k];art.classList.remove('closed','skipped','pain');art.querySelector('.okc').innerHTML=CHECK;art.querySelector('.exsum > small').textContent='Reabrir';
   const ix=SKIPLOG.findIndex(x=>x.ex===PLANS[P].ex[i].name);if(ix>=0)SKIPLOG.splice(ix,1)}
 function openSkip(P,i){const ex=PLANS[P].ex[i];
-  const s=sheet(`<span class="lbl">Pular exercício</span><p class="d" style="font-size:38px;margin:6px 0 4px">${ex.name}</p><p class="meta" style="margin:0 0 14px">Por que você vai pular?</p>
+  const s=sheet(`<span class="lbl">Pular exercício</span><p class="d" style="font-size:38px;margin:6px 0 4px">${ex.dn||ex.name}</p><p class="meta" style="margin:0 0 14px">Por que você vai pular?</p>
     <div style="display:flex;flex-direction:column;gap:10px" id="rs">
       <button class="reason" data-r="ocupado"><span class="ic">⏳</span><span><b>Aparelho ocupado</b><small>Te mostro um substituto equivalente</small></span></button>
       <button class="reason" data-r="dor"><span class="ic">🩹</span><span><b>Dor ou desconforto</b><small>Não perde medalha e o Sérgio é avisado</small></span></button>
@@ -2755,13 +2755,13 @@ const esc2=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const EXCSS='<style>.exv{width:100%;display:block;border-radius:20px;background:#fff;aspect-ratio:4/3;object-fit:cover}.exh{margin-top:12px;font-size:12.5px;line-height:1.45;color:var(--muted)}.exh b{display:block;color:var(--fg);font-size:11px;letter-spacing:.07em;text-transform:uppercase;margin:10px 0 3px}.exh p{margin:0}</style>';
 function openDemo(ex){
   const inf=exInfo(ex.name),gv=inf&&inf.v?'../ex/'+inf.v:'';
-  if(gv){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:34px;margin:4px 0 10px">${ex.name}</p>
+  if(gv){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:34px;margin:4px 0 10px">${ex.dn||ex.name}</p>
     <video class="exv" src="${gv}.mp4" poster="${gv}.jpg" autoplay loop muted playsinline webkit-playsinline preload="auto" aria-label="Animação de ${ex.name}"></video>
     ${exTxt(inf)}${ex.yt?`<a class="btn wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;margin-top:14px">▶ Ver o vídeo do seu personal</a>`:''}${EXCSS}`,s=>{const v=s.querySelector('video');if(v){v.muted=true;const pp=v.play();if(pp&&pp.catch)pp.catch(()=>{})}});return}
-  if(ex.yt){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.name}</p>
+  if(ex.yt){sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 10px">${ex.dn||ex.name}</p>
     <a class="btn solid wide" href="${String(ex.yt).replace(/"/g,'%22')}" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none">▶ Ver o vídeo do exercício</a>
     <p class="meta" style="margin-top:8px">Vídeo escolhido pelo seu personal. Abre no YouTube.</p>${exTxt(inf)}${EXCSS}`);return}
-  sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 6px">${ex.name}</p>
+  sheet(`<span class="lbl">Execução</span><p class="d" style="font-size:40px;margin:4px 0 6px">${ex.dn||ex.name}</p>
     <canvas class="fig" id="fig" width="720" height="480" aria-label="Animação de um boneco executando ${ex.name}"></canvas>
     <p class="meta">Animação ilustrativa.</p>${exTxt(inf)}${EXCSS}`,s=>{
     const cv=s.querySelector('#fig'),g=cv.getContext('2d');const css=getComputedStyle(document.documentElement);const t0=performance.now();
@@ -3976,7 +3976,7 @@ function renderNow(){const el=$('#trnow');if(!el||!TR.on)return;const P=curPlan,
   $('#tr-cnt').textContent=`${nd} de ${tot} exercícios`;
   if(i<0){el.innerHTML=`<span class="lbl">Tudo feito</span><p class="d">Bora finalizar</p><button class="btn solid wide" data-trfin style="background:var(--on-ink);color:var(--ink)">Finalizar treino</button>`;return}
   const e=ex[i],p=e.prev[e.prev.length-1];
-  el.innerHTML=`<div class="row"><span class="lbl">Agora • ${i+1} de ${tot}</span><button class="btn small" data-trjump="${i}">Ir</button></div><p class="d">${e.name}</p>
+  el.innerHTML=`<div class="row"><span class="lbl">Agora • ${i+1} de ${tot}</span><button class="btn small" data-trjump="${i}">Ir</button></div><p class="d">${e.dn||e.name}</p>
    <p class="trpl">Planejado: ${e.sets} × ${e.reps} reps • ${e.rest?'descanso '+e.rest+'s':'sem descanso'}</p><p class="meta" style="color:inherit;opacity:.7;margin:0">Última vez: ${p[0]} kg × ${p[1]}</p>`}
 /* montar a tela */
 $('#plans').insertAdjacentHTML('beforebegin','<div id="trh"></div>');
@@ -7304,7 +7304,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   P.forEach(w=>{const k=w.letter,days=w.exercises.days||[];ORD.push(k);MUS[k]=[];FIXN[k]=days.length?DS[days[0]]:'';
     (window.__PLOBS=window.__PLOBS||{})[k]=String((w.exercises&&w.exercises.obs)||'').trim();PLANS[k]={title:'Treino '+k,focus:w.title||('Treino '+k),day:days.length?days.map(d=>DL[d]).join(' e '):'quando puder',
       ex:w.exercises.ex.filter(e=>!e.cd).map(e=>{const S=(e.s&&e.s.length?e.s:[[0,10]]),reps=String(S[0][1]||10),rn=parseInt(reps)||10,lp=lastSets(e.n);
-        return {rr:String(S[0][1]||10).replace('-',' a '),mt:Array.isArray(e.mets)?e.mets:[],lk:!!e.link,lkid:e.link||0,rx:(e.rx==null?undefined:(+e.rx||0)),name:e.n,yt:/^https?:\/\//i.test(e.yt||'')?e.yt:'',sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
+        return {rr:String(S[0][1]||10).replace('-',' a '),mt:Array.isArray(e.mets)?e.mets:[],lk:!!e.link,lkid:e.link||0,rx:(e.rx==null?undefined:(+e.rx||0)),name:e.n,dn:(typeof e.dn==='string'&&e.dn.trim()&&e.dn.trim()!==e.n)?e.dn.trim().slice(0,60):'',yt:/^https?:\/\//i.test(e.yt||'')?e.yt:'',sets:S.length,reps:rn,obs:e.obs||'',type:'none',eq:eqOf(e.n),prev:S.map((z,j)=>lp&&lp[j]?lp[j]:[+z[0]||0,rn]),rest:+e.rest||0,
           tg:S.some(z=>+z[0]>0)?S.map(z=>[+z[0]||0,rn]):undefined}})}});
   const WKP=[0,1,2,3,4,5,6].map(i=>{const k=ORD.find(k=>(P.find(w=>w.letter===k).exercises.days||[]).includes(i));return k?{k}:(cf.cardio||[]).includes(i)?{c:1}:{r:1}});
   const ws=new Date(now.getFullYear(),now.getMonth(),now.getDate()-TI),we=new Date(ws.getTime()+6*864e5),inW=d=>d>=ymd(ws)&&d<=ymd(we);
