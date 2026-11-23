@@ -2005,7 +2005,7 @@ function favSheet2(){const w=CUR(),P=w.plans[T2.sel];const multi=w.plans.length>
   const dup=()=>what==='semana'?FAVW.findIndex(f=>f.kind==='semana'&&f.plans.length===w.plans.length&&f.plans.every((p,k)=>p.name===w.plans[k].name&&p.ex.length===w.plans[k].ex.length)):FAVW.findIndex(f=>f.kind==='treino'&&f.p.name===P.name&&f.p.ex.length===P.ex.length);
   const opt=(k,t,d)=>`<button class="opt2${what===k?' cur':''}" data-wh="${k}" aria-pressed="${what===k}"><b>${t}</b><small>${d}</small></button>`;
   const s=sheet(`<span class="lbl">Biblioteca</span><h3 class="d">Salvar para usar de novo</h3>
-    ${opt('semana','A semana inteira',w.plans.length+' treino'+(w.plans.length>1?'s':'')+' • '+tot+(tot===1?' exercício':' exercícios') • dias e cardio')}
+    ${opt('semana','A semana inteira',w.plans.length+' treino'+(w.plans.length>1?'s':'')+' • '+tot+(tot===1?' exercício':' exercícios')+' • dias e cardio')}
     ${opt('treino','Só o treino '+LT(w,T2.sel)+' • '+esc(P.name),nEx(P)+(nEx(P)===1?' exercício':' exercícios'))}
     <input class="inp" id="fn" value="${esc(what==='semana'?wkName():P.name)}" aria-label="Nome">
     <span class="lbl">Etiquetas</span><div class="chips">${['Iniciante','Intermediário','Avançado','Glúteo','Hipertrofia','Emagrecimento'].map(t=>`<button class="chip" data-tg="${t}" aria-pressed="false">${t}</button>`).join('')}</div>
