@@ -431,7 +431,7 @@ async function route(){const {data:{session}}=await sb.auth.getSession();if(!ses
   if(p&&p.role==='removido'){removed();return}
   if(!p||!p.onboarded){if(!ST.d.name&&p){ST.d.name=p.name||'';ST.d.phone=p.phone||''}
     const [{data:fx},{data:lc},{data:pz},{data:wh}]=await Promise.all([sb.from('fixed_slots').select('id').eq('student_id',ST.user.id).limit(1),sb.rpc('public_locs'),sb.rpc('public_prices'),sb.rpc('public_wh')]);PRICE=pz||{};WHD=wh||{};await refDesc();
-    LOCS=(lc||[]).filter(Boolean);ST.hasFx=!!(fx&&fx.length);STEPS=ST.hasFx?STEPS0.filter(k=>k!=='local'&&k!=='dias'):STEPS0.slice();step(Math.min(ST.d.step||0,STEPS.length-1));return}
+    LOCS=(lc||[]).filter(Boolean);ST.hasFx=!!(fx&&fx.length)||(p&&p.presencial===false);STEPS=ST.hasFx?STEPS0.filter(k=>k!=='local'&&k!=='dias'):STEPS0.slice();step(Math.min(ST.d.step||0,STEPS.length-1));return}
   home()}
 (async()=>{if(/[?&]sair\b/.test(location.search)){try{await sb.auth.signOut()}catch(_){}history.replaceState(null,'','/app/')}route()})();
 </script></body></html>
