@@ -6797,7 +6797,7 @@ try{LOCAL=window.__LOC0}catch(_){}try{const A=window.ALOCX;if(A){A.length=0;(win
 let CI={lim:4,used:0,credits:0,auto:false};try{const {data}=await PF.ci;if(data)CI=data}catch(_){}window.__CI2=CI;window.__AUTO=!!CI.auto;
 try{const {data:rl}=await PF.rl;if(rl&&window.__setRules)window.__setRules(rl)}catch(_){}
 let PAYR=null;try{const {data:pq}=await PF.pq;PAYR=(pq||[])[0]||null}catch(_){}window.__PAYR=PAYR;
-if(!(CL||[]).length&&!PAYR){location.replace('/app/');return}
+if(!(CL||[]).length&&!PAYR&&P.presencial!==false){location.replace('/app/');return}
 try{const [{data:at},{data:aa}]=await PF.anm;if(at&&!(aa&&aa.length)){location.replace('/app/');return}}catch(_){}
 
 /* ---- tempo: o protótipo conta dias a partir de 28/10/2026 ---- */
