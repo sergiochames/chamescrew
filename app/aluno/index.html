@@ -6904,6 +6904,11 @@ function wkBox(B){const RD=window.__RD;if(!RD)return;B.dataset.go='treino';B.cla
   B.innerHTML=`<span class="agh"><span><b>Minha semana de treino</b><small>${goal}x por semana • ${nd} de ${goal} feitos</small></span><em class="wkp">${pc}%</em></span><span class="wkds">${cells}</span><span class="wkbar"><i style="width:${pc}%"></i></span><span class="wkn">${nxT}</span>${lw}`}
 document.addEventListener('click',e=>{const c=e.target.closest('#agbox.wkon [data-wkd]');if(!c)return;e.preventDefault();e.stopPropagation();const i=+c.dataset.wkd;
   const t=document.querySelector('.tabs [data-go="treino"]');if(t)t.click();setTimeout(()=>{try{TR.sel=i;renderTrHome()}catch(_){}const W=window.__RD&&window.__RD.WKP||[];if(!(W[i]&&W[i].k)&&i<=(new Date().getDay()+6)%7){try{regSheet(i,'menu')}catch(_){}}},60)},true);
+
+/* ordem da semana: não pula treino (A → B → C → D); refazer o que já fez pode */
+document.addEventListener('click',e=>{const b=e.target.closest('[data-trgo]');if(!b)return;const k=b.dataset.trgo,nx=window.__NXK,RD=window.__RD||{};if(!nx||k===nx)return;
+  const doneW=new Set([...Object.values(RD.TRLOG||{}).flat(),...Object.keys((RD.TR&&RD.TR.done)||{}).filter(x=>RD.TR.done[x]==='hoje')]);if(doneW.has(k))return;
+  e.preventDefault();e.stopImmediatePropagation();try{toast('Siga a ordem: faça o Treino '+nx+' antes')}catch(_){alert('Siga a ordem: faça o Treino '+nx+' antes')}},true);
 /* olhinho: ver o treino sem começar */
 const EYE='<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
 function addEyes(){document.querySelectorAll('#trh .trl .trr').forEach(r=>{if(r.querySelector('.trv'))return;const k=(r.querySelector('.lt')||{}).textContent;if(!k)return;const b=document.createElement('button');b.className='btn small line trv';b.dataset.trview=k.trim();b.setAttribute('aria-label','Ver treino');b.innerHTML=EYE;const last=r.lastElementChild;const w=document.createElement('span');w.className='trva';r.insertBefore(w,last);w.appendChild(b);w.appendChild(last);if(last&&/Fazer este/.test(last.textContent))last.textContent='Fazer'})}
@@ -7349,7 +7354,7 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   const modo=cf.mode==='fixo'||cf.mode==='seq'?cf.mode:'livre';
   /* fila da semana: treino feito em dia fora do plano empurra os próximos (B, C, D…); segunda volta ao normal */
   {const SEQ=WKP.map(x=>x.k).filter(Boolean),dd=new Set(Object.keys(TRLOG).map(Number).filter(i=>(TRLOG[i]||[]).some(x=>x!=='cardio')));if(Object.values(done).includes('hoje'))dd.add(TI);
-   let n=dd.size;const rest=SEQ.slice(n);for(let i=TI;i<7;i++){if(dd.has(i))continue;if(WKP[i].k){const k=rest.shift();WKP[i]=k?{k}:{r:1}}}}
+   let n=dd.size;const rest=SEQ.slice(n);window.__NXK=rest[0]||null;for(let i=TI;i<7;i++){if(dd.has(i))continue;if(WKP[i].k){const k=rest.shift();WKP[i]=k?{k}:{r:1}}}for(let i=TI;i<7&&rest.length;i++){if(!dd.has(i)&&WKP[i].r)WKP[i]={k:rest.shift(),xr:1}}}
   let TK=WKP[TI].k;if(!TK){const i=ORD.indexOf(last.k);TK=L0?ORD[(i+1)%ORD.length]:ORD[0];for(let j=0;j<ORD.length&&done[TK];j++)TK=ORD[(ORD.indexOf(TK)+1)%ORD.length]}
   const f2=d=>d.getDate()+'/'+(d.getMonth()+1);
   const m0=ymd(new Date(now.getFullYear(),now.getMonth(),1)),LM=LOGS.filter(l=>l.day>=m0&&ORD.includes(l.letter)),cnt={};ORD.forEach(k=>cnt[k]=LM.filter(l=>l.letter===k).length);
