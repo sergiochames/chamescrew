@@ -7354,8 +7354,8 @@ function buildRD(){const W=WK||[],cf=(W.find(w=>w.letter==='_cfg')||{}).exercise
   const modo=cf.mode==='fixo'||cf.mode==='seq'?cf.mode:'livre';
   /* fila da semana: treino feito em dia fora do plano empurra os próximos (B, C, D…); segunda volta ao normal */
   {const SEQ=WKP.map(x=>x.k).filter(Boolean),dd=new Set(Object.keys(TRLOG).map(Number).filter(i=>(TRLOG[i]||[]).some(x=>x!=='cardio')));if(Object.values(done).includes('hoje'))dd.add(TI);
-   let n=dd.size;const rest=SEQ.slice(n);window.__NXK=rest[0]||null;for(let i=TI;i<7;i++){if(dd.has(i))continue;if(WKP[i].k){const k=rest.shift();WKP[i]=k?{k}:{r:1}}}for(let i=TI;i<7&&rest.length;i++){if(!dd.has(i)&&WKP[i].r)WKP[i]={k:rest.shift(),xr:1}}}
-  let TK=WKP[TI].k;if(!TK){const i=ORD.indexOf(last.k);TK=L0?ORD[(i+1)%ORD.length]:ORD[0];for(let j=0;j<ORD.length&&done[TK];j++)TK=ORD[(ORD.indexOf(TK)+1)%ORD.length]}
+   let n=dd.size;const rest=SEQ.slice(n);window.__NXK=rest[0]||null;for(let i=TI;i<7;i++){if(dd.has(i))continue;if(WKP[i].k){const k=rest.shift();WKP[i]=k?{k}:{r:1}}}}
+  let TK=WKP[TI].k;if(!TK&&window.__NXK&&ORD.includes(window.__NXK))TK=window.__NXK;if(!TK){const i=ORD.indexOf(last.k);TK=L0?ORD[(i+1)%ORD.length]:ORD[0];for(let j=0;j<ORD.length&&done[TK];j++)TK=ORD[(ORD.indexOf(TK)+1)%ORD.length]}
   const f2=d=>d.getDate()+'/'+(d.getMonth()+1);
   const m0=ymd(new Date(now.getFullYear(),now.getMonth(),1)),LM=LOGS.filter(l=>l.day>=m0&&ORD.includes(l.letter)),cnt={};ORD.forEach(k=>cnt[k]=LM.filter(l=>l.letter===k).length);
   const CM=DCS.filter(c=>c.day>=m0&&c.answers&&c.answers.cardio>0),pd=WKP.filter(x=>x.k).length||ORD.length,wks=Math.max(1,Math.ceil(now.getDate()/7));
