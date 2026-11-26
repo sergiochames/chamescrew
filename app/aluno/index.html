@@ -4493,7 +4493,7 @@ const CTIPOS=['Corrida','Bike','Esteira','Caminhada','Natação','Elíptico','Ou
 function items(i){if(TR.man[i]&&(TR.man[i].some(x=>x.k||x.c)||(i===TODAYI&&ORD.some(k=>TR.done[k]==='hoje'))))TR.man[i]=TR.man[i].filter(x=>!x.skip&&!x.rest);return [...(TR.man[i]||[]),...(i===TODAYI?[...ORD.filter(k=>TR.done[k]==='hoje'),...(TR.extra||[])].map(k=>({k,app:1})):((TR.log&&TR.log[i])||[]).filter(k=>k!=='cardio'&&!(TR.man[i]||[]).some(m=>m.k===k)).map(k=>({k,app:1})))]}
 const did=i=>items(i).some(x=>x.k||x.c);
 dayState=function(i){const P=WKP[i],I=items(i);if(did(i))return 'ok';if(I.some(x=>x.skip))return 'miss';if(I.some(x=>x.rest)||P.r)return 'off';if(i<TODAYI&&CFG.modo!=='livre')return 'miss';if(i===TODAYI)return 'today';return 'next'};
-function chipLab(i){const I=items(i),P=WKP[i],ks=I.filter(x=>x.k);if(ks.length)return ks[ks.length-1].k;if(I.some(x=>x.c))return HEART;if(I.some(x=>x.skip))return XIC;if(I.some(x=>x.rest))return MOON;if(P.c)return HEART;if(P.r)return '–';return P.k}
+function chipLab(i){const I=items(i),P=WKP[i],ks=I.filter(x=>x.k);if(ks.length)return ks[ks.length-1].k;if(I.some(x=>x.c))return HEART;if(I.some(x=>x.skip))return XIC;if(I.some(x=>x.rest))return MOON;if(P.c)return HEART;if(P.r)return MOON;return P.k}
 const itemTxt=x=>x.k?`<b>${PLANS[x.k].title}</b> ${x.app?'feito no app':'marcado como feito'}`:x.c?`<b>Cardio • ${x.tipo}</b> ${x.min} min • ${x.int.toLowerCase()}`:x.rest?'<b>Descanso</b>':`<b>Não treinou</b>${x.why?' • '+x.why.toLowerCase():''}`;
 renderTrHome=function(){if(CFG.semTreino){_rh18();return}const h=$('#trh');if(!h)return;setHero();updHoje();
   const i=TR.sel,P=WKP[i],I=items(i),done=new Set([0,1,2,3,4,5,6].flatMap(j=>items(j).filter(x=>x.k).map(x=>x.k))).size,dname=i===TODAYI?'Hoje':i===TODAYI-1?'Ontem':WKD[i]+' '+dDay(i),past=i<=TODAYI;
@@ -6896,7 +6896,7 @@ function wkBox(B){const RD=window.__RD;if(!RD)return;B.dataset.go='treino';B.cla
   const Wd=RD.WKP||[],TL=RD.TRLOG||{},dn=RD.TR&&RD.TR.done||{};let man={};try{man=TR.man||{}}catch(_){}
   const didI=i=>(TL[i]||[]).some(x=>x!=='cardio')||(i===TI&&Object.values(dn).includes('hoje'))||(man[i]||[]).some(x=>x.k||x.c);
   const goal=Wd.filter(x=>x.k).length||(RD.ORD||[]).length,nd=[0,1,2,3,4,5,6].filter(didI).length,pc=goal?Math.min(100,Math.round(nd/goal*100)):0;
-  const lab=i=>{const d=(TL[i]||[]).filter(x=>x!=='cardio');if(d.length)return d[d.length-1];const m=(man[i]||[]).find(x=>x.k);if(m)return m.k;if((man[i]||[]).some(x=>x.c)||(TL[i]||[]).includes('cardio'))return '♥';return Wd[i]&&Wd[i].k?Wd[i].k:MOON0};
+  const lab=i=>{if(i===TI){const h=Object.keys(dn).filter(x=>dn[x]==='hoje');if(h.length)return h[h.length-1]}const d=(TL[i]||[]).filter(x=>x!=='cardio');if(d.length)return d[d.length-1];const m=(man[i]||[]).find(x=>x.k);if(m)return m.k;if((man[i]||[]).some(x=>x.c)||(TL[i]||[]).includes('cardio'))return '♥';return Wd[i]&&Wd[i].k?Wd[i].k:MOON0};
   const cells=DS.map((w,i)=>`<span class="wkd${didI(i)?' ok':''}${i===TI&&!didI(i)?' t':''}${!(Wd[i]&&Wd[i].k)&&!didI(i)?' rs':''}" data-wkd="${i}"><small>${w}</small><b>${lab(i)}</b></span>`).join('');
   let nx=null;for(let j=TI;j<7;j++){if(Wd[j]&&Wd[j].k&&!didI(j)){nx={i:j,k:Wd[j].k};break}}
   const PL=RD.PLANS||{},nxT=nx&&PL[nx.k]?`Próximo: <b>${PL[nx.k].title} • ${WE(PL[nx.k].focus)}</b> • ${nx.i===TI?'hoje':DS[nx.i].toLowerCase()}`:'Semana fechada. Boa!';
@@ -6920,7 +6920,13 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-trview]');
 {const st=document.createElement('style');st.textContent=`#agbox.wkon .wkp{font-style:normal;font-weight:800;color:#4ade80;background:none;border:0;padding:0}
 #agbox .wkds{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:12px;width:100%}#agbox .wkd{border:1px solid var(--line,rgba(255,255,255,.12));border-radius:13px;padding:7px 0;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
 #agbox .wkd small{font-size:10px;opacity:.65;font-weight:700}#agbox .wkd b{font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center;height:20px}#agbox .wkd.ok{background:#22c55e;border-color:#22c55e;color:#04210f}#agbox .wkd.ok small{opacity:.8}
-#agbox .wkd.t{background:var(--fg,#efede6);color:var(--bg,#111)}#agbox .wkd.rs b{opacity:.55}
+#agbox .wkd.t{background:var(--fg,#efede6);color:var(--bg,#111)}
+.twr{gap:6px!important}.twd{border:1px solid var(--line,rgba(255,255,255,.12))!important;border-radius:13px!important;padding:7px 0 6px!important;gap:2px!important;background:none}
+.twd small{font-size:10px!important;opacity:.75}.twd span{width:auto!important;height:22px!important;border:0!important;background:none!important;font-size:17px!important;border-radius:0!important}
+.twd em{font-size:9.5px!important;opacity:.7}.twd.ok{background:#22c55e!important;border-color:#22c55e!important}.twd.ok span,.twd.ok small,.twd.ok em,.twd.ok span .hic2{color:#04210f!important;opacity:1}
+.twd.today{background:var(--fg)!important;border-color:var(--fg)!important}.twd.today span,.twd.today small,.twd.today em{color:var(--bg)!important}
+.twd.miss{border-color:var(--miss)!important}.twd.miss span{color:var(--miss)!important}.twd.off span{opacity:.55;font-size:15px!important}
+.twd.sel{box-shadow:0 0 0 2px var(--fg);background:none}.twd.ok.sel{background:#22c55e!important}.twd.today.sel{background:var(--fg)!important}#agbox .wkd.rs b{opacity:.55}
 #agbox .wkbar{display:block;height:6px;border-radius:9px;background:rgba(127,127,127,.2);margin-top:12px;width:100%}#agbox .wkbar i{display:block;height:100%;background:#22c55e;border-radius:9px}
 #agbox .wkn{display:block;margin-top:10px;font-size:13px;opacity:.75;text-align:left;width:100%}#agbox .wkn b{opacity:1}
 #agbox .wkl{display:flex;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line,rgba(255,255,255,.12));width:100%;text-align:left}#agbox .wkl small{display:block;font-size:11.5px;opacity:.6}#agbox .wkl b{font-size:13.5px}
